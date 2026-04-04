@@ -1,68 +1,164 @@
-/* Appointments section */
-.appointments-section header h2 {
-    font-size: 20px;
-    font-weight: 600;
+/* ── Section wrapper ── */
+.appt-section {
+    margin-bottom: 2.5rem;
+}
+
+/* ── Section header ── */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 12px;
 }
 
-/* Appointment card */
-article.appointment-card {
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb; /* light gray border */
-    border-radius: 8px;
-    padding: 16px 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+.section-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin: 0;
+    padding:20px;
 }
 
-article.appointment-card p {
-    margin-bottom: 8px;
-}
-
-/* Appointment status */
-.appointment-status {
-    font-weight: 500;
-    margin-bottom: 8px;
-}
-
-.appointment-status.upcoming {
-    color: #1D9E75; /* green for upcoming */
-}
-
-.appointment-status.past {
-    color: gray;
-}
-
-/* Buttons for actions */
-nav.appointment-actions {
+/* ── Arrow scroll buttons ── */
+.scroll-btns {
     display: flex;
-    gap: 10px;
-    margin-top: 10px;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
-nav.appointment-actions button {
-    padding: 8px 12px;
-    border: none;
+.scroll-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #374151;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+}
+
+.scroll-btn:hover {
+    background: #f3f4f6;
+}
+
+/* ────────────────────────────────
+   UPCOMING — horizontal carousel
+   ──────────────────────────────── */
+
+.carousel-track {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+    list-style: none;
+    margin: 0;
+    padding-left: 0;
+}
+
+.carousel-track::-webkit-scrollbar {
+    display: none;
+}
+
+/* Upcoming card */
+.appointment-card {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px 22px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    min-width: 290px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.card-accent {
+    width: 4px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    align-self: stretch;
+}
+
+.accent-upcoming {
+    background-color: #1D9E75;
+}
+
+.card-body {
+    flex: 1;
+}
+
+.card-clinic {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 6px;
+}
+
+/* Meta row inside upcoming card */
+.card-meta {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin: 8px 0 12px;
+    list-style: none;
+    padding: 0;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.meta-icon {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+/* Action buttons inside upcoming card */
+.appointment-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.appointment-actions button {
+    padding: 6px 13px;
     border-radius: 8px;
+    font-size: 12px;
     font-weight: 500;
     cursor: pointer;
-    transition: 0.3s;
+    border: none;
+    transition: opacity 0.2s;
 }
 
-/* Specific button styles */
 .view-btn {
-    background-color: #f3f4f6; /* light gray */
+    background-color: #f3f4f6;
     color: #111827;
+    border: 1px solid #e5e7eb;
 }
 
 .view-btn:hover {
     background-color: #1D9E75;
-    color: white;
+    color: #ffffff;
 }
 
 .reschedule-btn {
-    background-color: #1D9E75; /* green */
-    color: white;
+    background-color: #1D9E75;
+    color: #ffffff;
 }
 
 .reschedule-btn:hover {
@@ -70,18 +166,129 @@ nav.appointment-actions button {
 }
 
 .cancel-btn {
-    background-color: #f87171; /* red */
-    color: white;
+    background-color: #f87171;
+    color: #ffffff;
 }
 
 .cancel-btn:hover {
     opacity: 0.8;
 }
 
-/* Responsive */
+/* ────────────────────────────────
+   PAST — horizontal row list
+   ──────────────────────────────── */
+
+.past-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.past-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 18px;
+    background-color: #ffffff;
+    border-left: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.past-row:first-child {
+    border-top: 1px solid #e5e7eb;
+    border-radius: 12px 12px 0 0;
+}
+
+.past-row:last-child {
+    border-radius: 0 0 12px 12px;
+}
+
+.past-row:only-child {
+    border-radius: 12px;
+}
+
+.past-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #d1d5db;
+    flex-shrink: 0;
+}
+
+.past-clinic {
+    font-size: 14px;
+    font-weight: 500;
+    color: #111827;
+    flex: 1;
+    margin: 0;
+}
+
+.past-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+}
+
+.past-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+/* ────────────────────────────────
+   BADGES
+   ──────────────────────────────── */
+
+.badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+.badge-upcoming {
+    background-color: #E1F5EE;
+    color: #0F6E56;
+}
+
+.badge-past {
+    background-color: #f3f4f6;
+    color: #6b7280;
+}
+
+.badge-cancelled {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+/* ────────────────────────────────
+   RESPONSIVE
+   ──────────────────────────────── */
+
 @media (max-width: 768px) {
-    nav.appointment-actions {
+    .appointment-card {
+        min-width: 260px;
+    }
+
+    .appointment-actions {
         flex-direction: column;
-        gap: 8px;
+    }
+
+    .past-row {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .past-clinic {
+        flex-basis: 100%;
     }
 }

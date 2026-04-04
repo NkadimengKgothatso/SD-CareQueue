@@ -6,11 +6,10 @@
     <title>My Appointments</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="myappointments.css">
-     <link rel="stylesheet" href="bookAppointments.css">
+    <link rel="stylesheet" href="bookAppointments.css">
 </head>
 <body>
 
-    <!-- Top navigation bar -->
     <header class="top-bar">
         <nav class="logo">
             <span class="logo-icon"></span>
@@ -20,7 +19,6 @@
 
     <main class="container">
 
-        <!-- Sidebar -->
         <aside>
             <nav>
                 <ul>
@@ -41,61 +39,156 @@
             </section>
         </aside>
 
-        <!-- Main content -->
-        <section>
+        <section class="main-content">
             <h1>My Appointments</h1>
 
+
+            
+
             <!-- Upcoming Appointments -->
-            <section class="appointments-section">
-                <header>
-                    <h2>Upcoming Appointments</h2>
+            <section class="appt-section">
+                <header class="section-header">
+                    <h2 class="section-label">Upcoming Appointments</h2>
+                    <nav class="scroll-btns">
+                        <button class="scroll-btn" onclick="document.getElementById('upcoming').scrollBy({left:-320,behavior:'smooth'})">&#8592;</button>
+                        <button class="scroll-btn" onclick="document.getElementById('upcoming').scrollBy({left:320,behavior:'smooth'})">&#8594;</button>
+                    </nav>
                 </header>
 
-                <article class="appointment-card">
-                    <p><strong>Clinic:</strong> Sebetola Clinic</p>
-                    <p><strong>Date:</strong> 2026-04-10</p>
-                    <p><strong>Time:</strong> 09:30 AM</p>
-                    <p class="appointment-status upcoming">Status: Scheduled</p>
-                    <nav class="appointment-actions">
-                        <button class="view-btn">View</button>
-                        <button class="reschedule-btn">Reschedule</button>
-                        <button class="cancel-btn">Cancel</button>
-                    </nav>
-                </article>
+                <ul class="carousel-track" id="upcoming">
 
-                <article class="appointment-card">
-                    <p><strong>Clinic:</strong> Central Health Clinic</p>
-                    <p><strong>Date:</strong> 2026-04-15</p>
-                    <p><strong>Time:</strong> 02:00 PM</p>
-                    <p class="appointment-status upcoming">Status: Scheduled</p>
-                    <nav class="appointment-actions">
-                        <button class="view-btn">View</button>
-                        <button class="reschedule-btn">Reschedule</button>
-                        <button class="cancel-btn">Cancel</button>
-                    </nav>
-                </article>
+                    <li class="appointment-card">
+                        <span class="card-accent accent-upcoming"></span>
+                        <article class="card-body">
+                            <p class="card-clinic">Sebetola Clinic</p>
+                            <span class="badge badge-upcoming">Scheduled</span>
+                            <ul class="card-meta">
+                                <li class="meta-item"><i class="fa-solid fa-calendar-day meta-icon"></i> 10 Apr 2026</li>
+                                <li class="meta-item"><i class="fa-solid fa-clock meta-icon"></i> 09:30 AM</li>
+                            </ul>
+                            <nav class="appointment-actions">
+                                <button class="view-btn">View</button>
+                                <button class="reschedule-btn">Reschedule</button>
+                                <button class="cancel-btn">Cancel</button>
+                            </nav>
+                        </article>
+                    </li>
+
+                    <li class="appointment-card">
+                        <span class="card-accent accent-upcoming"></span>
+                        <article class="card-body">
+                            <p class="card-clinic">Central Health Clinic</p>
+                            <span class="badge badge-upcoming">Scheduled</span>
+                            <ul class="card-meta">
+                                <li class="meta-item"><i class="fa-solid fa-calendar-day meta-icon"></i> 15 Apr 2026</li>
+                                <li class="meta-item"><i class="fa-solid fa-clock meta-icon"></i> 02:00 PM</li>
+                            </ul>
+                            <nav class="appointment-actions">
+                                <button class="view-btn">View</button>
+                                <button class="reschedule-btn">Reschedule</button>
+                                <button class="cancel-btn">Cancel</button>
+                            </nav>
+                        </article>
+                    </li>
+
+                    <li class="appointment-card">
+                        <span class="card-accent accent-upcoming"></span>
+                        <article class="card-body">
+                            <p class="card-clinic">Maphalle Clinic</p>
+                            <span class="badge badge-upcoming">Scheduled</span>
+                            <ul class="card-meta">
+                                <li class="meta-item"><i class="fa-solid fa-calendar-day meta-icon"></i> 22 Apr 2026</li>
+                                <li class="meta-item"><i class="fa-solid fa-clock meta-icon"></i> 11:00 AM</li>
+                            </ul>
+                            <nav class="appointment-actions">
+                                <button class="view-btn">View</button>
+                                <button class="reschedule-btn">Reschedule</button>
+                                <button class="cancel-btn">Cancel</button>
+                            </nav>
+                        </article>
+                    </li>
+
+                    <li class="appointment-card">
+                        <span class="card-accent accent-upcoming"></span>
+                        <article class="card-body">
+                            <p class="card-clinic">Wits Campus Health</p>
+                            <span class="badge badge-upcoming">Scheduled</span>
+                            <ul class="card-meta">
+                                <li class="meta-item"><i class="fa-solid fa-calendar-day meta-icon"></i> 30 Apr 2026</li>
+                                <li class="meta-item"><i class="fa-solid fa-clock meta-icon"></i> 03:15 PM</li>
+                            </ul>
+                            <nav class="appointment-actions">
+                                <button class="view-btn">View</button>
+                                <button class="reschedule-btn">Reschedule</button>
+                                <button class="cancel-btn">Cancel</button>
+                            </nav>
+                        </article>
+                    </li>
+
+                </ul>
             </section>
 
             <!-- Past Appointments -->
-            <section class="appointments-section">
-                <header>
-                    <h2>Past Appointments</h2>
+            <section class="appt-section">
+                <header class="section-header">
+                    <h2 class="section-label">Past Appointments</h2>
                 </header>
 
-                <article class="appointment-card">
-                    <p><strong>Clinic:</strong> Sebetola Clinic</p>
-                    <p><strong>Date:</strong> 2026-03-20</p>
-                    <p><strong>Time:</strong> 10:00 AM</p>
-                    <p class="appointment-status past">Status: Completed</p>
-                </article>
+                <ul class="past-list">
 
-                <article class="appointment-card">
-                    <p><strong>Clinic:</strong> Central Health Clinic</p>
-                    <p><strong>Date:</strong> 2026-03-10</p>
-                    <p><strong>Time:</strong> 11:30 AM</p>
-                    <p class="appointment-status past">Status: Completed</p>
-                </article>
+                    <li class="past-row">
+                        <span class="past-dot"></span>
+                        <p class="past-clinic">Sebetola Clinic</p>
+                        <ul class="past-meta">
+                            <li class="past-meta-item"><i class="fa-solid fa-calendar-day meta-icon"></i> 20 Mar 2026</li>
+                            <li class="past-meta-item"><i class="fa-solid fa-clock meta-icon"></i> 10:00 AM</li>
+                            <li><span class="badge badge-past">Completed</span></li>
+                        </ul>
+                    </li>
+
+                    <li class="past-row">
+                        <span class="past-dot"></span>
+                        <p class="past-clinic">Central Health Clinic</p>
+                        <ul class="past-meta">
+                            <li class="past-meta-item"><i class="fa-solid fa-calendar-day meta-icon"></i> 10 Mar 2026</li>
+                            <li class="past-meta-item"><i class="fa-solid fa-clock meta-icon"></i> 11:30 AM</li>
+                            <li><span class="badge badge-past">Completed</span></li>
+                        </ul>
+                    </li>
+
+                    <li class="past-row">
+                        <span class="past-dot"></span>
+                        <p class="past-clinic">Braam MediClinic</p>
+                        <ul class="past-meta">
+                            <li class="past-meta-item"><i class="fa-solid fa-calendar-day meta-icon"></i> 22 Feb 2026</li>
+                            <li class="past-meta-item"><i class="fa-solid fa-clock meta-icon"></i> 08:45 AM</li>
+                            <li><span class="badge badge-past">Completed</span></li>
+                        </ul>
+                    </li>
+
+                    <li class="past-row">
+                        <span class="past-dot"></span>
+                        <p class="past-clinic">Parktown Health</p>
+                        <ul class="past-meta">
+                            <li class="past-meta-item"><i class="fa-solid fa-calendar-day meta-icon"></i> 05 Feb 2026</li>
+                            <li class="past-meta-item"><i class="fa-solid fa-clock meta-icon"></i> 01:00 PM</li>
+                            <li><span class="badge badge-past">Completed</span></li>
+                        </ul>
+                    </li>
+
+                    <li class="past-row">
+                        <span class="past-dot"></span>
+                        <p class="past-clinic">Sebetola Clinic</p>
+                        <ul class="past-meta">
+                            <li class="past-meta-item"><i class="fa-solid fa-calendar-day meta-icon"></i> 18 Jan 2026</li>
+                            <li class="past-meta-item"><i class="fa-solid fa-clock meta-icon"></i> 10:30 AM</li>
+                            <li><span class="badge badge-cancelled">Cancelled</span></li>
+                        </ul>
+                    </li>
+
+                </ul>
             </section>
+
         </section>
 
     </main>
