@@ -1,154 +1,87 @@
-/* Import font */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-
-/* Reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* Variables */
-:root {
-    --color-bg-primary: white;
-    --color-bg-secondary: #f8fbf9;
-    --color-text-primary: #111827;
-    --color-text-secondary: #6b7280;
-    --color-border-light: #e5e7eb;
-    --color-brand: #1D9E75;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --font-sans: 'Inter', sans-serif;
-}
-
-/* Body */
-body {
-    font-family: var(--font-sans);
-    background-color: var(--color-bg-secondary);
-    color: var(--color-text-primary);
-}
-
-/* Top Bar */
-header.top-bar {
-    display: flex;
-    align-items: center;
-    padding: 14px 28px;
-    background: var(--color-bg-primary);
-    border-bottom: 1px solid var(--color-border-light);
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-span.logo-icon {
-    width: 28px;
-    height: 28px;
-    background: var(--color-brand);
-    border-radius: 7px;
-    position: relative;
-    display: inline-block;
-}
-
-span.logo-icon::before {
-    content: '';
-    position: absolute;
-    background: white;
-    width: 3px; height: 13px;
-    left: 12px; top: 7px;
-    border-radius: 1px;
-}
-
-span.logo-icon::after {
-    content: '';
-    position: absolute;
-    background: white;
-    width: 13px; height: 3px;
-    left: 7px; top: 12px;
-    border-radius: 1px;
-}
-
-span.logo-name {
-    font-size: 18px;
+/* Appointments section */
+.appointments-section header h2 {
+    font-size: 20px;
     font-weight: 600;
-    color: var(--color-text-primary);
+    margin-bottom: 12px;
 }
 
-/* Layout */
-.container {
-    display: flex;
-    gap: 20px;
+/* Appointment card */
+article.appointment-card {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb; /* light gray border */
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 
-/* Sidebar */
-aside {
-    width: 22%;
-    background-color: var(--color-bg-primary);
-    padding: 20px;
-    border-radius: var(--radius-md);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+article.appointment-card p {
+    margin-bottom: 8px;
 }
 
-aside ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 20px;
-}
-
-aside ul li {
-    margin-bottom: 10px;
-}
-
-aside ul li a {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-    color: var(--color-text-primary);
-    padding: 10px 12px;
-    border-radius: var(--radius-md);
-    transition: 0.3s;
+/* Appointment status */
+.appointment-status {
     font-weight: 500;
+    margin-bottom: 8px;
 }
 
-aside ul li a:hover {
-    background-color: var(--color-brand);
+.appointment-status.upcoming {
+    color: #1D9E75; /* green for upcoming */
+}
+
+.appointment-status.past {
+    color: gray;
+}
+
+/* Buttons for actions */
+nav.appointment-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+nav.appointment-actions button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* Specific button styles */
+.view-btn {
+    background-color: #f3f4f6; /* light gray */
+    color: #111827;
+}
+
+.view-btn:hover {
+    background-color: #1D9E75;
     color: white;
 }
 
-/* User section */
-.user-Section {
-    margin-top: auto;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px;
-    background-color: #f3f4f6;
-    border-radius: var(--radius-lg);
+.reschedule-btn {
+    background-color: #1D9E75; /* green */
+    color: white;
 }
 
-.user-Section i {
-    color: var(--color-brand);
-    font-size: 20px;
+.reschedule-btn:hover {
+    opacity: 0.8;
 }
 
-.name-Surname {
-    font-weight: 600;
-    margin-bottom: 2px;
+.cancel-btn {
+    background-color: #f87171; /* red */
+    color: white;
 }
 
-.user-Identity {
-    font-size: 0.85rem;
-    color: var(--color-text-secondary);
+.cancel-btn:hover {
+    opacity: 0.8;
 }
 
-/* Main Content */
-main {
-    flex: 1;
-    padding: 20px;
+/* Responsive */
+@media (max-width: 768px) {
+    nav.appointment-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
 }
