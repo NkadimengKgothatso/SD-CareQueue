@@ -1,1 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Sets character encoding to UTF-8 to support most characters -->
+  <meta charset="UTF-8">
 
+  <!-- Makes page responsive on mobile devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Page title shown in browser tab -->
+  <title>Care Queue — Sign In</title>
+
+  <!-- Link to shared stylesheet (outside Login folder) -->
+  <link rel="stylesheet" href="../style.css">
+
+   <!-- Link to login-specific JS -->
+  <script type="module" src="./login.js" defer></script>
+</head>
+<body>
+
+  <!-- Top navigation bar -->
+  <header class="top-bar">
+    <nav class="logo">
+      <!-- Logo icon (green square with plus sign created with CSS) -->
+      <span class="logo-icon"></span>
+      <span class="logo-name">Care Queue</span>
+    </nav>
+  </header>
+
+  <!-- Main content split into two panels: left info + right login -->
+  <main class="split">
+
+    <!-- Left panel: Info about the app -->
+    <section class="left-panel">
+      <p class="lp-tag">Community clinic access</p>
+      <h1 class="lp-h">Healthcare made easier for every South African.</h1>
+      <p class="lp-p">Join thousands of patients who skip the queue, book ahead, and get notified when it's their turn — all from their phone.</p>
+
+      <!-- Bullet points highlighting features -->
+      <ul class="lp-bullets">
+        <li class="bullet">
+          <span class="bullet-dot"><span class="bullet-check"></span></span>
+          <p class="bullet-text">Find any public clinic from the SA National Health Facility Register</p>
+        </li>
+        <li class="bullet">
+          <span class="bullet-dot"><span class="bullet-check"></span></span>
+          <p class="bullet-text">Book ahead or join the walk-in queue remotely</p>
+        </li>
+        <li class="bullet">
+          <span class="bullet-dot"><span class="bullet-check"></span></span>
+          <p class="bullet-text">Real-time queue updates so you know exactly when to arrive</p>
+        </li>
+        <li class="bullet">
+          <span class="bullet-dot"><span class="bullet-check"></span></span>
+          <p class="bullet-text">Secure sign-in — your details stay private and protected</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Right panel: Login card -->
+    <section class="right-panel">
+      <article class="login-card">
+
+        <h2 class="lc-title">Welcome back.</h2>
+        <p class="lc-sub">Select your role to continue. You'll be directed to the right portal after sign-in.</p>
+
+        <!-- Role selection -->
+        <p class="role-label">Select your role</p>
+        <ul class="role-options">
+          <li class="role-opt selected" id="opt-patient" onclick="selectRole('patient')">
+            <span class="role-radio"><span class="radio-inner"></span></span>
+            <span class="role-text-wrap">
+              <span class="role-name">Patient</span>
+              <span class="role-hint">Book appointments and track queues</span>
+            </span>
+            <span class="role-badge rb-g">Patient</span>
+          </li>
+          <li class="role-opt" id="opt-staff" onclick="selectRole('staff')">
+            <span class="role-radio"></span>
+            <span class="role-text-wrap">
+              <span class="role-name">Clinic staff</span>
+              <span class="role-hint">Manage daily queue and appointments</span>
+            </span>
+            <span class="role-badge rb-b">Staff</span>
+          </li>
+          <li class="role-opt" id="opt-admin" onclick="selectRole('admin')">
+            <span class="role-radio"></span>
+            <span class="role-text-wrap">
+              <span class="role-name">Admin</span>
+              <span class="role-hint">Manage clinics, staff and analytics</span>
+            </span>
+            <span class="role-badge rb-p">Admin</span>
+          </li>
+        </ul>
+
+        <!-- Divider between role selector and Google button -->
+        <section class="divider">
+          <span class="div-line"></span>
+          <span class="div-text">Continue with</span>
+          <span class="div-line"></span>
+        </section>
+
+        <!-- Google Sign-In button -->
+        <section class="providers">
+          <button class="provider-btn" id="google-btn"
+                  style="border-color:#4285F4;"
+                  onclick="signInWithGoogle()">
+            <span class="provider-logo">
+              <span class="g-letter">
+                <span class="g-b">G</span><span class="g-r">o</span><span class="g-y">o</span><span class="g-b">g</span><span class="g-gr">l</span><span class="g-r">e</span>
+              </span>
+            </span>
+            <span class="provider-name">Continue with Google</span>
+          </button>
+        </section>
+
+        <!-- POPIA compliance notice -->
+        <footer class="terms">
+          By continuing you agree to our <a>Terms of Service</a> and <a>Privacy Policy</a>. Your data is handled in compliance with POPIA.
+        </footer>
+
+      </article>
+    </section>
+
+  </main>
+
+</body>
+</html>
