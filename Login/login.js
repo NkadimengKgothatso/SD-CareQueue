@@ -115,7 +115,7 @@ window.signInWithGoogle = async function() {
 
 function handleRedirect(role, user) {
   if (role === "patient") {
-    window.location.href = "../Patients WebPages/Dashboard.html"; // patient dashboard
+    window.location.href = "../Patients_WebPages/Dashboard.html"; // patient dashboard
   } else {
     showPlaceholder(role, user); // staff/admin placeholder
   }
