@@ -3,71 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Appointment Page</title>
+    <title>My Appointments</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="myappointments.css">
+     <link rel="stylesheet" href="bookAppointments.css">
 </head>
 <body>
 
     <!-- Top navigation bar -->
     <header class="top-bar">
         <nav class="logo">
-        <!-- Logo icon (green square with plus sign created with CSS) -->
-        <span class="logo-icon"></span>
-        <span class="logo-name" style="vertical-align: middle;">Care Queue</span>
+            <span class="logo-icon"></span>
+            <span class="logo-name">Care Queue</span>
         </nav>
     </header>
 
-    <section class="container">
+    <main class="container">
 
         <!-- Sidebar -->
-    <aside>
-        <ul>
-            <li>
-                <a href="Dashboard.html">
-                    <i class="fa-solid fa-chart-bar"></i>
-                    Dashboard
-                </a>
-            </li>
-            <li>
-                <a href="MyAppointments.html">
-                    <i class="fa-solid fa-calendar-plus"></i>
-                    Book Appointment
-                </a>
-            </li>
-            <li>
-                <a href="MyAppointments.html">
-                    <i class="fa-solid fa-calendar-check"></i>
-                    My Appointments
-                </a>
-            </li>
-            <li>
-                <a href="Queues.html">
-                    <i class="fa-solid fa-users"></i>
-                    Queue Status
-                </a>
-            </li>
-            <li>
-                <a href="Clinics.html">
-                    <i class="fa-solid fa-location-dot"></i>
-                    Find Clinic
-                </a>
-            </li>
+        <aside>
+            <nav>
+                <ul>
+                    <li><a href="Dashboard.html"><i class="fa-solid fa-chart-bar"></i> Dashboard</a></li>
+                    <li><a href="BookAppointment.html"><i class="fa-solid fa-calendar-plus"></i> Book Appointment</a></li>
+                    <li><a href="MyAppointments.html"><i class="fa-solid fa-calendar-check"></i> My Appointments</a></li>
+                    <li><a href="Queues.html"><i class="fa-solid fa-users"></i> Queue Status</a></li>
+                    <li><a href="Clinics.html"><i class="fa-solid fa-location-dot"></i> Find Clinic</a></li>
+                </ul>
+            </nav>
 
-            
-        </ul>
+            <section class="user-Section">
+                <i class="fa-solid fa-user" style="padding: 5px;"></i>
+                <address>
+                    <p class="name-Surname">Name Surname</p>
+                    <p class="user-Identity">Patient</p>
+                </address>
+            </section>
+        </aside>
 
-        <section class="user-Section">
-            <i class="fa-solid fa-user" style="padding: 5px;"></i>
-            <section>
-                <p class="name-Surname">Name Surname</p>
-                <p class="user-Identity" style="padding: 3px">Patient</p>
+        <!-- Main content -->
+        <section>
+            <h1>My Appointments</h1>
+
+            <!-- Upcoming Appointments -->
+            <section class="appointments-section">
+                <header>
+                    <h2>Upcoming Appointments</h2>
+                </header>
+
+                <article class="appointment-card">
+                    <p><strong>Clinic:</strong> Sebetola Clinic</p>
+                    <p><strong>Date:</strong> 2026-04-10</p>
+                    <p><strong>Time:</strong> 09:30 AM</p>
+                    <p class="appointment-status upcoming">Status: Scheduled</p>
+                    <nav class="appointment-actions">
+                        <button class="view-btn">View</button>
+                        <button class="reschedule-btn">Reschedule</button>
+                        <button class="cancel-btn">Cancel</button>
+                    </nav>
+                </article>
+
+                <article class="appointment-card">
+                    <p><strong>Clinic:</strong> Central Health Clinic</p>
+                    <p><strong>Date:</strong> 2026-04-15</p>
+                    <p><strong>Time:</strong> 02:00 PM</p>
+                    <p class="appointment-status upcoming">Status: Scheduled</p>
+                    <nav class="appointment-actions">
+                        <button class="view-btn">View</button>
+                        <button class="reschedule-btn">Reschedule</button>
+                        <button class="cancel-btn">Cancel</button>
+                    </nav>
+                </article>
+            </section>
+
+            <!-- Past Appointments -->
+            <section class="appointments-section">
+                <header>
+                    <h2>Past Appointments</h2>
+                </header>
+
+                <article class="appointment-card">
+                    <p><strong>Clinic:</strong> Sebetola Clinic</p>
+                    <p><strong>Date:</strong> 2026-03-20</p>
+                    <p><strong>Time:</strong> 10:00 AM</p>
+                    <p class="appointment-status past">Status: Completed</p>
+                </article>
+
+                <article class="appointment-card">
+                    <p><strong>Clinic:</strong> Central Health Clinic</p>
+                    <p><strong>Date:</strong> 2026-03-10</p>
+                    <p><strong>Time:</strong> 11:30 AM</p>
+                    <p class="appointment-status past">Status: Completed</p>
+                </article>
             </section>
         </section>
-    </aside>
 
-        <main>
-            <h2>My Appointments</h2>
-        </main>
+    </main>
 
-    </section>
+</body>
+</html>
