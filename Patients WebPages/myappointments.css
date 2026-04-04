@@ -18,10 +18,9 @@
     text-transform: uppercase;
     letter-spacing: 0.07em;
     margin: 0;
-    padding:20px;
 }
 
-/* ── Arrow scroll buttons ── */
+/* ── Arrow buttons ── */
 .scroll-btns {
     display: flex;
     gap: 6px;
@@ -50,19 +49,36 @@
 }
 
 /* ────────────────────────────────
+   CRITICAL — allow overflow on all
+   parents so carousel can scroll
+   ──────────────────────────────── */
+
+.main-content {
+    overflow: visible;
+    min-width: 0;
+}
+
+.appt-section {
+    overflow: visible;
+}
+
+/* ────────────────────────────────
    UPCOMING — horizontal carousel
    ──────────────────────────────── */
 
 .carousel-track {
     display: flex;
     gap: 14px;
-    overflow-x: auto;
+    overflow-x: scroll;
+    overflow-y: visible;
     scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
     padding-bottom: 8px;
-    scrollbar-width: none;
-    list-style: none;
-    margin: 0;
     padding-left: 0;
+    margin: 0;
+    list-style: none;
+    scrollbar-width: none;
+    box-sizing: border-box;
 }
 
 .carousel-track::-webkit-scrollbar {
@@ -79,7 +95,9 @@
     gap: 14px;
     align-items: flex-start;
     min-width: 290px;
+    width: 290px;
     flex-shrink: 0;
+    box-sizing: border-box;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
@@ -96,6 +114,7 @@
 
 .card-body {
     flex: 1;
+    min-width: 0;
 }
 
 .card-clinic {
@@ -105,7 +124,6 @@
     margin: 0 0 6px;
 }
 
-/* Meta row inside upcoming card */
 .card-meta {
     display: flex;
     gap: 14px;
@@ -128,7 +146,7 @@
     color: #9ca3af;
 }
 
-/* Action buttons inside upcoming card */
+/* Action buttons */
 .appointment-actions {
     display: flex;
     gap: 8px;
@@ -277,6 +295,7 @@
 @media (max-width: 768px) {
     .appointment-card {
         min-width: 260px;
+        width: 260px;
     }
 
     .appointment-actions {
