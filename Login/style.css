@@ -5,9 +5,11 @@
   padding: 0;
 }
 
-/*ROOT VARIABLES */
+/* GOOGLE FONT */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+/* ROOT VARIABLES */
 :root {
-  /* Backgrounds and text */
   --color-bg-primary:     white;
   --color-bg-secondary:   whitesmoke;
   --color-text-primary:   #111827;
@@ -15,8 +17,6 @@
   --color-text-tertiary:  #9ca3af;
   --color-border-light:   gainsboro;
   --color-border-medium:  silver;
-
-  /* Border radius and fonts */
   --radius-lg:            12px;
   --radius-md:            8px;
   --font-sans:            'Inter', system-ui, sans-serif;
@@ -29,10 +29,7 @@
   --brand-tag:            #5DCAA5;
 }
 
-/*IMPORT GOOGLE FONT */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-
-/*  BODY */
+/* BODY */
 body {
   font-family: var(--font-sans);
   background: var(--color-bg-secondary);
@@ -41,7 +38,7 @@ body {
   flex-direction: column;
 }
 
-/* TOP BAR AND LOGO */
+/* TOP BAR */
 header.top-bar {
   display: flex;
   align-items: center;
@@ -50,22 +47,24 @@ header.top-bar {
   border-bottom: 0.5px solid var(--color-border-light);
 }
 
+/* LOGO */
 nav.logo {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-/* Logo icon: green square with plus sign using ::before and ::after */
-span.logo-icon {
+/* Logo icon: green square with CSS-only plus sign — no image file */
+figure.logo-icon {
   width: 28px; height: 28px;
   background: var(--brand-mid);
   border-radius: 7px;
   position: relative;
-  display: inline-block;
+  margin: 0;
 }
 
-span.logo-icon::before {
+/* Vertical bar of plus sign */
+figure.logo-icon::before {
   content: '';
   position: absolute;
   background: white;
@@ -74,7 +73,8 @@ span.logo-icon::before {
   left: 12px; top: 7px;
 }
 
-span.logo-icon::after {
+/* Horizontal bar of plus sign */
+figure.logo-icon::after {
   content: '';
   position: absolute;
   background: white;
@@ -83,20 +83,20 @@ span.logo-icon::after {
   left: 7px; top: 12px;
 }
 
-span.logo-name {
+figcaption.logo-name {
   font-size: 14px;
   font-weight: 500;
   color: var(--color-text-primary);
 }
 
-/*  MAIN SPLIT LAYOUT */
+/* MAIN SPLIT LAYOUT */
 main.split {
   display: flex;
   flex: 1;
   min-height: calc(100vh - 57px);
 }
 
-/* LEFT PANEL (INFO) */
+/* LEFT INFO PANEL */
 section.left-panel {
   width: 44%;
   background: var(--brand-dark);
@@ -142,24 +142,26 @@ li.bullet {
   gap: 10px;
 }
 
-span.bullet-dot {
+figure.bullet-dot {
   width: 18px; height: 18px;
   border-radius: 50%;
   background: var(--brand-mid);
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   margin-top: 1px;
+  margin-bottom: 0;
 }
 
-span.bullet-check {
+b.bullet-check {
   display: inline-block;
   width: 8px; height: 5px;
   border-left: 1.5px solid white;
   border-bottom: 1.5px solid white;
   transform: rotate(-45deg);
   margin-top: -1px;
+  font-weight: normal;
 }
 
 p.bullet-text {
@@ -168,7 +170,7 @@ p.bullet-text {
   line-height: 1.5;
 }
 
-/* RIGHT PANEL (LOGIN CARD)*/
+/* RIGHT LOGIN PANEL */
 section.right-panel {
   flex: 1;
   display: flex;
@@ -178,6 +180,7 @@ section.right-panel {
   background: var(--color-bg-secondary);
 }
 
+/* LOGIN CARD */
 article.login-card {
   background: var(--color-bg-primary);
   border: 0.5px solid var(--color-border-light);
@@ -201,7 +204,14 @@ p.lc-sub {
   line-height: 1.5;
 }
 
-p.role-label {
+/* ROLE FIELDSET — wraps the role selector semantically */
+fieldset.role-fieldset {
+  border: none;
+  padding: 0;
+  margin-bottom: 22px;
+}
+
+legend.role-label {
   font-size: 11px;
   font-weight: 500;
   color: var(--color-text-secondary);
@@ -210,12 +220,11 @@ p.role-label {
   letter-spacing: 0.04em;
 }
 
-/* ROLE SELECTOR */
+/* ROLE OPTIONS LIST */
 ul.role-options {
   display: flex;
   flex-direction: column;
   gap: 7px;
-  margin-bottom: 22px;
   list-style: none;
 }
 
@@ -230,55 +239,92 @@ li.role-opt {
   transition: border-color 0.1s, background 0.1s;
 }
 
-li.role-opt:hover {
-  background: var(--color-bg-secondary);
-}
+li.role-opt:hover               { background: var(--color-bg-secondary); }
+li.role-opt.selected            { border-color: var(--brand-mid); background: var(--brand-lightest); }
+li.role-opt.selected-blue       { border-color: #185FA5; background: #E6F1FB; }
+li.role-opt.selected-purple     { border-color: #534AB7; background: #EEEDFE; }
 
-li.role-opt.selected { border-color: var(--brand-mid); background: var(--brand-lightest); }
-li.role-opt.selected-blue { border-color: #185FA5; background: #E6F1FB; }
-li.role-opt.selected-purple { border-color: #534AB7; background: #EEEDFE; }
-
-span.role-radio {
+/* Hide default radio button — we style the li instead */
+input.role-radio {
+  appearance: none;
+  -webkit-appearance: none;
   width: 16px; height: 16px;
   border-radius: 50%;
   border: 1.5px solid var(--color-border-medium);
   flex-shrink: 0;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
-span.radio-inner { width: 6px; height: 6px; border-radius: 50%; background: white; display: inline-block; }
+li.role-opt.selected        input.role-radio { background: var(--brand-mid); border-color: var(--brand-mid); }
+li.role-opt.selected-blue   input.role-radio { background: #185FA5; border-color: #185FA5; }
+li.role-opt.selected-purple input.role-radio { background: #534AB7; border-color: #534AB7; }
 
-span.role-text-wrap { flex: 1; display: inline-flex; flex-direction: column; gap: 2px; }
-span.role-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
-span.role-hint { font-size: 11px; color: var(--color-text-secondary); }
+/* White dot inside selected radio */
+input.role-radio:checked::after {
+  content: '';
+  display: block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: white;
+  margin: auto;
+}
 
-span.role-badge {
+label.role-text-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+}
+
+strong.role-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+small.role-hint {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+mark.role-badge {
   font-size: 10px;
   padding: 2px 8px;
   border-radius: 20px;
   margin-left: auto;
   white-space: nowrap;
+  background: none;
 }
 
-span.rb-g { background: var(--brand-lightest); color: var(--brand-dark); }
-span.rb-b { background: #E6F1FB; color: #0C447C; }
-span.rb-p { background: #EEEDFE; color: #3C3489; }
+mark.rb-g { background: var(--brand-lightest); color: var(--brand-dark); }
+mark.rb-b { background: #E6F1FB; color: #0C447C; }
+mark.rb-p { background: #EEEDFE; color: #3C3489; }
 
-/* DIVIDER */
-section.divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+/* DIVIDER — semantic hr instead of decorative spans */
+hr.divider {
+  border: none;
+  border-top: 0.5px solid var(--color-border-light);
+  margin-bottom: 6px;
+}
+
+p.divider-label {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  text-align: center;
   margin-bottom: 16px;
 }
 
-span.div-line { flex: 1; height: 0.5px; background: var(--color-border-light); display: inline-block; }
-span.div-text { font-size: 11px; color: var(--color-text-tertiary); }
-
 /* GOOGLE BUTTON */
-section.providers { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+section.providers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
 
 button.provider-btn {
   display: flex;
@@ -297,24 +343,33 @@ button.provider-btn {
 button.provider-btn:hover:not(:disabled) { background: var(--color-bg-secondary); }
 button.provider-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-span.provider-logo {
+/* Google logo figure */
+figure.provider-logo {
   width: 18px; height: 18px;
   border-radius: 3px;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   background: white;
   border: 0.5px solid gainsboro;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
 }
 
-span.provider-name { font-size: 13px; color: var(--color-text-primary); }
+strong.provider-name {
+  font-size: 13px;
+  color: var(--color-text-primary);
+  font-weight: 400;
+}
 
-span.g-letter { font-size: 11px; font-weight: 500; }
-span.g-r  { color: #EA4335; }
-span.g-b  { color: #4285F4; }
-span.g-y  { color: #FBBC04; }
-span.g-gr { color: #34A853; }
+/* Google coloured letters */
+b.g-r  { color: #EA4335; font-weight: normal; }
+b.g-b  { color: #4285F4; font-weight: normal; }
+b.g-y  { color: #FBBC04; font-weight: normal; }
+b.g-gr { color: #34A853; font-weight: normal; }
 
 /* ERROR MESSAGE */
 p.auth-error {
@@ -329,7 +384,7 @@ p.auth-error {
   text-align: center;
 }
 
-/*STAFF / ADMIN PLACEHOLDER*/
+/* STAFF / ADMIN PLACEHOLDER */
 section.placeholder-wrap {
   display: flex;
   flex-direction: column;
@@ -339,13 +394,12 @@ section.placeholder-wrap {
   padding: 12px 0;
 }
 
-p.placeholder-icon  { font-size: 36px; }
 h2.placeholder-title { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
-p.placeholder-role  { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-tertiary); }
-p.placeholder-msg   { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; }
-p.placeholder-badge { font-size: 12px; padding: 4px 16px; border-radius: 20px; font-weight: 500; }
-p.badge-blue   { background: #E6F1FB; color: #0C447C; }
-p.badge-purple { background: #EEEDFE; color: #3C3489; }
+p.placeholder-role   { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-tertiary); }
+p.placeholder-msg    { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; }
+p.placeholder-badge  { font-size: 12px; padding: 4px 16px; border-radius: 20px; font-weight: 500; }
+p.badge-blue         { background: #E6F1FB; color: #0C447C; }
+p.badge-purple       { background: #EEEDFE; color: #3C3489; }
 
 button.sign-out-btn {
   margin-top: 8px;
@@ -368,9 +422,13 @@ footer.terms {
   line-height: 1.6;
 }
 
-footer.terms a { color: var(--color-text-secondary); text-decoration: underline; cursor: pointer; }
+footer.terms a {
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  cursor: pointer;
+}
 
-/* RESPONSIVE*/
+/* RESPONSIVE */
 @media (max-width: 768px) {
   main.split { flex-direction: column; }
   section.left-panel { width: 100%; padding: 32px 24px; min-height: auto; }
