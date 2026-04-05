@@ -89,7 +89,7 @@ span.logo-name {
 
 /* Sidebar */
 aside {
-    width: 22%;
+    width: 19%;
     background-color: var(--brand-dark);
     padding: 20px;
     border-radius: var(--radius-md);
@@ -178,6 +178,11 @@ main {
 .search-Clinic p {
     margin-bottom: 10px;
     font-weight: 500;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    margin-bottom: 12px;
+    margin-top: 12px;
 }
 
 .search-Bar {
@@ -202,6 +207,121 @@ main {
     padding: 10px;
     border-radius: 20px;
     background-color: #f1f5f9;
+}
+
+/* Clinic list container */
+.clinic-list-card {
+    margin-top: 16px;
+    background: var(--color-bg-primary);
+    border: 0.5px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+}
+
+/* Scrollable clinic results area */
+.clinic-results {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+/* Scrollbar */
+.clinic-results::-webkit-scrollbar {
+    width: 8px;
+}
+
+.clinic-results::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 10px;
+}
+
+.clinic-results::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.clinic-results::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Individual clinic card */
+.clinic-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 0.5px solid var(--color-border-light);
+    border-radius: var(--radius-md);
+    background: #fff;
+    transition: 0.2s ease;
+}
+
+.clinic-card:hover {
+    border-color: var(--brand-mid);
+    background: #f9fffc;
+}
+
+/* Icon */
+.clinic-icon {
+    font-size: 22px;
+    color: var(--brand-mid);
+    background: var(--brand-lightest);
+    padding: 12px;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+/* Clinic text */
+.clinic-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.clinic-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.clinic-services {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+}
+
+.clinic-bookings {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+}
+
+/* Open button */
+.open-btn {
+    margin-left: auto;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    background-color: var(--brand-lightest);
+    color: var(--brand-dark);
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.open-btn:hover {
+    background-color: var(--brand-mid);
+    color: white;
+}
+
+/* No results */
+.no-results {
+    text-align: center;
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    padding: 16px 0;
 }
 
 /* Near me button */
@@ -247,12 +367,16 @@ main {
 /* Shared card style */
 .selected-clinic-card,
 .reason-card {
-    background: var(--color-bg-primary);
+    background-color: var(--color-bg-primary);
     border: 0.5px solid var(--color-border-light);
     border-radius: var(--radius-lg);
     padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.selected-clinic-card {
+    margin-top: 8px;
 }
 
 /* Small section heading */
@@ -261,6 +385,7 @@ main {
     font-weight: 500;
     color: var(--color-text-secondary);
     margin-bottom: 12px;
+    margin-top: 12px;
 }
 
 /* Clinic name */
@@ -422,6 +547,8 @@ main {
     color: white;
     border-color: var(--brand-mid);
 }
+
+
 
 /* Responsive */
 @media (max-width: 768px) {
