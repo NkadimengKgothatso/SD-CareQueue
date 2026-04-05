@@ -83,7 +83,20 @@ window.signInWithGoogle = async function() {
     const userSnap = await getDoc(userRef);            // Check if user already exists
 
     if (!userSnap.exists()) {
-      // First-time sign-in → create new document
+      // First time — confirm role before saving
+      const confirmed = confirm(
+        `You are signing in as "${selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}". \n\nYou will not be able to change your role later. \n\nAre you sure?`
+      );
+
+      if (!confirmed) {
+        // User cancelled — go back to login
+        btn.disabled = false;
+        btn.querySelector(".provider-name").textContent = "Continue with Google";
+        await signOut(auth);
+        return;
+      }
+
+      // Save new user with selected role
       await setDoc(userRef, {
         uid:         user.uid,
         displayName: user.displayName,
@@ -92,13 +105,14 @@ window.signInWithGoogle = async function() {
         role:        selectedRole,
         createdAt:   serverTimestamp()
       });
-    } else {
-      // Returning user → update role if changed
-      await setDoc(userRef, { role: selectedRole }, { merge: true });
-    }
 
-    // Redirect based on role
-    handleRedirect(selectedRole, user);
+      handleRedirect(selectedRole, user);
+
+    } else {
+      // Returning user — ignore selection, use saved role
+      const savedRole = userSnap.data().role;
+      handleRedirect(savedRole, user);
+    }
 
   } catch (err) {
     console.error("Sign-in error:", err);
