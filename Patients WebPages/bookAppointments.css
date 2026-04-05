@@ -17,6 +17,13 @@
     --radius-md: 8px;
     --radius-lg: 12px;
     --font-sans: 'Inter', sans-serif;
+
+      /* Brand colors */
+    --brand-dark:           #085041;
+    --brand-mid:            #1D9E75;
+    --brand-light-text:     #9FE1CB;
+    --brand-lightest:       #E1F5EE;
+    --brand-tag:            #5DCAA5;
 }
 
 /* Body */
@@ -83,7 +90,7 @@ span.logo-name {
 /* Sidebar */
 aside {
     width: 22%;
-    background-color: var(--color-bg-primary);
+    background-color: var(--brand-dark);
     padding: 20px;
     border-radius: var(--radius-md);
     min-height: 100vh;
@@ -107,7 +114,7 @@ aside ul li a {
     align-items: center;
     gap: 10px;
     text-decoration: none;
-    color: var(--color-text-primary);
+    color: var(--color-bg-secondary);
     padding: 10px 12px;
     border-radius: var(--radius-md);
     transition: 0.3s;
