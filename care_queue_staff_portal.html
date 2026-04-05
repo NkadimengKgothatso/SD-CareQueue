@@ -1,0 +1,303 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+.app{display:flex;min-height:700px;background:var(--color-background-secondary);font-family:var(--font-sans);}
+.sidebar{width:200px;background:var(--color-background-primary);border-right:0.5px solid var(--color-border-tertiary);display:flex;flex-direction:column;flex-shrink:0;}
+.sb-top{padding:16px;}
+.logo{display:flex;align-items:center;gap:8px;margin-bottom:20px;}
+.logo-icon{width:28px;height:28px;background:#185FA5;border-radius:7px;position:relative;flex-shrink:0;}
+.logo-icon:before,.logo-icon:after{content:'';position:absolute;background:#fff;border-radius:1px;}
+.logo-icon:before{width:3px;height:13px;left:12px;top:7px;}
+.logo-icon:after{width:13px;height:3px;left:7px;top:12px;}
+.logo-name{font-size:14px;font-weight:500;color:var(--color-text-primary);}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--border-radius-md);cursor:pointer;font-size:13px;color:var(--color-text-secondary);margin-bottom:2px;}
+.nav-item:hover{background:var(--color-background-secondary);color:var(--color-text-primary);}
+.nav-item.active{background:#E6F1FB;color:#0C447C;font-weight:500;}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.nb{margin-left:auto;background:#185FA5;color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;}
+.sb-footer{margin-top:auto;padding:14px;border-top:0.5px solid var(--color-border-tertiary);}
+.user-row{display:flex;align-items:center;gap:9px;}
+.avatar{width:30px;height:30px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#0C447C;flex-shrink:0;}
+.user-name{font-size:12px;font-weight:500;color:var(--color-text-primary);}
+.user-role{font-size:11px;color:var(--color-text-tertiary);}
+.main{flex:1;padding:20px;}
+.screen{display:none;}
+.screen.active{display:block;}
+.page-title{font-size:17px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px;}
+.page-sub{font-size:12px;color:var(--color-text-secondary);margin-bottom:18px;}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:12px;}
+.card-title{font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px;}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px;}
+.kpi{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;}
+.kpi-val{font-size:22px;font-weight:500;color:var(--color-text-primary);}
+.kpi-lbl{font-size:11px;color:var(--color-text-secondary);margin-top:3px;}
+.kpi-up{font-size:10px;color:#0F6E56;margin-top:2px;}
+.btn-sm{padding:6px 13px;font-size:12px;border-radius:var(--border-radius-md);cursor:pointer;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);}
+.btn-sm:hover{background:var(--color-background-secondary);}
+.btn-primary{background:#185FA5;color:#fff;border-color:#185FA5;}
+.btn-primary:hover{background:#0C447C;}
+.btn-green{background:#1D9E75;color:#fff;border-color:#1D9E75;}
+.btn-green:hover{background:#0F6E56;}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;}
+.tbl th{text-align:left;color:var(--color-text-secondary);font-weight:500;padding:0 0 8px;border-bottom:0.5px solid var(--color-border-tertiary);}
+.tbl td{padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.pill{font-size:10px;padding:2px 8px;border-radius:20px;}
+.p-wait{background:#E6F1FB;color:#185FA5;}
+.p-consult{background:#E1F5EE;color:#085041;}
+.p-called{background:#FAEEDA;color:#633806;}
+.p-done{background:#F1EFE8;color:#444441;}
+.act-btns{display:flex;gap:4px;}
+.act-btn{font-size:10px;padding:3px 8px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);cursor:pointer;color:var(--color-text-secondary);background:transparent;}
+.act-btn:hover{background:var(--color-background-secondary);}
+.act-btn.g{border-color:#9FE1CB;color:#0F6E56;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.tabs{display:flex;gap:4px;}
+.tab{font-size:12px;padding:5px 12px;border-radius:var(--border-radius-md);cursor:pointer;color:var(--color-text-secondary);}
+.tab.active{background:#E6F1FB;color:#0C447C;font-weight:500;}
+.stat-bar{height:4px;border-radius:2px;margin-top:3px;}
+.bar-fill{height:100%;border-radius:2px;}
+.notif-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--color-border-tertiary);}
+.notif-item:last-child{border-bottom:none;}
+.n-dot{width:7px;height:7px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.n-text{font-size:12px;color:var(--color-text-primary);}
+.n-time{font-size:10px;color:var(--color-text-tertiary);margin-top:2px;}
+.upcom-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);}
+.upcom-row:last-child{border-bottom:none;}
+.upcom-time{font-size:12px;font-weight:500;color:var(--color-text-primary);min-width:42px;}
+.upcom-name{font-size:12px;color:var(--color-text-primary);}
+.upcom-svc{font-size:11px;color:var(--color-text-secondary);}
+.bar-chart{display:flex;align-items:flex-end;gap:5px;height:80px;margin-top:8px;}
+.bar-g{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;}
+.bar-b{width:100%;border-radius:2px 2px 0 0;}
+.bar-l{font-size:10px;color:var(--color-text-tertiary);}
+</style>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sb-top">
+      <div class="logo">
+        <div class="logo-icon"></div>
+        <span class="logo-name">Care Queue</span>
+      </div>
+      <div class="nav-item active" onclick="show('dashboard')"><div class="nav-dot"></div>Dashboard</div>
+      <div class="nav-item" onclick="show('appointments')"><div class="nav-dot"></div>Manage appointments</div>
+      <div class="nav-item" onclick="show('queue')"><div class="nav-dot"></div>Queue management <span class="nb">17</span></div>
+      <div class="nav-item" onclick="show('analytics')"><div class="nav-dot"></div>Analytics</div>
+      <div class="nav-item" onclick="show('walkin')"><div class="nav-dot"></div>Walk-in</div>
+    </div>
+    <div class="sb-footer">
+      <div class="user-row">
+        <div class="avatar">SN</div>
+        <div><div class="user-name">Sister Nkosi</div><div class="user-role">Clinic staff</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div class="screen active" id="screen-dashboard">
+      <div class="page-title">Welcome back, Sister Nkosi</div>
+      <div class="page-sub">Zola Community Clinic · Wednesday, 2 April 2026</div>
+      <div class="kpis">
+        <div class="kpi"><div class="kpi-val">24</div><div class="kpi-lbl">Total today</div></div>
+        <div class="kpi"><div class="kpi-val">17</div><div class="kpi-lbl">In queue now</div></div>
+        <div class="kpi"><div class="kpi-val">28m</div><div class="kpi-lbl">Avg wait</div><div class="kpi-up">↓ improving</div></div>
+        <div class="kpi"><div class="kpi-val">7</div><div class="kpi-lbl">Completed</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="card">
+          <div class="card-title">Upcoming appointments</div>
+          <div class="upcom-row"><div class="upcom-time">09:00</div><div><div class="upcom-name">Nomsa Dlamini</div><div class="upcom-svc">General consultation</div></div><span class="pill p-wait">Booked</span></div>
+          <div class="upcom-row"><div class="upcom-time">09:30</div><div><div class="upcom-name">Thabo Nkosi</div><div class="upcom-svc">General consultation</div></div><span class="pill p-wait">Booked</span></div>
+          <div class="upcom-row"><div class="upcom-time">10:00</div><div><div class="upcom-name">Lerato Mokoena</div><div class="upcom-svc">Child health</div></div><span class="pill p-wait">Booked</span></div>
+          <div style="margin-top:10px;"><button class="btn-sm btn-primary" onclick="show('appointments')">View all</button></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Notifications</div>
+          <div class="notif-item"><div class="n-dot" style="background:#E24B4A;"></div><div><div class="n-text">Sipho Mahlangu called but did not respond</div><div class="n-time">2 min ago</div></div></div>
+          <div class="notif-item"><div class="n-dot" style="background:#1D9E75;"></div><div><div class="n-text">Zanele Khumalo joined walk-in queue</div><div class="n-time">8 min ago</div></div></div>
+          <div class="notif-item"><div class="n-dot" style="background:#185FA5;"></div><div><div class="n-text">3 new appointments booked for tomorrow</div><div class="n-time">1 hr ago</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-appointments">
+      <div class="page-title">Manage appointments</div>
+      <div class="page-sub">Today's scheduled appointments</div>
+      <div class="card">
+        <div class="q-header">
+          <div class="tabs">
+            <div class="tab active">Today (9)</div>
+            <div class="tab">Tomorrow (7)</div>
+            <div class="tab">This week</div>
+          </div>
+          <button class="btn-sm btn-green">+ Add appointment</button>
+        </div>
+        <table class="tbl">
+          <tr><th style="width:14%">Time</th><th style="width:26%">Patient</th><th style="width:22%">Service</th><th style="width:16%">Status</th><th style="width:22%">Actions</th></tr>
+          <tr>
+            <td>08:00</td><td><div style="font-size:12px;font-weight:500;">Nomsa Dlamini</div></td><td>General</td>
+            <td><span class="pill p-consult">In consult</span></td>
+            <td><div class="act-btns"><button class="act-btn g">Complete</button></div></td>
+          </tr>
+          <tr>
+            <td>08:30</td><td><div style="font-size:12px;font-weight:500;">Sipho Mahlangu</div></td><td>ARV collection</td>
+            <td><span class="pill p-called">Called</span></td>
+            <td><div class="act-btns"><button class="act-btn">Skip</button><button class="act-btn g">Check in</button></div></td>
+          </tr>
+          <tr>
+            <td>09:00</td><td><div style="font-size:12px;font-weight:500;">Thabo Nkosi</div></td><td>General</td>
+            <td><span class="pill p-wait">Waiting</span></td>
+            <td><div class="act-btns"><button class="act-btn">Move</button><button class="act-btn g">Call</button></div></td>
+          </tr>
+          <tr>
+            <td>09:30</td><td><div style="font-size:12px;font-weight:500;">Lerato Mokoena</div></td><td>Child health</td>
+            <td><span class="pill p-wait">Waiting</span></td>
+            <td><div class="act-btns"><button class="act-btn">Move</button><button class="act-btn g">Call</button></div></td>
+          </tr>
+          <tr>
+            <td>10:00</td><td><div style="font-size:12px;font-weight:500;">Zanele Khumalo</div></td><td>Family planning</td>
+            <td><span class="pill p-wait">Waiting</span></td>
+            <td><div class="act-btns"><button class="act-btn">Move</button><button class="act-btn g">Call</button></div></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-queue">
+      <div class="page-title">Queue management</div>
+      <div class="page-sub">Live daily queue · 17 patients waiting</div>
+      <div class="kpis" style="grid-template-columns:repeat(3,minmax(0,1fr));">
+        <div class="kpi"><div class="kpi-val">17</div><div class="kpi-lbl">Waiting</div></div>
+        <div class="kpi"><div class="kpi-val">1</div><div class="kpi-lbl">In consultation</div></div>
+        <div class="kpi"><div class="kpi-val">28m</div><div class="kpi-lbl">Avg wait time</div></div>
+      </div>
+      <div class="card">
+        <div class="q-header">
+          <div class="tabs">
+            <div class="tab active">All (17)</div>
+            <div class="tab">Booked (9)</div>
+            <div class="tab">Walk-in (8)</div>
+          </div>
+          <button class="btn-sm btn-primary" onclick="show('walkin')">Call next</button>
+        </div>
+        <table class="tbl">
+          <tr><th style="width:6%">#</th><th style="width:28%">Patient</th><th style="width:24%">Service</th><th style="width:18%">Status</th><th style="width:24%">Actions</th></tr>
+          <tr>
+            <td><div style="width:20px;height:20px;border-radius:50%;background:#185FA5;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;">1</div></td>
+            <td><div style="font-size:12px;font-weight:500;">Nomsa Dlamini</div><div style="font-size:10px;color:var(--color-text-tertiary);">W-044 · 07:52</div></td>
+            <td>General</td><td><span class="pill p-consult">In consult</span></td>
+            <td><button class="act-btn g">Complete</button></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><div style="font-size:12px;font-weight:500;">Sipho Mahlangu</div><div style="font-size:10px;color:var(--color-text-tertiary);">W-045 · 08:01</div></td>
+            <td>ARV</td><td><span class="pill p-called">Called</span></td>
+            <td><div class="act-btns"><button class="act-btn">Skip</button><button class="act-btn g">Check in</button></div></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><div style="font-size:12px;font-weight:500;">Thabo Nkosi</div><div style="font-size:10px;color:var(--color-text-tertiary);">W-047 · 08:15</div></td>
+            <td>General</td><td><span class="pill p-wait">Waiting</span></td>
+            <td><div class="act-btns"><button class="act-btn">Move</button><button class="act-btn g">Call</button></div></td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td><div style="font-size:12px;font-weight:500;">Lerato Mokoena</div><div style="font-size:10px;color:var(--color-text-tertiary);">W-048 · 08:40</div></td>
+            <td>Child health</td><td><span class="pill p-wait">Waiting</span></td>
+            <td><div class="act-btns"><button class="act-btn">Move</button><button class="act-btn g">Call</button></div></td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td><div style="font-size:12px;font-weight:500;">Zanele Khumalo</div><div style="font-size:10px;color:var(--color-text-tertiary);">W-049 · 08:52</div></td>
+            <td>Family planning</td><td><span class="pill p-wait">Waiting</span></td>
+            <td><div class="act-btns"><button class="act-btn">Move</button><button class="act-btn g">Call</button></div></td>
+          </tr>
+        </table>
+        <div style="padding:10px 0 2px;font-size:11px;color:var(--color-text-tertiary);text-align:center;">12 more patients in queue</div>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-analytics">
+      <div class="page-title">Analytics</div>
+      <div class="page-sub">Zola Community Clinic · April 2026</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div class="card" style="text-align:center;">
+          <div class="card-title" style="text-align:left;">No-show rate</div>
+          <div style="font-size:36px;font-weight:500;color:#E24B4A;">23%</div>
+          <div style="font-size:11px;color:var(--color-text-secondary);margin-top:4px;">Appointment no-shows this month</div>
+          <div style="margin-top:10px;"><button class="btn-sm" style="width:100%;">Export CSV</button></div>
+        </div>
+        <div class="card" style="text-align:center;">
+          <div class="card-title" style="text-align:left;">Avg wait time</div>
+          <div style="font-size:36px;font-weight:500;color:#185FA5;">54.5%</div>
+          <div style="font-size:11px;color:var(--color-text-secondary);margin-top:4px;">Reduction vs same period last year</div>
+          <div style="margin-top:10px;"><button class="btn-sm" style="width:100%;">Export PDF</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Patient volume — last 7 days</div>
+        <div class="bar-chart">
+          <div class="bar-g"><div class="bar-b" style="height:52px;background:#B5D4F4;"></div><div class="bar-l">Wed</div></div>
+          <div class="bar-g"><div class="bar-b" style="height:68px;background:#B5D4F4;"></div><div class="bar-l">Thu</div></div>
+          <div class="bar-g"><div class="bar-b" style="height:78px;background:#B5D4F4;"></div><div class="bar-l">Fri</div></div>
+          <div class="bar-g"><div class="bar-b" style="height:30px;background:#D3D1C7;"></div><div class="bar-l">Sat</div></div>
+          <div class="bar-g"><div class="bar-b" style="height:14px;background:#D3D1C7;"></div><div class="bar-l">Sun</div></div>
+          <div class="bar-g"><div class="bar-b" style="height:80px;background:#378ADD;"></div><div class="bar-l">Mon</div></div>
+          <div class="bar-g"><div class="bar-b" style="height:64px;background:#378ADD;"></div><div class="bar-l">Tue</div></div>
+          <div class="bar-g"><div class="bar-b" style="height:50px;border:1.5px dashed #378ADD;border-radius:2px 2px 0 0;"></div><div class="bar-l" style="color:#185FA5;">Today</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-walkin">
+      <div class="page-title">Walk-in management</div>
+      <div class="page-sub">Register and manage walk-in patients</div>
+      <div class="card">
+        <div class="card-title">Current walk-in queue (8 patients)</div>
+        <table class="tbl">
+          <tr><th style="width:8%">#</th><th style="width:30%">Patient</th><th style="width:24%">Reason</th><th style="width:18%">Waited</th><th style="width:20%">Actions</th></tr>
+          <tr><td>1</td><td><div style="font-size:12px;font-weight:500;">Bongani Zulu</div><div style="font-size:10px;color:var(--color-text-tertiary);">W-051</div></td><td>General</td><td>52m</td><td><button class="act-btn g">Call</button></td></tr>
+          <tr><td>2</td><td><div style="font-size:12px;font-weight:500;">Phindile Mthembu</div><div style="font-size:10px;color:var(--color-text-tertiary);">W-052</div></td><td>TB screening</td><td>41m</td><td><button class="act-btn g">Call</button></td></tr>
+          <tr><td>3</td><td><div style="font-size:12px;font-weight:500;">Andile Dube</div><div style="font-size:10px;color:var(--color-text-tertiary);">W-053</div></td><td>ARV</td><td>28m</td><td><button class="act-btn g">Call</button></td></tr>
+        </table>
+        <div style="padding:8px 0 2px;font-size:11px;color:var(--color-text-tertiary);text-align:center;">5 more walk-in patients</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Register new walk-in patient</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Full name</div>
+            <input style="width:100%;padding:7px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:12px;background:var(--color-background-primary);color:var(--color-text-primary);" placeholder="Patient full name">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">SA ID / passport</div>
+            <input style="width:100%;padding:7px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:12px;background:var(--color-background-primary);color:var(--color-text-primary);" placeholder="ID number">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Reason for visit</div>
+            <select style="width:100%;padding:7px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:12px;background:var(--color-background-primary);color:var(--color-text-primary);">
+              <option>General consultation</option><option>ARV collection</option><option>Child health</option><option>Family planning</option><option>TB screening</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Contact number</div>
+            <input style="width:100%;padding:7px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:12px;background:var(--color-background-primary);color:var(--color-text-primary);" placeholder="+27 ...">
+          </div>
+        </div>
+        <button class="btn-sm btn-green" style="margin-top:12px;padding:8px 18px;">Add to queue</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+<script>
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  const map={dashboard:0,appointments:1,queue:2,analytics:3,walkin:4};
+  document.querySelectorAll('.nav-item')[map[id]].classList.add('active');
+}
+</script>

@@ -1,65 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Care Queue — Patient Dashboard</title>
-  <link rel="stylesheet" href="../style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Appointments</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="myappointments.css">
+    <link rel="stylesheet" href="bookAppointments.css">
 </head>
 <body>
 
-  <header class="top-bar">
-    <nav class="logo">
-      <span class="logo-icon"></span>
-      <span class="logo-name">Care Queue</span>
-    </nav>
-  </header>
+    <header class="top-bar">
+        <nav class="logo">
+            <span class="logo-icon"></span>
+            <span class="logo-name">Care Queue</span>
+        </nav>
+    </header>
 
-  <main>
-    <article class="login-card" style="margin: 60px auto; text-align: center;">
-      
-      <h2 style="margin-top: 10px;">Patient Dashboard</h2>
-      <p style="color: #6b7280; margin-top: 8px; font-size: 13px;">
-        Appointment booking and queue tracking coming soon.<br/>
-        Your account is set up and ready.
-      </p>
-      <p style="margin-top: 16px; background: #E1F5EE; color: #085041; display: inline-block; padding: 4px 16px; border-radius: 20px; font-size: 12px; font-weight: 500;">
-        Patient
-      </p>
-      <br/>
-      <button onclick="signOut()" style="margin-top: 20px; font-size: 13px; color: #6b7280; background: none; border: none; cursor: pointer; text-decoration: underline;">
-        ← Sign out
-      </button>
-    </article>
-  </main>
+    <main class="container">
+
+        <aside>
+            <nav>
+                <ul>
+                    <li><a href="Dashboard.html"><i class="fa-solid fa-chart-bar"></i> Dashboard</a></li>
+                    <li><a href="BookAppointments.html"><i class="fa-solid fa-calendar-plus"></i> Book Appointment</a></li>
+                    <li><a href="MyAppointments.html"><i class="fa-solid fa-calendar-check"></i> My Appointments</a></li>
+                    <li><a href="Queues.html"><i class="fa-solid fa-users"></i> Queue Status</a></li>
+                    <li><a href="Clinics.html"><i class="fa-solid fa-location-dot"></i> Find Clinic</a></li>
+                </ul>
+            </nav>
+
+            <section class="user-Section">
+                <i class="fa-solid fa-user" style="padding: 5px;"></i>
+                <address>
+                    <p class="name-Surname">Name Surname</p>
+                    <p class="user-Identity">Patient</p>
+                </address>
+            </section>
+        </aside>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { logoutUser } from "../path-to-your-file/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey:            "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
-      authDomain:        "carequeue-284bb.firebaseapp.com",
-      projectId:         "carequeue-284bb",
-      storageBucket:     "carequeue-284bb.firebasestorage.app",
-      messagingSenderId: "702048481855",
-      appId:             "1:702048481855:web:1bb9675ecadb9e22043e8a"
-    };
-
-    const app  = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    // If not signed in, send back to login
-    onAuthStateChanged(auth, (user) => {
-      if (!user) window.location.href = "../Login/index.html";
-    });
-
-    // Sign out button
-    window.signOut = async function() {
-      await signOut(auth);
-      window.location.href = "../Login/index.html";
-    };
-  </script>
+  // Attach to button
+  window.signOut = logoutUser;
+</script>
 
 </body>
 </html>
