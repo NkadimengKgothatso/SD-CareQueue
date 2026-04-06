@@ -1,0 +1,113 @@
+html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="myappointments.css">
+    <link rel="stylesheet" href="bookAppointments.css">
+    <link rel="stylesheet" href="Dashboard.css">
+</head>
+<body>
+
+    <header class="top-bar">
+        <nav class="logo">
+            <span class="logo-icon"></span>
+            <span class="logo-name">Care Queue</span>
+        </nav>
+    </header>
+
+    <main class="container">
+
+        <aside>
+            <nav>
+                <ul>
+                    <li><a href="Dashboard.html"><i class="fa-solid fa-chart-bar"></i> Dashboard</a></li>
+                    <li><a href="BookAppointments.html"><i class="fa-solid fa-calendar-plus"></i> Book Appointment</a></li>
+                    <li><a href="MyAppointments.html"><i class="fa-solid fa-calendar-check"></i> My Appointments</a></li>
+                    <li><a href="Queues.html"><i class="fa-solid fa-users"></i> Queue Status</a></li>
+                    <li><a href="Clinics.html"><i class="fa-solid fa-location-dot"></i> Find Clinic</a></li>
+                </ul>
+            </nav>
+
+            <section class="user-Section">
+                <i class="fa-solid fa-user" style="padding: 5px;"></i>
+                <address>
+                    <p class="name-Surname">Name Surname</p>
+                    <p class="user-Identity">Patient</p>
+                </address>
+            </section>
+        </aside>
+ <!-- created by kea -->
+  <script type="module">
+  import { logoutUser } from "../path-to-your-file/firebase-auth.js";
+
+  // Attach to button
+  window.signOut = logoutUser;
+</script>
+<!-- starting my part here (KG) -->
+
+   
+
+
+    <section >
+
+         <header>
+        <h1>Welcome back, Motshekhene </h1>
+        <p>friday, 10 April 2026</p>
+        </header>
+        <section>
+          
+
+        <article>
+              <h2>Next appointment</h2>
+            <h3>clinic details : makgakgapje loal clinic </h3>
+            <p>appointment deatils: thursday, 14 April - 10:00 AM -type of consultation :general consultion</p>
+            <nav>
+                <button href="Queues.html">Track queue</button>
+                <button href="BookAppointments.html">Reschedule</button>
+                <button href="# we will add deleting the appoint ment functionality ">Cancel</button>
+            </nav>
+        </article>
+
+        </section>
+        
+   
+
+        <section>
+                   <article>
+            <!-- take from  apointments  -->
+            <h3>5</h3>
+            <p>visits this year </p>
+        </article>
+
+        <article>
+            <!-- take from queue   -->
+            <h3>2</h3>
+            <p> Queue position  </p>
+        </article>
+
+         <article>
+            <!-- take from queue   -->
+            <h3>~30~</h3>
+            <p> Estimated waiting time </p>
+
+        </article>
+        </section>
+
+        <section>
+             
+        <article>
+            <h2>Current Queue Status  </h2>
+            <h3>4th in queue </h3>
+            <progress value="4" max="10"></progress>
+            <p>3 patients ahead of you and 6 patients behind you</p>
+        </article>
+    </section>
+        </section>
+       
+
+</body>
+</html>
