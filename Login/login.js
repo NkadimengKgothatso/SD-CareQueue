@@ -140,7 +140,7 @@ window.signInWithGoogle = async function() {
 function handleRedirect(role, user) {
   if (role === "patient") {
     // Redirect patient to their dashboard
-    window.location.href = "../Patients_WebPages/Dashboard.html";
+    window.location.href = "../Patients_WebPages/PatientDashboard.html";
   } else {
     // Show placeholder for staff and admin (coming in future sprints)
     showPlaceholder(role, user);
@@ -201,7 +201,7 @@ onAuthStateChanged(auth, async (user) => {
         const savedRole = userSnap.data().role;
 
         if (savedRole === "patient") {
-          window.location.href = "../Patients_WebPages/Dashboard.html";
+          window.location.href = "../Patients_WebPages/PatientDashboard.html";
         } else {
           showPlaceholder(savedRole, user);
         }
