@@ -1,0 +1,23 @@
+{
+  "name": "sd-carequeue",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NkadimengKgothatso/SD-CareQueue.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NkadimengKgothatso/SD-CareQueue/issues"
+  },
+  "homepage": "https://github.com/NkadimengKgothatso/SD-CareQueue#readme",
+  "devDependencies": {
+    "jest": "^30.3.0"
+  }
+}
