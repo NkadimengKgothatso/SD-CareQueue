@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Appointments</title>
+    <title>Care Queue — Patient Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="myappointments.css">
     <link rel="stylesheet" href="bookAppointments.css">
@@ -22,7 +22,7 @@
         <aside>
             <nav>
                 <ul>
-                    <li><a href="Dashboard.html"><i class="fa-solid fa-chart-bar"></i> Dashboard</a></li>
+                    <li><a href="PatientDashboard.html"><i class="fa-solid fa-chart-bar"></i> Dashboard</a></li>
                     <li><a href="BookAppointments.html"><i class="fa-solid fa-calendar-plus"></i> Book Appointment</a></li>
                     <li><a href="MyAppointments.html"><i class="fa-solid fa-calendar-check"></i> My Appointments</a></li>
                     <li><a href="Queues.html"><i class="fa-solid fa-users"></i> Queue Status</a></li>
@@ -39,12 +39,35 @@
             </section>
         </aside>
 
-  <script type="module">
-  import { logoutUser } from "../path-to-your-file/firebase-auth.js";
+    </main>
 
-  // Attach to button
-  window.signOut = logoutUser;
-</script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey:            "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
+            authDomain:        "carequeue-284bb.firebaseapp.com",
+            projectId:         "carequeue-284bb",
+            storageBucket:     "carequeue-284bb.firebasestorage.app",
+            messagingSenderId: "702048481855",
+            appId:             "1:702048481855:web:1bb9675ecadb9e22043e8a"
+        };
+
+        const app  = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // If not signed in, redirect back to login
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.href = "../Login/index.html";
+        });
+
+        // Sign out
+        window.signOut = async function() {
+            await signOut(auth);
+            window.location.href = "../Login/index.html";
+        };
+    </script>
 
 </body>
 </html>
