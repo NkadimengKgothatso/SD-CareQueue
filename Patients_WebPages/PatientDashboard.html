@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="myappointments.css">
     <link rel="stylesheet" href="bookAppointments.css">
-    <link rel="stylesheet" href="Dashboard.css">
+    <link rel="stylesheet" href="PatientDashboard.css">
 </head>
 <body>
 
@@ -39,7 +39,7 @@
                 </address>
             </section>
         </aside>
-<<<<<<< HEAD:Patients_WebPages/Dashboard.html
+
  <!-- created by kea -->
   <script type="module">
   import { logoutUser } from "../path-to-your-file/firebase-auth.js";
@@ -112,34 +112,6 @@
 
     </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey:            "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
-            authDomain:        "carequeue-284bb.firebaseapp.com",
-            projectId:         "carequeue-284bb",
-            storageBucket:     "carequeue-284bb.firebasestorage.app",
-            messagingSenderId: "702048481855",
-            appId:             "1:702048481855:web:1bb9675ecadb9e22043e8a"
-        };
-
-        const app  = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        // If not signed in, redirect back to login
-        onAuthStateChanged(auth, (user) => {
-            if (!user) window.location.href = "../Login/index.html";
-        });
-
-        // Sign out
-        window.signOut = async function() {
-            await signOut(auth);
-            window.location.href = "../Login/index.html";
-        };
-    </script>
->>>>>>> 275442685a6647fd67d2d81f4703bd86c057c3b2:Patients_WebPages/PatientDashboard.html
-
+<script src="firebase.js"></script>
 </body>
 </html>
