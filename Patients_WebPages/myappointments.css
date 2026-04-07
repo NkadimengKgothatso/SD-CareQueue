@@ -1,6 +1,22 @@
+/* ────────────────────────────────
+   MAIN CONTENT
+   ──────────────────────────────── */
+
+.main-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0;
+    overflow: hidden;
+}
+
 /* ── Section wrapper ── */
 .appt-section {
-    margin-bottom: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1;
+    margin-bottom: 1.5rem;
 }
 
 /* ── Section header ── */
@@ -9,19 +25,20 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 12px;
+    padding: 0 4px;
+    flex-shrink: 0;
 }
 
 .section-label {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     color: #6b7280;
     text-transform: uppercase;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.08em;
     margin: 0;
-    padding:40px;
 }
 
-/* ── Arrow buttons ── */
+/* ── Arrow buttons (kept for markup compatibility) ── */
 .scroll-btns {
     display: flex;
     gap: 6px;
@@ -31,14 +48,14 @@
 }
 
 .scroll-btn {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     border: 1px solid #e5e7eb;
     background: #ffffff;
     color: #374151;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -50,63 +67,72 @@
 }
 
 /* ────────────────────────────────
-   CRITICAL — allow overflow on all
-   parents so carousel can scroll
+   UPCOMING — vertical scroll container
    ──────────────────────────────── */
 
-.main-content {
-    overflow: visible;
-    min-width: 0;
+.carousel-outer {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 420px;
+    flex: 1;
+    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
 }
 
-.appt-section {
-    overflow: visible;
+.carousel-outer::-webkit-scrollbar {
+    width: 5px;
 }
 
-/* ────────────────────────────────
-   UPCOMING — horizontal carousel
-   ──────────────────────────────── */
+.carousel-outer::-webkit-scrollbar-track {
+    background: transparent;
+}
 
+.carousel-outer::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+}
+
+/* Stack cards vertically */
 .carousel-track {
     display: flex;
-    gap: 14px;
-    overflow-x: scroll;
-    overflow-y: visible;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 8px;
-    padding-left: 0;
-    margin: 0;
+    flex-direction: column;
+    gap: 0;
     list-style: none;
-    scrollbar-width: none;
-    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-.carousel-track::-webkit-scrollbar {
-    display: none;
-}
-
-/* Upcoming card */
+/* ── Upcoming card ── */
 .appointment-card {
     background-color: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 20px 22px;
+    border-bottom: 1px solid #f3f4f6;
+    padding: 16px 20px;
     display: flex;
     gap: 14px;
-    align-items: flex-start;
-    min-width: 290px;
-    width: 290px;
-    flex-shrink: 0;
+    align-items: center;
+    width: 100%;
     box-sizing: border-box;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: background 0.12s;
+}
+
+.appointment-card:last-child {
+    border-bottom: none;
+}
+
+.appointment-card:hover {
+    background-color: #f9fafb;
 }
 
 .card-accent {
-    width: 4px;
-    border-radius: 4px;
+    width: 3px;
+    border-radius: 3px;
     flex-shrink: 0;
     align-self: stretch;
+    min-height: 48px;
 }
 
 .accent-upcoming {
@@ -116,63 +142,71 @@
 .card-body {
     flex: 1;
     min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
 .card-clinic {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     color: #111827;
-    margin: 0 0 6px;
+    margin: 0;
+    flex-shrink: 0;
+    min-width: 140px;
 }
 
 .card-meta {
     display: flex;
     gap: 14px;
     flex-wrap: wrap;
-    margin: 8px 0 12px;
     list-style: none;
     padding: 0;
+    margin: 0;
+    flex: 1;
 }
 
 .meta-item {
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 13px;
+    font-size: 12px;
     color: #6b7280;
 }
 
 .meta-icon {
-    font-size: 12px;
+    font-size: 11px;
     color: #9ca3af;
 }
 
-/* Action buttons */
+/* ── Action buttons ── */
 .appointment-actions {
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
 .appointment-actions button {
-    padding: 6px 13px;
+    padding: 5px 11px;
     border-radius: 8px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
     cursor: pointer;
     border: none;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, background 0.2s, color 0.2s;
 }
 
 .view-btn {
     background-color: #f3f4f6;
     color: #111827;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #e5e7eb !important;
 }
 
 .view-btn:hover {
     background-color: #1D9E75;
     color: #ffffff;
+    border-color: #1D9E75 !important;
 }
 
 .reschedule-btn {
@@ -185,8 +219,8 @@
 }
 
 .cancel-btn {
-    background-color: #f87171;
-    color: #ffffff;
+    background-color: #fee2e2;
+    color: #b91c1c;
 }
 
 .cancel-btn:hover {
@@ -194,8 +228,34 @@
 }
 
 /* ────────────────────────────────
-   PAST — horizontal row list
+   PAST — vertical scroll container
    ──────────────────────────────── */
+
+.past-outer {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 320px;
+    flex: 1;
+    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+}
+
+.past-outer::-webkit-scrollbar {
+    width: 5px;
+}
+
+.past-outer::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.past-outer::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+}
 
 .past-list {
     list-style: none;
@@ -206,37 +266,30 @@
 .past-row {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 14px 18px;
-    background-color: #ffffff;
-    border-left: 1px solid #e5e7eb;
-    border-right: 1px solid #e5e7eb;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.past-row:first-child {
-    border-top: 1px solid #e5e7eb;
-    border-radius: 12px 12px 0 0;
+    gap: 14px;
+    padding: 13px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.12s;
 }
 
 .past-row:last-child {
-    border-radius: 0 0 12px 12px;
+    border-bottom: none;
 }
 
-.past-row:only-child {
-    border-radius: 12px;
+.past-row:hover {
+    background-color: #f9fafb;
 }
 
 .past-dot {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background-color: #d1d5db;
     flex-shrink: 0;
 }
 
 .past-clinic {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     color: #111827;
     flex: 1;
@@ -246,7 +299,7 @@
 .past-meta {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -257,7 +310,7 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 13px;
+    font-size: 12px;
     color: #6b7280;
     white-space: nowrap;
 }
@@ -268,7 +321,7 @@
 
 .badge {
     display: inline-block;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 500;
     padding: 3px 10px;
     border-radius: 20px;
@@ -294,21 +347,30 @@
    ──────────────────────────────── */
 
 @media (max-width: 768px) {
-    .appointment-card {
-        min-width: 260px;
-        width: 260px;
+    .card-body {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
     }
 
     .appointment-actions {
-        flex-direction: column;
+        flex-wrap: wrap;
     }
 
     .past-row {
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 8px;
     }
 
     .past-clinic {
         flex-basis: 100%;
+    }
+
+    .carousel-outer {
+        max-height: 340px;
+    }
+
+    .past-outer {
+        max-height: 260px;
     }
 }
