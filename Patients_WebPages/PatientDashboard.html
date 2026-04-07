@@ -52,63 +52,184 @@
    
 
 
-    <section >
+<section class="main-content">
 
-         <header>
-        <h1>Welcome back, Motshekhene </h1>
-        <p>friday, 10 April 2026</p>
+    <!-- HEADER -->
+    <header class="setcion-header">
+        <h1>Welcome back, Mothsekhene</h1>
+        <p>Wednesday, 2 April 2026</p>
+    </header>
+
+
+    <!-- NEXT APPOINTMENT -->
+    <section class="appt-section">
+
+        <header class="section-header">
+            <h2 class="section-label">Next Appointment</h2>
         </header>
-        <section>
-          
 
-        <article>
-              <h2>Next appointment</h2>
-            <h3>clinic details : makgakgapje loal clinic </h3>
-            <p>appointment deatils: thursday, 14 April - 10:00 AM -type of consultation :general consultion</p>
-            <nav>
-                <button href="Queues.html">Track queue</button>
-                <button href="BookAppointments.html">Reschedule</button>
-                <button href="# we will add deleting the appoint ment functionality ">Cancel</button>
-            </nav>
-        </article>
+        <!-- EMPTY STATE -->
+        <article class="carousel-outer" id="no-appointment">
 
-        </section>
-        
-   
+            <article class="appointment-card">
 
-        <section>
-                   <article>
-            <!-- take from  apointments  -->
-            <h3>5</h3>
-            <p>visits this year </p>
-        </article>
+                <p class="card-clinic">No Upcoming Appointments</p>
 
-        <article>
-            <!-- take from queue   -->
-            <h3>2</h3>
-            <p> Queue position  </p>
-        </article>
+                <ul class="card-meta">
+                    <li class="meta-item">
+                        Given I am logged in as a patient with no upcoming appointments
+                    </li>
+                    <li class="meta-item">
+                        When I open the dashboard
+                    </li>
+                    <li class="meta-item">
+                        Then I see placeholder appointment information
+                    </li>
+                </ul>
 
-         <article>
-            <!-- take from queue   -->
-            <h3>~30~</h3>
-            <p> Estimated waiting time </p>
+                <nav class="appointment-actions">
+                    <a href="BookAppointments.html">
+                        <button class="reschedule-btn">Book Appointment</button>
+                    </a>
+                </nav>
+
+            </article>
 
         </article>
-        </section>
 
-        <section>
-             
-        <article>
-            <h2>Current Queue Status  </h2>
-            <h3>4th in queue </h3>
-            <progress value="4" max="10"></progress>
-            <p>3 patients ahead of you and 6 patients behind you</p>
-        </article>
+
+        <!-- FILLED STATE -->
+        <!-- <article class="carousel-outer" id="has-appointment">
+
+            <article class="appointment-card">
+
+                <p class="card-clinic">Zola Community Clinic</p>
+
+                <ul class="card-meta">
+                    <li class="meta-item">Thursday, 3 April</li>
+                    <li class="meta-item">09:30</li>
+                    <li class="meta-item">General Consultation</li>
+                </ul>
+
+                <nav class="appointment-actions">
+                    <a href="Queues.html">
+                        <button class="view-btn">Track Queue</button>
+                    </a>
+
+                    <a href="BookAppointments.html">
+                        <button class="reschedule-btn">Reschedule</button>
+                    </a>
+
+                    <button class="cancel-btn">Cancel</button>
+                </nav>
+
+            </article>
+
+        </article> -->
+
     </section>
-        </section>
-       
-=======
+
+
+    <!-- STATISTICS -->
+     
+    <!-- FILLED STATE -->
+    <!-- <section class="appt-section">
+
+        <header class="section-header">
+            <h2 class="section-label">Patient Statistics</h2>
+        </header>
+
+        <ul class="card-meta">
+
+            <li class="meta-item">
+                <p>Visits this year</p>
+                <h3>3</h3>
+            </li>
+
+            <li class="meta-item">
+                <p>Position in queue</p>
+                <h3>4</h3>
+            </li>
+
+            <li class="meta-item">
+                <p>Est. wait time</p>
+                <h3>~22m</h3>
+            </li>
+
+        </ul>
+
+    </section> -->
+    <!-- EMPTY STATE -->
+    <section class="appt-section">
+
+    <header class="section-header">
+        <h2 class="section-label">Patient Statistics</h2>
+    </header>
+
+    <article class="carousel-outer">
+
+        <article class="appointment-card">
+
+            <p class="card-clinic">No statistics available yet</p>
+
+            <ul class="card-meta">
+                <li class="meta-item">Book an appointment to generate statistics</li>
+            </ul>
+
+        </article>
+
+    </article>
+
+</section>
+
+    <!-- QUEUE STATUS -->
+
+    <!-- FILLED STATE -->
+    <!-- <section class="appt-section">
+
+        <header class="section-header">
+            <h2 class="section-label">Current Queue Status</h2>
+        </header>
+
+        <article class="carousel-outer">
+
+            <article class="appointment-card">
+
+                <p class="card-clinic">4 in queue</p>
+
+                <ul class="card-meta">
+                    <li class="meta-item">Patients ahead of you</li>
+                </ul>
+
+            </article>
+
+        </article>
+
+    </section> -->
+       <!-- EMPTY STATE -->
+    <section class="appt-section">
+
+    <header class="section-header">
+        <h2 class="section-label">Current Queue Status</h2>
+    </header>
+
+    <article class="carousel-outer">
+
+        <article class="appointment-card">
+
+            <p class="card-clinic">No active queue</p>
+
+            <ul class="card-meta">
+                <li class="meta-item">You are not currently in a queue</li>
+            </ul>
+
+        </article>
+
+    </article>
+
+</section>
+</section>
+
 
     </main>
 
