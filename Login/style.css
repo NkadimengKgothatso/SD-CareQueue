@@ -434,3 +434,76 @@ footer.terms a {
   section.left-panel { width: 100%; padding: 32px 24px; min-height: auto; }
   h1.lp-h { font-size: 20px; }
 }
+
+
+/* CUSTOM CONFIRMATION MODAL */
+dialog.confirm-modal {
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 0;
+  max-width: 340px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+
+dialog.confirm-modal::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+article.modal-card {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+h2.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+p.modal-msg {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+p.modal-question {
+  font-size: 13px;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+footer.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+button.modal-cancel {
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  border: 0.5px solid var(--color-border-medium);
+  background: var(--color-bg-primary);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+button.modal-cancel:hover { background: var(--color-bg-secondary); }
+
+button.modal-confirm {
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--brand-mid);
+  color: white;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+button.modal-confirm:hover { background: var(--brand-dark); }

@@ -1,6 +1,5 @@
 
 // Import Firebase modules
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getAuth,
@@ -17,9 +16,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-
-//Firebase project config
-
+// Firebase project config
 const firebaseConfig = {
   apiKey:            "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
   authDomain:        "carequeue-284bb.firebaseapp.com",
@@ -29,74 +26,89 @@ const firebaseConfig = {
   appId:             "1:702048481855:web:1bb9675ecadb9e22043e8a",
 };
 
-
-// Initialize Firebase App
-
+// Initialize Firebase
 const app  = initializeApp(firebaseConfig);
-
-// Firebase Authentication instance
 const auth = getAuth(app);
-
-// Firestore database instance
 const db   = getFirestore(app);
 
-
-// Role selection logic
-// Default role is 'patient'
+// Default selected role is patient
 let selectedRole = "patient";
 
-// Called when user clicks a role
+// Role Selection 
+// Called when user clicks a role option
 window.selectRole = function(role) {
   selectedRole = role;
 
-  // Remove selection from all roles
+  // Remove highlight from all role options
   ["patient", "staff", "admin"].forEach(r => {
     const el = document.getElementById("opt-" + r);
     el.classList.remove("selected", "selected-blue", "selected-purple");
-    el.querySelector(".role-radio").innerHTML = "";
   });
 
-  // Add selection to clicked role
+  // Highlight the selected role with the correct color
   const el = document.getElementById("opt-" + role);
-  el.querySelector(".role-radio").innerHTML = '<span class="radio-inner"></span>';
-
-  // Add color class based on role
   if (role === "patient")    el.classList.add("selected");        // Green
   else if (role === "staff") el.classList.add("selected-blue");   // Blue
   else                       el.classList.add("selected-purple"); // Purple
 };
 
 
-// Google Sign-In
+// Shows a popup(modal) asking user to confirm their role
+// Returns a Promise that resolves true (confirmed) or false (cancelled)
+function showConfirmModal(role) {
+  return new Promise((resolve) => {
+    const modal      = document.getElementById("confirm-modal");
+    const roleName   = document.getElementById("modal-role-name");
+    const confirmBtn = document.getElementById("modal-confirm");
+    const cancelBtn  = document.getElementById("modal-cancel");
 
+    // Display the selected role name in the modal
+    roleName.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+
+    // Open the modal
+    modal.showModal();
+
+    // User clicked confirm
+    confirmBtn.onclick = () => {
+      modal.close();
+      resolve(true);
+    };
+
+    // User clicked cancel
+    cancelBtn.onclick = () => {
+      modal.close();
+      resolve(false);
+    };
+  });
+}
+
+// Google Sign-In 
 window.signInWithGoogle = async function() {
   const btn = document.getElementById("google-btn");
-  btn.disabled = true;                       // prevent double clicks
-  btn.querySelector(".provider-name").textContent = "Signing in…";
+  btn.disabled = true; // Prevent double clicks
+  btn.querySelector("strong.provider-name").textContent = "Signing in…";
 
   try {
-    const provider = new GoogleAuthProvider();          // Google provider
-    const result   = await signInWithPopup(auth, provider); // Firebase popup
-    const user     = result.user;                        // Firebase user object
+    const provider = new GoogleAuthProvider();
+    const result   = await signInWithPopup(auth, provider); // Open Google popup
+    const user     = result.user;
 
-    const userRef  = doc(db, "Users", user.uid);        // Firestore document for this user
-    const userSnap = await getDoc(userRef);            // Check if user already exists
+    const userRef  = doc(db, "Users", user.uid); // Reference to user's Firestore doc
+    const userSnap = await getDoc(userRef);      // Check if user already exists
 
     if (!userSnap.exists()) {
-      // First time — confirm role before saving
-      const confirmed = confirm(
-        `You are signing in as "${selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}". \n\nYou will not be able to change your role later. \n\nAre you sure?`
-      );
+      // First time signing in — show confirmation modal before saving role
+      const confirmed = await showConfirmModal(selectedRole);
 
       if (!confirmed) {
-        // User cancelled — go back to login
+        // User cancelled — sign them out and reset button
         btn.disabled = false;
-        btn.querySelector(".provider-name").textContent = "Continue with Google";
+        btn.querySelector("strong.provider-name").textContent = "Continue with Google";
         await signOut(auth);
         return;
       }
 
-      // Save new user with selected role
+      // Save new user document to Firestore
       await setDoc(userRef, {
         uid:         user.uid,
         displayName: user.displayName,
@@ -109,7 +121,7 @@ window.signInWithGoogle = async function() {
       handleRedirect(selectedRole, user);
 
     } else {
-      // Returning user — ignore selection, use saved role
+      // Returning user — use their saved role, ignore what they selected
       const savedRole = userSnap.data().role;
       handleRedirect(savedRole, user);
     }
@@ -120,31 +132,29 @@ window.signInWithGoogle = async function() {
       ? "Sign-in was cancelled. Please try again."
       : "Something went wrong. Please try again.");
     btn.disabled = false;
-    btn.querySelector(".provider-name").textContent = "Continue with Google";
+    btn.querySelector("strong.provider-name").textContent = "Continue with Google";
   }
 };
 
-
-// Redirect users based on role
-
+//  Redirect Based on Role 
 function handleRedirect(role, user) {
   if (role === "patient") {
-    window.location.href = "../Patients_WebPages/Dashboard.html"; // patient dashboard
+    // Redirect patient to their dashboard
+    window.location.href = "../Patients_WebPages/PatientDashboard.html";
   } else {
-    showPlaceholder(role, user); // staff/admin placeholder
+    // Show placeholder for staff and admin (coming in future sprints)
+    showPlaceholder(role, user);
   }
 }
 
-
-// Placeholder for staff/admin
-
+// Staff / Admin Placeholder
+// Replaces the login card with a placeholder message for non-patient roles
 function showPlaceholder(role, user) {
-  const card = document.querySelector("article.login-card");
+  const card      = document.querySelector("article.login-card");
   const roleLabel = role === "staff" ? "Clinic Staff" : "Admin";
 
   card.innerHTML = `
     <section class="placeholder-wrap">
-    
       <h2 class="placeholder-title">Welcome, ${user.displayName?.split(" ")[0] || "there"}!</h2>
       <p class="placeholder-role">${roleLabel} Portal</p>
       <p class="placeholder-msg">
@@ -159,32 +169,28 @@ function showPlaceholder(role, user) {
   `;
 }
 
-
-// Sign out logic
-
+// Sign Out 
 window.handleSignOut = async function() {
   await signOut(auth);
   window.location.reload();
 };
 
-
-// Display error messages
-
+ 
+// Displays an error message above the Google button
 function showError(msg) {
   let el = document.getElementById("auth-error");
   if (!el) {
     el = document.createElement("p");
     el.id = "auth-error";
     el.className = "auth-error";
-    document.querySelector(".providers").before(el);
+    document.querySelector("section.providers").before(el);
   }
   el.textContent = msg;
   el.style.display = "block";
 }
 
 
-// Auto redirect if user already signed in
-
+// If user is already signed in, skip login and redirect immediately
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     try {
@@ -195,7 +201,7 @@ onAuthStateChanged(auth, async (user) => {
         const savedRole = userSnap.data().role;
 
         if (savedRole === "patient") {
-          window.location.href = "../Patients WebPages/Dashboard.html";
+          window.location.href = "../Patients_WebPages/PatientDashboard.html";
         } else {
           showPlaceholder(savedRole, user);
         }

@@ -130,5 +130,19 @@
 
   </main>
 
+
+
+  <!-- Custom role confirmation modal -->
+  <dialog class="confirm-modal" id="confirm-modal">
+    <article class="modal-card">
+      <h2 class="modal-title">Confirm your role</h2>
+      <p class="modal-msg">You are signing in as <strong id="modal-role-name"></strong>. You will not be able to change your role later.</p>
+      <p class="modal-question">Are you sure you want to continue?</p>
+      <footer class="modal-actions">
+        <button class="modal-cancel" id="modal-cancel">Go back</button>
+        <button class="modal-confirm" id="modal-confirm">Yes, continue</button>
+      </footer>
+    </article>
+  </dialog>
 </body>
 </html>
