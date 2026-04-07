@@ -1,3 +1,32 @@
+// Import Firebase (MODULAR SDK)
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    serverTimestamp,
+    query,
+    where,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey:            "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
+    authDomain:        "carequeue-284bb.firebaseapp.com",
+    projectId:         "carequeue-284bb",
+    storageBucket:     "carequeue-284bb.firebasestorage.app",
+    messagingSenderId: "702048481855",
+    appId:             "1:702048481855:web:1bb9675ecadb9e22043e8a"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+
+
 // =========================
 // TIME SLOT FUNCTIONALITY
 // =========================
@@ -43,6 +72,7 @@ const clinicSearchInput = document.getElementById("clinicSearch");
 const clinicResults = document.getElementById("clinicResults"); 
 
 let clinics = [];
+let selectedClinicId;
 
 // Fetch clinics from JSON file
 async function loadClinics() {
@@ -60,11 +90,6 @@ async function loadClinics() {
 function displayClinics(clinicList) {
     clinicResults.innerHTML = "";
 
-    if (clinicList.length === 0) {
-        clinicResults.innerHTML = `<p class="no-results">No clinics found.</p>`;
-        return;
-    }
-
     clinicList.forEach(clinic => {
         const clinicCard = document.createElement("section");
         clinicCard.classList.add("clinic-card");
@@ -75,11 +100,33 @@ function displayClinics(clinicList) {
             <section class="clinic-info">
                 <p class="clinic-name">${clinic.name}</p>
                 <p class="clinic-services">Primary healthcare services</p>
-                <p class="clinic-bookings">12 bookings today</p>
             </section>
 
-            <button class="open-btn">Open</button>
+            <button class="open-btn">Select</button>
         `;
+
+        
+        // selected clinic when clicked
+        clinicCard.querySelector(".open-btn").addEventListener("click", () => {
+            
+
+            // Reset all clinic buttons first
+            document.querySelectorAll(".open-btn").forEach(btn => {
+                btn.textContent = "Select";
+                btn.style.backgroundColor = "#E1F5EE"; // reset background
+                btn.style.color = "#085041";           // reset text color
+            });
+            
+            selectedClinicId = clinic.id; // JSON "id" of clinic
+        
+            // Set this button as selected
+            const btn = clinicCard.querySelector(".open-btn");
+            btn.textContent = "Selected";
+            btn.style.backgroundColor = "#1D9E75"; // green color for example
+            btn.style.color = "#fff"; // white text
+
+
+        });
 
         clinicResults.appendChild(clinicCard);
     });
@@ -98,3 +145,99 @@ clinicSearchInput.addEventListener("input", () => {
 
 // Load clinics when page starts
 loadClinics();
+
+
+//display patient name on side bar
+const user = auth.currentUser;
+const nameSurnameEl = document.getElementById("name-Surname");
+
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // Display the name
+        nameSurnameEl.textContent = user.displayName;
+    } else {
+        // User not logged in
+        nameSurnameEl.textContent = "Guest";
+    }
+});
+
+
+// CONFIRM APPOINTMENT BUTTON
+const confirmBtn = document.querySelector(".confirm-Button");
+
+confirmBtn.addEventListener("click", async () => {
+    const user = auth.currentUser;
+
+    if (!user) {
+        alert("You must be logged in");
+        return;
+    }
+
+   
+
+
+    const date = document.getElementById("appt-date").value;
+    const time = selectedTimeInput.value;
+    const reason = document.querySelector(".reason-select").value;
+
+    // VALIDATION
+    if (!selectedClinicId || !date || !time || reason === "Select reason") {
+        alert("Please fill in all fields");
+        return;
+    }
+
+    // Check if slot already taken
+    const q = query(
+        collection(db, "Appointments"),
+        where("clinicID", "==", selectedClinicId),
+        where("date", "==", date),
+        where("time", "==", time)
+    );
+
+    const existing = await getDocs(q);
+
+    if (!existing.empty) {
+        alert("This time slot is already booked. Please choose another.");
+        return;
+    }
+
+    try {
+        await addDoc(collection(db, "Appointments"), {
+            clinicID: selectedClinicId,
+            userID: user.uid,
+            date: date,
+            time: time,
+            reason: reason,
+            status: "Waiting",
+            createdAT: serverTimestamp()
+        });
+
+        alert("Appointment booked successfully!");
+
+        //Reset form
+        document.getElementById("appt-date").value = "";
+        selectedTimeInput.value = "";
+        document.querySelector(".reason-select").selectedIndex = 0;
+
+        document.querySelectorAll(".time-slot").forEach(btn => {
+            btn.classList.remove("selected");
+        });
+        
+        // Reset all clinic buttons first
+        document.querySelectorAll(".open-btn").forEach(btn => {
+            btn.textContent = "Select";
+            btn.style.backgroundColor = "#E1F5EE"; // reset background
+            btn.style.color = "#085041";           // reset text color
+        });
+
+        //Reset clinic id
+        selectedClinicId =null;
+        // Redirect to MyAppointments.html
+        window.location.href = "MyAppointments.html";
+
+    } catch (error) {
+        console.error("Error booking appointment:", error);
+        alert("Failed to book appointment");
+    }
+});
