@@ -1,6 +1,4 @@
-/* ────────────────────────────────
-   MAIN CONTENT
-   ──────────────────────────────── */
+/* main content in html layout */
 
 .main-content {
     display: flex;
@@ -8,18 +6,21 @@
     height: 100%;
     min-width: 0;
     overflow: hidden;
+    width: 100%;
+    flex: 1;
 }
 
-/* ── Section wrapper ── */
+/* Section wrapper */
 .appt-section {
     display: flex;
     flex-direction: column;
     min-height: 0;
     flex: 1;
     margin-bottom: 1.5rem;
+    width: 100%;
 }
 
-/* ── Section header ── */
+/* Section header */
 .section-header {
     display: flex;
     align-items: center;
@@ -38,47 +39,21 @@
     margin: 0;
 }
 
-/* ── Arrow buttons (kept for markup compatibility) ── */
-.scroll-btns {
-    display: flex;
-    gap: 6px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
 
-.scroll-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 1px solid #e5e7eb;
-    background: #ffffff;
-    color: #374151;
-    cursor: pointer;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s;
-}
 
-.scroll-btn:hover {
-    background: #f3f4f6;
-}
-
-/* ────────────────────────────────
-   UPCOMING — vertical scroll container
-   ──────────────────────────────── */
 
 .carousel-outer {
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 14px;
+
     overflow-y: auto;
     overflow-x: hidden;
+
     max-height: 420px;
     flex: 1;
     min-height: 0;
+
     scrollbar-width: thin;
     scrollbar-color: #d1d5db transparent;
 }
@@ -87,27 +62,16 @@
     width: 5px;
 }
 
-.carousel-outer::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.carousel-outer::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 4px;
-}
-
-/* Stack cards vertically */
 .carousel-track {
     display: flex;
     flex-direction: column;
-    gap: 0;
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
-/* ── Upcoming card ── */
-.appointment-card {
+/* upcoming appointments */
+.appointment-card:not(.past-card) {
     background-color: #ffffff;
     border-bottom: 1px solid #f3f4f6;
     padding: 16px 20px;
@@ -119,258 +83,285 @@
     transition: background 0.12s;
 }
 
-.appointment-card:last-child {
-    border-bottom: none;
-}
-
-.appointment-card:hover {
+.appointment-card:not(.past-card):hover {
     background-color: #f9fafb;
 }
 
+/*  Accent line */
 .card-accent {
     width: 3px;
     border-radius: 3px;
-    flex-shrink: 0;
     align-self: stretch;
-    min-height: 48px;
 }
 
 .accent-upcoming {
     background-color: #1D9E75;
 }
 
+/*Card body */
 .card-body {
     flex: 1;
     min-width: 0;
     display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
 }
 
-.card-clinic {
-    font-size: 14px;
-    font-weight: 600;
-    color: #111827;
-    margin: 0;
-    flex-shrink: 0;
-    min-width: 140px;
-}
-
-.card-meta {
+.card-clinic-group {
     display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+
+.appointment-card:not(.past-card) .card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
     list-style: none;
     padding: 0;
     margin: 0;
-    flex: 1;
 }
-
+/* meta items */
 .meta-item {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     font-size: 12px;
     color: #6b7280;
 }
 
-.meta-icon {
-    font-size: 11px;
-    color: #9ca3af;
-}
 
-/* ── Action buttons ── */
-.appointment-actions {
+.appointment-card:not(.past-card) .appointment-actions {
     display: flex;
     gap: 6px;
-    flex-shrink: 0;
 }
 
 .appointment-actions button {
     padding: 5px 11px;
     border-radius: 8px;
     font-size: 11px;
-    font-weight: 500;
-    cursor: pointer;
     border: none;
-    transition: opacity 0.2s, background 0.2s, color 0.2s;
+    cursor: pointer;
 }
 
 .view-btn {
-    background-color: #f3f4f6;
+    background: #f3f4f6;
     color: #111827;
-    border: 1px solid #e5e7eb !important;
-}
-
-.view-btn:hover {
-    background-color: #1D9E75;
-    color: #ffffff;
-    border-color: #1D9E75 !important;
 }
 
 .reschedule-btn {
-    background-color: #1D9E75;
-    color: #ffffff;
-}
-
-.reschedule-btn:hover {
-    opacity: 0.8;
+    background: #1D9E75;
+    color: #fff;
 }
 
 .cancel-btn {
-    background-color: #fee2e2;
+    background: #fee2e2;
     color: #b91c1c;
 }
 
-.cancel-btn:hover {
-    opacity: 0.8;
-}
-
-/* ────────────────────────────────
-   PAST — vertical scroll container
-   ──────────────────────────────── */
+/* past appointments scrollable now */
 
 .past-outer {
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 14px;
+
     overflow-y: auto;
     overflow-x: hidden;
-    max-height: 320px;
+
+    max-height: 420px;   
     flex: 1;
     min-height: 0;
-    scrollbar-width: thin;
-    scrollbar-color: #d1d5db transparent;
+
+    width: 100%;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
 }
 
-.past-outer::-webkit-scrollbar {
-    width: 5px;
-}
 
-.past-outer::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.past-outer::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 4px;
-}
-
-.past-list {
+#past {
     list-style: none;
     margin: 0;
     padding: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+    min-height: 0;
 }
 
-.past-row {
+/* past card styling */
+.past-card {
     display: flex;
     align-items: center;
     gap: 14px;
+
     padding: 13px 20px;
     border-bottom: 1px solid #f3f4f6;
-    transition: background 0.12s;
-}
 
-.past-row:last-child {
-    border-bottom: none;
-}
+    opacity: 0.85;
+    background: #f8f9fa;
 
-.past-row:hover {
-    background-color: #f9fafb;
-}
+    min-height: 70px;
+    width: 100%;
+    box-sizing: border-box;
 
-.past-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background-color: #d1d5db;
+    
     flex-shrink: 0;
 }
 
-.past-clinic {
-    font-size: 13px;
-    font-weight: 500;
-    color: #111827;
-    flex: 1;
-    margin: 0;
-}
-
-.past-meta {
+#past li {
+    width: 100%;
     display: flex;
-    align-items: center;
-    gap: 12px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    flex-wrap: wrap;
 }
 
-.past-meta-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 12px;
-    color: #6b7280;
-    white-space: nowrap;
+
+.past-card:hover {
+    background: #f1f3f5;
 }
 
-/* ────────────────────────────────
-   BADGES
-   ──────────────────────────────── */
-
+/* Badge styling */
 .badge {
-    display: inline-block;
     font-size: 10px;
-    font-weight: 500;
     padding: 3px 10px;
     border-radius: 20px;
 }
 
-.badge-upcoming {
-    background-color: #E1F5EE;
-    color: #0F6E56;
-}
-
-.badge-past {
-    background-color: #f3f4f6;
-    color: #6b7280;
+.badge-scheduled {
+    background: #d1fae5;
+    color: #065f46;
 }
 
 .badge-cancelled {
-    background-color: #fee2e2;
+    background: #fee2e2;
     color: #b91c1c;
 }
 
-/* ────────────────────────────────
-   RESPONSIVE
-   ──────────────────────────────── */
+.badge-completed {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+/* cancel button dialogue */
+
+dialog {
+    border: none;
+    border-radius: 16px;
+    width: 380px;
+    max-width: 92%;
+    padding: 0;
+    background: #ffffff;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    overflow: hidden;
+    animation: popIn 0.2s ease-out;
+}
+
+dialog::backdrop {
+    background: rgba(0,0,0,0.6);
+}
+
+@keyframes popIn {
+    from {
+        transform: translate(-50%, -50%) scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+dialog header {
+    padding: 16px 18px;
+    font-size: 16px;
+    font-weight: 600;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+dialog p {
+    padding: 16px 18px;
+    margin: 0;
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+}
+
+dialog footer {
+    padding: 14px 18px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-top: 1px solid #f1f5f9;
+    background: #fafafa;
+}
+
+/* buttons */
+.secondary-btn {
+    background: #f3f4f6;
+    color: #111827;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.secondary-btn:hover {
+    background: #e5e7eb;
+}
+
+.danger-btn {
+    background: #ef4444;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.danger-btn:hover {
+    background: #dc2626;
+}
+
 
 @media (max-width: 768px) {
     .card-body {
         flex-direction: column;
         align-items: flex-start;
-        gap: 8px;
     }
 
     .appointment-actions {
         flex-wrap: wrap;
     }
 
-    .past-row {
+    .past-card {
         flex-wrap: wrap;
-        gap: 8px;
     }
+}
 
-    .past-clinic {
-        flex-basis: 100%;
-    }
+.empty-state {
+    padding: 24px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 13px;
+    font-style: italic;
+}
 
-    .carousel-outer {
-        max-height: 340px;
-    }
-
-    .past-outer {
-        max-height: 260px;
-    }
+.empty-state::before {
+    
+    display: block;
+    font-size: 22px;
+    margin-bottom: 6px;
 }
