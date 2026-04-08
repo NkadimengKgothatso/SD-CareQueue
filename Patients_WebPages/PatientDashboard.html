@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="myappointments.css">
     <link rel="stylesheet" href="bookAppointments.css">
+    <link rel="stylesheet" href="PatientDashboard.css">
 </head>
 <body>
 
@@ -39,35 +40,199 @@
             </section>
         </aside>
 
+ <!-- created by kea -->
+  <script type="module">
+  import { logoutUser } from "../path-to-your-file/firebase-auth.js";
+
+  // Attach to button
+  window.signOut = logoutUser;
+</script>
+<!-- starting my part here (KG) -->
+
+   
+
+
+<section class="main-content">
+
+    <!-- HEADER -->
+    <header class="setcion-header">
+        <h1>Welcome back, Mothsekhene</h1>
+        <p>Wednesday, 2 April 2026</p>
+    </header>
+
+
+    <!-- NEXT APPOINTMENT -->
+    <section class="appt-section">
+
+        <header class="section-header">
+            <h2 class="section-label">Next Appointment</h2>
+        </header>
+
+        <!-- EMPTY STATE -->
+        <article class="carousel-outer" id="no-appointment">
+
+            <article class="appointment-card">
+
+                <p class="card-clinic">No Upcoming Appointments</p>
+
+                <ul class="card-meta">
+                    <li class="meta-item">
+                        Given I am logged in as a patient with no upcoming appointments
+                    </li>
+                    <li class="meta-item">
+                        When I open the dashboard
+                    </li>
+                    <li class="meta-item">
+                        Then I see placeholder appointment information
+                    </li>
+                </ul>
+
+                <nav class="appointment-actions">
+                    <a href="BookAppointments.html">
+                        <button class="reschedule-btn">Book Appointment</button>
+                    </a>
+                </nav>
+
+            </article>
+
+        </article>
+
+
+        <!-- FILLED STATE -->
+        <!-- <article class="carousel-outer" id="has-appointment">
+
+            <article class="appointment-card">
+
+                <p class="card-clinic">Zola Community Clinic</p>
+
+                <ul class="card-meta">
+                    <li class="meta-item">Thursday, 3 April</li>
+                    <li class="meta-item">09:30</li>
+                    <li class="meta-item">General Consultation</li>
+                </ul>
+
+                <nav class="appointment-actions">
+                    <a href="Queues.html">
+                        <button class="view-btn">Track Queue</button>
+                    </a>
+
+                    <a href="BookAppointments.html">
+                        <button class="reschedule-btn">Reschedule</button>
+                    </a>
+
+                    <button class="cancel-btn">Cancel</button>
+                </nav>
+
+            </article>
+
+        </article> -->
+
+    </section>
+
+
+    <!-- STATISTICS -->
+     
+    <!-- FILLED STATE -->
+    <!-- <section class="appt-section">
+
+        <header class="section-header">
+            <h2 class="section-label">Patient Statistics</h2>
+        </header>
+
+        <ul class="card-meta">
+
+            <li class="meta-item">
+                <p>Visits this year</p>
+                <h3>3</h3>
+            </li>
+
+            <li class="meta-item">
+                <p>Position in queue</p>
+                <h3>4</h3>
+            </li>
+
+            <li class="meta-item">
+                <p>Est. wait time</p>
+                <h3>~22m</h3>
+            </li>
+
+        </ul>
+
+    </section> -->
+    <!-- EMPTY STATE -->
+    <section class="appt-section">
+
+    <header class="section-header">
+        <h2 class="section-label">Patient Statistics</h2>
+    </header>
+
+    <article class="carousel-outer">
+
+        <article class="appointment-card">
+
+            <p class="card-clinic">No statistics available yet</p>
+
+            <ul class="card-meta">
+                <li class="meta-item">Book an appointment to generate statistics</li>
+            </ul>
+
+        </article>
+
+    </article>
+
+</section>
+
+    <!-- QUEUE STATUS -->
+
+    <!-- FILLED STATE -->
+    <!-- <section class="appt-section">
+
+        <header class="section-header">
+            <h2 class="section-label">Current Queue Status</h2>
+        </header>
+
+        <article class="carousel-outer">
+
+            <article class="appointment-card">
+
+                <p class="card-clinic">4 in queue</p>
+
+                <ul class="card-meta">
+                    <li class="meta-item">Patients ahead of you</li>
+                </ul>
+
+            </article>
+
+        </article>
+
+    </section> -->
+       <!-- EMPTY STATE -->
+    <section class="appt-section">
+
+    <header class="section-header">
+        <h2 class="section-label">Current Queue Status</h2>
+    </header>
+
+    <article class="carousel-outer">
+
+        <article class="appointment-card">
+
+            <p class="card-clinic">No active queue</p>
+
+            <ul class="card-meta">
+                <li class="meta-item">You are not currently in a queue</li>
+            </ul>
+
+        </article>
+
+    </article>
+
+</section>
+</section>
+
+
     </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey:            "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
-            authDomain:        "carequeue-284bb.firebaseapp.com",
-            projectId:         "carequeue-284bb",
-            storageBucket:     "carequeue-284bb.firebasestorage.app",
-            messagingSenderId: "702048481855",
-            appId:             "1:702048481855:web:1bb9675ecadb9e22043e8a"
-        };
-
-        const app  = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        // If not signed in, redirect back to login
-        onAuthStateChanged(auth, (user) => {
-            if (!user) window.location.href = "../Login/index.html";
-        });
-
-        // Sign out
-        window.signOut = async function() {
-            await signOut(auth);
-            window.location.href = "../Login/index.html";
-        };
-    </script>
-
+<script src="firebase.js"></script>
 </body>
 </html>
