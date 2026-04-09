@@ -9,7 +9,8 @@ import {
     addDoc,
     doc,
     updateDoc,
-    serverTimestamp
+    serverTimestamp,
+    getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ─── Firebase Config ────────────────────────────────────────────────────────
@@ -402,11 +403,27 @@ async function loadTodaysQueue(clinicId) {
                 reason:        d.reason        || "",
                 patientName:   d.patientName   || null,
                 isWalkIn:      d.isWalkIn      || false,
-                queuePosition: d.queuePosition || autoPosition++
+                queuePosition: d.queuePosition || autoPosition++,
+                userID:        d.userID        || null 
             });
         });
 
+        // Fetch patient names from Users collection
+        for (let appt of queueData) {
+            if (appt.userID) {
+                try {
+                    const userDoc = await getDoc(doc(db, "Users", appt.userID));
+                    if (userDoc.exists()) {
+                        appt.patientName = userDoc.data().displayName;
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch patient name:", err);
+                }
+            }
+        }
+
         renderQueue();
+
 
     } catch (err) {
         console.error("Failed to load queue:", err);
