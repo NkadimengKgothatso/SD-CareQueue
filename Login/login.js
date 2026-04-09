@@ -143,7 +143,7 @@ function handleRedirect(role, user) {
     window.location.href = "../Patients_WebPages/PatientDashboard.html";
   } else {
     // Show placeholder for staff and admin (coming in future sprints)
-    showPlaceholder(role, user);
+    window.location.href = "../Staff_Webpages/Queues.html";
   }
 }
 
@@ -203,7 +203,7 @@ onAuthStateChanged(auth, async (user) => {
         if (savedRole === "patient") {
           window.location.href = "../Patients_WebPages/PatientDashboard.html";
         } else {
-          showPlaceholder(savedRole, user);
+          window.location.href = "../Staff_Webpages/Queues.html";
         }
       }
     } catch (e) {
