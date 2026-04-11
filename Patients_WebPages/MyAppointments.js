@@ -1,7 +1,7 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // Firebase config
 const firebaseConfig = {
@@ -18,54 +18,232 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+//J: status map for appointments statuses
+const statusMap = {
+  Waiting: "waiting",
+  Scheduled: "scheduled",
+  Cancelled: "cancelled",
+  Completed: "completed"
+};
+
+let selectedAppointment = null;
+let selectedElement = null;
+
 const nameSurnameEl = document.querySelector(".name-Surname");
 const upcomingList = document.getElementById("upcoming");
+const pastList = document.getElementById("past");
 
 let clinicsMap = new Map();
+
+const modal = document.createElement("dialog");
+modal.setAttribute("id", "cancelModal");
+
+modal.innerHTML = `
+    <section>
+        <header>
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <h2>Cancel Appointment</h2>
+        </header>
+
+        <p>Are you sure you want to cancel this appointment? This action cannot be undone.</p>
+
+        <footer>
+            <button id="confirmCancelBtn" class="danger-btn">
+                <i class="fa-solid fa-xmark"></i>
+                Yes, Cancel
+            </button>
+
+            <button id="closeModalBtn" class="secondary-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+                Keep It
+            </button>
+        </footer>
+    </section>
+`;
+
+document.body.appendChild(modal);
+
+const confirmBtn = modal.querySelector("#confirmCancelBtn");
+const closeBtn = modal.querySelector("#closeModalBtn");
+
+closeBtn.addEventListener("click", () => {
+    modal.close();
+});
+
+confirmBtn.addEventListener("click", async () => {
+    if (!selectedAppointment) return;
+
+    try {
+        await updateDoc(doc(db, "Appointments", selectedAppointment.id), {
+            status: "cancelled"
+        });
+
+        selectedElement.remove();
+
+    } catch (error) {
+        console.error("Cancel failed:", error);
+    }
+
+    modal.close();
+});
 
 async function loadClinics() {
     try {
         const response = await fetch("./clinics.json");
         const clinics = await response.json();
         clinics.forEach(clinic => {
-            clinicsMap.set(clinic.id.toString(), clinic); // store with string keys
+            clinicsMap.set(clinic.id.toString(), clinic);
         });
     } catch (error) {
         console.error("Failed to load clinics:", error);
     }
 }
 
+/* ======================================================
+   🔥 NEW: EMPTY STATE HANDLER (SAFE ADDITION)
+====================================================== */
+function setEmptyState(container, message) {
+    if (!container.children.length) {
+        container.innerHTML = `<li class="empty-state">${message}</li>`;
+    }
+}
+
 function renderAppointment(appointment) {
+
+    const status = (appointment.status || "scheduled")
+        .toLowerCase()
+        .trim();
+
+    const isPast =
+        status === "cancelled" ||
+        status === "canceled" ||
+        status === "completed";
+
     const li = document.createElement("li");
     li.classList.add("appointment-card");
 
     const clinic = clinicsMap.get(appointment.clinicID.toString());
     const clinicName = clinic ? clinic.name : "Unknown Clinic";
 
+    if (isPast) {
+        li.classList.add("past-card");
+    } else {
+        li.classList.add("upcoming-card");
+    }
+
+    // =========================
+    // PAST APPOINTMENTS (NO BUTTONS)
+    // =========================
+    if (isPast) {
+        li.innerHTML = `
+            <span class="card-accent accent-past"></span>
+
+            <article class="card-body">
+
+                <header class="card-clinic-group">
+                    <p class="card-clinic">${clinicName}</p>
+                </header>
+
+                <ul class="card-meta">
+                    <li class="meta-item">
+                        <i class="fa-solid fa-calendar-day meta-icon"></i>
+                        ${appointment.date}
+                    </li>
+                    <li class="meta-item">
+                        <i class="fa-solid fa-clock meta-icon"></i>
+                        ${appointment.time}
+                    </li>
+                    ${appointment.reason ? `
+                    <li class="meta-item">
+                        <i class="fa-solid fa-notes-medical meta-icon"></i>
+                        ${appointment.reason}
+                    </li>` : ""}
+                </ul>
+
+                <footer class="card-footer">
+                    <span class="badge badge-${status}">
+                        ${status}
+                    </span>
+                </footer>
+
+            </article>
+        `;
+
+        pastList.appendChild(li);
+        return;
+    }
+
+    // =========================
+    // UPCOMING APPOINTMENTS
+    // =========================
     li.innerHTML = `
         <span class="card-accent accent-upcoming"></span>
+
         <article class="card-body">
-            <p class="card-clinic">${clinicName}</p>
-            <span class="badge badge-upcoming">Scheduled</span>
+
+            <header class="card-clinic-group">
+                <p class="card-clinic">${clinicName}</p>
+
+                <nav class="appointment-actions">
+                    <button class="track-btn">Track</button>
+                    <button class="reschedule-btn">Reschedule</button>
+                    <button class="cancel-btn">Cancel</button>
+                </nav>
+            </header>
+
             <ul class="card-meta">
-                <li class="meta-item"><i class="fa-solid fa-calendar-day meta-icon"></i> ${appointment.date}</li>
-                <li class="meta-item"><i class="fa-solid fa-clock meta-icon"></i> ${appointment.time}</li>
+                <li class="meta-item">
+                    <i class="fa-solid fa-calendar-day meta-icon"></i>
+                    ${appointment.date}
+                </li>
+                <li class="meta-item">
+                    <i class="fa-solid fa-clock meta-icon"></i>
+                    ${appointment.time}
+                </li>
+                ${appointment.reason ? `
+                <li class="meta-item">
+                    <i class="fa-solid fa-notes-medical meta-icon"></i>
+                    ${appointment.reason}
+                </li>` : ""}
             </ul>
-            <nav class="appointment-actions">
-                <button class="view-btn">View</button>
-                <button class="reschedule-btn">Reschedule</button>
-                <button class="cancel-btn">Cancel</button>
-            </nav>
+
+            <footer class="card-footer">
+                <span class="badge badge-${status}">
+                    ${status}
+                </span>
+            </footer>
+
         </article>
     `;
+
+    const cancelBtn = li.querySelector(".cancel-btn");
+    const trackBtn = li.querySelector(".track-btn");
+    const rescheduleBtn = li.querySelector(".reschedule-btn");
+
+    rescheduleBtn.addEventListener("click", () => {
+        window.location.href = `BookAppointments.html?mode=reschedule&id=${appointment.id}`;
+    });
+
+    cancelBtn.addEventListener("click", () => {
+        selectedAppointment = appointment;
+        selectedElement = li;
+        modal.showModal();
+    });
+
+    trackBtn.addEventListener("click", () => {
+        window.location.href = "Queues.html";
+    });
+
     upcomingList.appendChild(li);
 }
 
+upcomingList.innerHTML = "<p>Loading appointments...</p>";
+
 onAuthStateChanged(auth, async (user) => {
     if (user) {
+
         nameSurnameEl.textContent = user.displayName;
 
-        // Load clinics first
         await loadClinics();
 
         const q = query(
@@ -74,22 +252,42 @@ onAuthStateChanged(auth, async (user) => {
         );
 
         const snapshot = await getDocs(q);
-        upcomingList.innerHTML = ""; // Clear current list
+
+        upcomingList.innerHTML = "";
+        pastList.innerHTML = "";
 
         const today = new Date();
-        // Render only upcoming appointments
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            const apptDate = new Date(data.date); // assumes date string "YYYY-MM-DD"
+
+        let hasUpcoming = false;
+        let hasPast = false;
+
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+
+            const apptDate = new Date(data.date);
+
+            const appointment = {
+                id: docSnap.id,
+                clinicID: data.clinicID,
+                date: data.date,
+                time: data.time,
+                status: data.status,
+                reason: data.reason
+            };
 
             if (apptDate >= today) {
-                renderAppointment({
-                    clinicID: data.clinicID,
-                    date: data.date,
-                    time: data.time
-                });
+                hasUpcoming = true;
+                renderAppointment(appointment);
+            } else {
+                hasPast = true;
+                renderAppointment(appointment);
             }
         });
+
+        // code for handling no appointments cases
+        setEmptyState(upcomingList, "No upcoming appointments");
+        setEmptyState(pastList, "No past appointments");
+
     } else {
         nameSurnameEl.textContent = "Guest";
         upcomingList.innerHTML = "<p>Please log in to view your appointments.</p>";
