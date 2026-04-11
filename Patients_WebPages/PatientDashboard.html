@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="myappointments.css">
     <link rel="stylesheet" href="bookAppointments.css">
-    <link rel="stylesheet" href="PatientDashboard.css">
+    
 </head>
 <body>
 
@@ -35,23 +35,26 @@
         <section class="user-Section">
             <i class="fa-solid fa-user" style="padding: 5px;"></i>
             <address>
-                <p class="name-Surname" id="userName">Name Surname</p>
-                <p class="user-Identity" id="userRole">Patient</p>
+                <p class="name-Surname" id="userName"></p>
+                <p class="user-Identity" id="userRole"></p>
             </address>
         </section>
     </aside>
 
 
-     <!-- EMPTY STATES -->
-     <section  id ="emptyStates" class="main-content">
+     
+     <section  id ="emptyStates" class="main-content" >
           
-                            <section class="main-content">
+                            
 
                         <header class="setcion-header">
-                            <h1>Welcome back, Mothsekhene</h1>
-                            <p>Wednesday, 2 April 2026</p>
+                            <h1 id="welcomeMessage"></h1>
+                            <p id="currentDate"></p>
                         </header>
 
+
+                        <!-- EMPTY STATES -->
+                <section class="main-content" style="display: none;">
                         <!-- NEXT APPOINTMENT (EMPTY) -->
                         <section class="appt-section">
                             <header class="section-header">
@@ -113,7 +116,7 @@
 
 
              <!-- FILLED STATES -->
-            <section id="filledStates" class="main-content" style="display: none;">
+            <section id="filledStates" class="main-content">
                         
                             <!-- NEXT APPOINTMENT (FILLED) -->
                             <section class="appt-section">
@@ -192,6 +195,7 @@
 
     </main>
 
-<script src="firebase.js"></script>
+<script type="module" src="firebase.js"></script>
+<script type="module" src="PatientDashboard.js"></script>
 </body>
 </html>
