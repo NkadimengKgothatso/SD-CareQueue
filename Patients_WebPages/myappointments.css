@@ -379,7 +379,7 @@ dialog footer {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-    padding: 0;
+    padding: 10px;
     margin-top: 10px;
 }
 
@@ -407,6 +407,7 @@ dialog footer {
 .green { background: #dcfce7; color: #14532d; }
 .blue { background: #dbeafe; color: #1e3a8a; }
 .yellow { background: #fef9c3; color: #854d0e; }
+.purple { background: #ede9fe; color: #5b21b6; }
 
 
 /* queue card */
@@ -447,7 +448,7 @@ dialog footer {
     color: #6b7280;
 }
 
-//* satisfaction container */
+/* satisfaction container */
 .satisfaction {
     margin-top: 16px;
 }
