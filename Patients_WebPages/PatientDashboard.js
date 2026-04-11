@@ -188,7 +188,16 @@ async function loadAppointments(userId) {
                       
 
                         <footer class="card-footer">
-                            <button class="view-btn" onclick="goToAppointments()">
+                            <button class="view-btn" onclick="goToAppointments()"      style="
+                                background:#22c55e;
+                                color:white;
+                                border:none;
+                                padding:8px 14px;
+                                border-radius:10px;
+                                font-size:12px;
+                                font-weight:600;
+                                cursor:pointer;
+                                box-shadow:0 4px 10px rgba(0,0,0,0.1);">
                                 <i></i> View
                             </button>
                         </footer>
