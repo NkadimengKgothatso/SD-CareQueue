@@ -236,7 +236,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
                 nameEl.textContent = data.displayName || "User";
                 roleEl.textContent = data.role || "Unknown";
-                welcomeEl.textContent = `Welcome back, ${data.displayName || "User"}`;
+                welcomeEl.textContent = `Welcome , ${data.displayName || "User"}`;
             }
 
             dateEl.textContent = new Date().toLocaleDateString("en-ZA", {
