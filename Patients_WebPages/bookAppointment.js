@@ -9,7 +9,10 @@ import {
     serverTimestamp,
     query,
     where,
-    getDocs
+    getDocs,
+    doc,
+    getDoc,
+    updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -25,7 +28,13 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-
+// =========================
+// RESCHEDULE MODE (ADDED)
+// =========================
+const urlParams = new URLSearchParams(window.location.search);
+const mode = urlParams.get("mode");
+const appointmentId = urlParams.get("id");
+const isRescheduleMode = mode === "reschedule";
 
 // =========================
 // TIME SLOT FUNCTIONALITY
@@ -38,7 +47,7 @@ function renderTimeSlots() {
 
     for (let hour = 8; hour <= 17; hour++) {
         for (let minute of [0, 30]) {
-            if (hour === 17 && minute === 30) continue; // stop at 17:00
+            if (hour === 17 && minute === 30) continue;
 
             const slotBtn = document.createElement("button");
             slotBtn.classList.add("time-slot");
@@ -79,14 +88,37 @@ async function loadClinics() {
     try {
         const response = await fetch("./clinics.json");
         clinics = await response.json();
-        displayClinics(clinics); // show all clinics initially
+        displayClinics(clinics);
+
+        if (isRescheduleMode) {
+            loadAppointmentForReschedule();
+        }
+
     } catch (error) {
         console.error("Error loading clinics:", error);
         clinicResults.innerHTML = "<p>Failed to load clinics.</p>";
     }
 }
 
-// Display clinics on page
+// Load appointment data for reschedule
+async function loadAppointmentForReschedule() {
+    if (!appointmentId) return;
+
+    const ref = doc(db, "Appointments", appointmentId);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+
+    selectedClinicId = data.clinicID;
+
+    document.getElementById("appt-date").value = data.date;
+    selectedTimeInput.value = data.time;
+    document.querySelector(".reason-select").value = data.reason;
+}
+
+// Display clinics
 function displayClinics(clinicList) {
     clinicResults.innerHTML = "";
 
@@ -105,34 +137,26 @@ function displayClinics(clinicList) {
             <button class="open-btn">Select</button>
         `;
 
-        
-        // selected clinic when clicked
         clinicCard.querySelector(".open-btn").addEventListener("click", () => {
-            
 
-            // Reset all clinic buttons first
             document.querySelectorAll(".open-btn").forEach(btn => {
                 btn.textContent = "Select";
-                btn.style.backgroundColor = "#E1F5EE"; // reset background
-                btn.style.color = "#085041";           // reset text color
+                btn.style.backgroundColor = "#E1F5EE";
+                btn.style.color = "#085041";
             });
-            
-            selectedClinicId = clinic.id; // JSON "id" of clinic
-        
-            // Set this button as selected
+
+            selectedClinicId = clinic.id;
+
             const btn = clinicCard.querySelector(".open-btn");
             btn.textContent = "Selected";
-            btn.style.backgroundColor = "#1D9E75"; // green color for example
-            btn.style.color = "#fff"; // white text
-
-
+            btn.style.backgroundColor = "#1D9E75";
+            btn.style.color = "#fff";
         });
 
         clinicResults.appendChild(clinicCard);
     });
 }
 
-// Search as user types
 clinicSearchInput.addEventListener("input", () => {
     const searchValue = clinicSearchInput.value.toLowerCase().trim();
 
@@ -143,25 +167,18 @@ clinicSearchInput.addEventListener("input", () => {
     displayClinics(filteredClinics);
 });
 
-// Load clinics when page starts
 loadClinics();
 
-
-//display patient name on side bar
-const user = auth.currentUser;
+// display patient name on side bar
 const nameSurnameEl = document.getElementById("name-Surname");
-
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        // Display the name
         nameSurnameEl.textContent = user.displayName;
     } else {
-        // User not logged in
         nameSurnameEl.textContent = "Guest";
     }
 });
-
 
 // CONFIRM APPOINTMENT BUTTON
 const confirmBtn = document.querySelector(".confirm-Button");
@@ -174,20 +191,33 @@ confirmBtn.addEventListener("click", async () => {
         return;
     }
 
-   
-
-
     const date = document.getElementById("appt-date").value;
     const time = selectedTimeInput.value;
     const reason = document.querySelector(".reason-select").value;
 
-    // VALIDATION
     if (!selectedClinicId || !date || !time || reason === "Select reason") {
         alert("Please fill in all fields");
         return;
     }
 
-    // Check if slot already taken
+    // RESCHEDULE MODE
+    if (isRescheduleMode) {
+        const ref = doc(db, "Appointments", appointmentId);
+
+        await updateDoc(ref, {
+            clinicID: selectedClinicId,
+            date: date,
+            time: time,
+            reason: reason,
+            status: "rescheduled",
+            updatedAt: serverTimestamp()
+        });
+
+        alert("Appointment rescheduled successfully!");
+        window.location.href = "MyAppointments.html";
+        return;
+    }
+
     const q = query(
         collection(db, "Appointments"),
         where("clinicID", "==", selectedClinicId),
@@ -209,13 +239,12 @@ confirmBtn.addEventListener("click", async () => {
             date: date,
             time: time,
             reason: reason,
-            status: "Waiting",
+            status: "scheduled",
             createdAT: serverTimestamp()
         });
 
         alert("Appointment booked successfully!");
 
-        //Reset form
         document.getElementById("appt-date").value = "";
         selectedTimeInput.value = "";
         document.querySelector(".reason-select").selectedIndex = 0;
@@ -223,17 +252,15 @@ confirmBtn.addEventListener("click", async () => {
         document.querySelectorAll(".time-slot").forEach(btn => {
             btn.classList.remove("selected");
         });
-        
-        // Reset all clinic buttons first
+
         document.querySelectorAll(".open-btn").forEach(btn => {
             btn.textContent = "Select";
-            btn.style.backgroundColor = "#E1F5EE"; // reset background
-            btn.style.color = "#085041";           // reset text color
+            btn.style.backgroundColor = "#E1F5EE";
+            btn.style.color = "#085041";
         });
 
-        //Reset clinic id
-        selectedClinicId =null;
-        // Redirect to MyAppointments.html
+        selectedClinicId = null;
+
         window.location.href = "MyAppointments.html";
 
     } catch (error) {
@@ -241,3 +268,12 @@ confirmBtn.addEventListener("click", async () => {
         alert("Failed to book appointment");
     }
 });
+
+// Reschedule button
+const rescheduleBtn = document.querySelector(".reschedule-Button");
+
+if (rescheduleBtn) {
+    rescheduleBtn.addEventListener("click", () => {
+        console.log("Reschedule clicked - step 2 ready");
+    });
+}

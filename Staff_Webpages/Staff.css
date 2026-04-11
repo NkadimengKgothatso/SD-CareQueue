@@ -1,0 +1,455 @@
+/* ============================================================
+   Queue Management – Staff View Styles
+   Complements your existing bookAppointments.css
+   ============================================================ */
+
+/* ── CSS Variables ──────────────────────────────────────── */
+:root {
+    --clr-primary:       #1a7f5a;
+    --clr-primary-light: #e8f5f0;
+    --clr-danger:        #dc3545;
+    --clr-danger-light:  #fdecea;
+    --clr-warning:       #e07b00;
+    --clr-warning-light: #fff3e0;
+    --clr-success:       #198754;
+    --clr-success-light: #eaf4ef;
+    --clr-muted:         #6c757d;
+    --clr-border:        #dee2e6;
+    --clr-surface:       #ffffff;
+    --clr-bg:            #f4f6f8;
+
+    --radius-card: 12px;
+    --radius-btn:  8px;
+    --shadow-card: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-hover:0 6px 18px rgba(0,0,0,0.13);
+
+    --transition: 0.2s ease;
+}
+
+/* ── Queue List ─────────────────────────────────────────── */
+#upcoming {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* ── Queue Card ─────────────────────────────────────────── */
+.queue-card {
+    display: flex;
+    align-items: stretch;
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.queue-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+}
+
+/* Active patient currently in consultation gets a highlighted border */
+.queue-card.active-consult {
+    border-color: var(--clr-primary);
+    border-left: 4px solid var(--clr-primary);
+    background: linear-gradient(135deg, var(--clr-primary-light) 0%, var(--clr-surface) 60%);
+}
+
+/* Completed / cancelled cards are visually muted */
+.queue-card.done-card {
+    opacity: 0.65;
+    border-style: dashed;
+}
+
+/* ── Position Badge ─────────────────────────────────────── */
+.queue-position {
+    min-width: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--clr-primary);
+    background: var(--clr-primary-light);
+    letter-spacing: -0.5px;
+    flex-shrink: 0;
+}
+
+.queue-position.pos-done {
+    color: var(--clr-muted);
+    background: #f0f0f0;
+    font-size: 1rem;
+}
+
+/* ── Card Body ──────────────────────────────────────────── */
+.card-body {
+    flex: 1;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.card-clinic-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.card-patient-name {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.card-patient-name i {
+    color: var(--clr-primary);
+    font-size: 1.1rem;
+}
+
+/* ── Meta List ──────────────────────────────────────────── */
+.card-meta {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--clr-muted);
+}
+
+.meta-icon {
+    color: var(--clr-primary);
+    font-size: 0.8rem;
+}
+
+.walk-in-tag {
+    color: var(--clr-warning);
+    font-weight: 600;
+}
+
+.walk-in-tag .meta-icon {
+    color: var(--clr-warning);
+}
+
+/* ── Action Buttons ─────────────────────────────────────── */
+.queue-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: none;
+    border-radius: var(--radius-btn);
+    font-size: 0.83rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+
+.action-btn:active {
+    transform: scale(0.97);
+}
+
+/* Advance (primary action) */
+.advance-btn {
+    background: var(--clr-primary);
+    color: #fff;
+}
+
+.advance-btn:hover {
+    background: #155e43;
+    box-shadow: 0 2px 8px rgba(26,127,90,0.35);
+}
+
+/* Cancel */
+.cancel-btn-queue {
+    background: var(--clr-danger-light);
+    color: var(--clr-danger);
+    border: 1px solid #f5c2c7;
+}
+
+.cancel-btn-queue:hover {
+    background: #f8d7da;
+    box-shadow: 0 2px 8px rgba(220,53,69,0.2);
+}
+
+.completed-tag {
+    font-size: 0.85rem;
+    color: var(--clr-success);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* ── Badges ─────────────────────────────────────────────── */
+.badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.badge-waiting        { background: var(--clr-warning-light); color: var(--clr-warning); }
+.badge-scheduled      { background: #e8ecff;                  color: #3a4db7; }
+.badge-in-consultation{ background: var(--clr-primary-light); color: var(--clr-primary); }
+.badge-completed      { background: var(--clr-success-light); color: var(--clr-success); }
+.badge-cancelled      { background: #f0f0f0;                  color: var(--clr-muted);   }
+
+/* ── Section Divider ────────────────────────────────────── */
+.section-divider {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--clr-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 8px 0 4px;
+}
+
+.section-divider::before,
+.section-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--clr-border);
+}
+
+/* ── Empty / Loading / Error States ────────────────────── */
+.empty-state,
+.loading-state {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 48px 24px;
+    color: var(--clr-muted);
+    font-size: 0.95rem;
+    text-align: center;
+    background: var(--clr-surface);
+    border: 2px dashed var(--clr-border);
+    border-radius: var(--radius-card);
+}
+
+.empty-icon {
+    font-size: 2.2rem;
+    color: #c8d0d8;
+}
+
+.error-state {
+    color: var(--clr-danger);
+    border-color: #f5c2c7;
+}
+
+.loading-state i {
+    font-size: 1.6rem;
+    color: var(--clr-primary);
+}
+
+/* ── Walk-in Trigger Button ─────────────────────────────── */
+.walk-in-trigger-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--clr-warning-light);
+    color: var(--clr-warning);
+    border: 1.5px solid #f5a623;
+    border-radius: var(--radius-btn);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 16px;
+    transition: background var(--transition), box-shadow var(--transition);
+}
+
+.walk-in-trigger-btn:hover {
+    background: #ffe0b2;
+    box-shadow: 0 2px 8px rgba(224,123,0,0.25);
+}
+
+/* ── Walk-in Modal ──────────────────────────────────────── */
+#walkInModal {
+    border: none;
+    border-radius: 16px;
+    padding: 0;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+    max-width: 440px;
+    width: 90%;
+}
+
+#walkInModal::backdrop {
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(3px);
+}
+
+.modal-inner {
+    padding: 28px 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+}
+
+.modal-header i {
+    font-size: 1.5rem;
+    color: var(--clr-warning);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #1a1a2e;
+}
+
+.modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.modal-field label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #444;
+}
+
+.required { color: var(--clr-danger); }
+
+.modal-field input {
+    padding: 10px 14px;
+    border: 1.5px solid var(--clr-border);
+    border-radius: var(--radius-btn);
+    font-size: 0.95rem;
+    color: #1a1a2e;
+    outline: none;
+    transition: border-color var(--transition);
+}
+
+.modal-field input:focus {
+    border-color: var(--clr-primary);
+    box-shadow: 0 0 0 3px rgba(26,127,90,0.15);
+}
+
+.modal-footer {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.modal-error {
+    color: var(--clr-danger);
+    font-size: 0.83rem;
+    margin: -8px 0 0;
+    font-weight: 600;
+}
+
+/* ── Shared Button Styles (primary / secondary) ─────────── */
+.primary-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 20px;
+    background: var(--clr-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-btn);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background var(--transition), box-shadow var(--transition);
+}
+
+.primary-btn:hover {
+    background: #155e43;
+    box-shadow: 0 3px 10px rgba(26,127,90,0.35);
+}
+
+.secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 18px;
+    background: transparent;
+    color: var(--clr-muted);
+    border: 1.5px solid var(--clr-border);
+    border-radius: var(--radius-btn);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--transition);
+}
+
+.secondary-btn:hover {
+    background: var(--clr-bg);
+}
+
+/* ── Confirm Button (repurposed) ────────────────────────── */
+.confirm-Button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 26px;
+    background: var(--clr-success);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-btn);
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background var(--transition), box-shadow var(--transition);
+}
+
+.confirm-Button:hover {
+    background: #146c43;
+    box-shadow: 0 4px 14px rgba(25,135,84,0.35);
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .queue-position { min-width: 38px; font-size: 1.1rem; }
+    .card-body      { padding: 12px; }
+    .queue-actions  { flex-direction: column; align-items: flex-start; }
+    .action-btn     { width: 100%; justify-content: center; }
+}

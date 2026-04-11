@@ -8,6 +8,8 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" >
         <link rel="stylesheet" href="../Patients_WebPages/bookAppointments.css">
         <link rel="stylesheet" href="../Login/bookAppointments.css">     
+        <link rel="stylesheet" href="Staff.css">
+        <script type="module" src="Queues.js"></script>
         
     </head>
 
@@ -73,12 +75,16 @@
             </section>
         </section>
     </aside>
-        <main>
-            <h2>Manage </h2>
+        <main >
+            <h2>Manage Queue </h2>
 
+            <h1>My Appointments</h1>
 
-                
+            <!-- Upcoming Appointments -->
+            <section class="appt-section">
+                <ul id="upcoming"></ul>
             </section>
+
             <button class="confirm-Button">Confirm Appointment</button>
 
         </main>
