@@ -29,6 +29,8 @@ const statusMap = {
 let selectedAppointment = null;
 let selectedElement = null;
 
+
+//gets these by id from html
 const nameSurnameEl = document.querySelector(".name-Surname");
 const upcomingList = document.getElementById("upcoming");
 const pastList = document.getElementById("past");
@@ -38,6 +40,8 @@ let clinicsMap = new Map();
 const modal = document.createElement("dialog");
 modal.setAttribute("id", "cancelModal");
 
+
+//modal popup for cancel button
 modal.innerHTML = `
     <section>
         <header>
@@ -61,6 +65,7 @@ modal.innerHTML = `
     </section>
 `;
 
+//adds cancel modal to document
 document.body.appendChild(modal);
 
 const confirmBtn = modal.querySelector("#confirmCancelBtn");
@@ -99,9 +104,7 @@ async function loadClinics() {
     }
 }
 
-/* ======================================================
-   🔥 NEW: EMPTY STATE HANDLER (SAFE ADDITION)
-====================================================== */
+// empy state case
 function setEmptyState(container, message) {
     if (!container.children.length) {
         container.innerHTML = `<li class="empty-state">${message}</li>`;
@@ -131,9 +134,7 @@ function renderAppointment(appointment) {
         li.classList.add("upcoming-card");
     }
 
-    // =========================
-    // PAST APPOINTMENTS (NO BUTTONS)
-    // =========================
+ //past appointments section
     if (isPast) {
         li.innerHTML = `
             <span class="card-accent accent-past"></span>
@@ -173,9 +174,7 @@ function renderAppointment(appointment) {
         return;
     }
 
-    // =========================
-    // UPCOMING APPOINTMENTS
-    // =========================
+   //upcoming appointments section
     li.innerHTML = `
         <span class="card-accent accent-upcoming"></span>
 
@@ -237,6 +236,7 @@ function renderAppointment(appointment) {
     upcomingList.appendChild(li);
 }
 
+//shows this everytime page refreshes
 upcomingList.innerHTML = "<p>Loading appointments...</p>";
 
 onAuthStateChanged(auth, async (user) => {

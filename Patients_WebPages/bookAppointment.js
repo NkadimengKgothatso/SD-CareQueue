@@ -36,6 +36,12 @@ const mode = urlParams.get("mode");
 const appointmentId = urlParams.get("id");
 const isRescheduleMode = mode === "reschedule";
 
+const pageTitle = document.getElementById("pageTitle");
+
+if (isRescheduleMode && pageTitle) {
+    pageTitle.textContent = "Reschedule Appointment";
+}
+
 // =========================
 // TIME SLOT FUNCTIONALITY
 // =========================
