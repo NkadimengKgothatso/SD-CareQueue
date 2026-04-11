@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="myappointments.css">
     <link rel="stylesheet" href="bookAppointments.css">
-    <link rel="stylesheet" href="PatientDashboard.css">
+    
 </head>
 <body>
 
@@ -36,8 +36,8 @@
         <section class="user-Section">
             <i class="fa-solid fa-user" style="padding: 5px;"></i>
             <address>
-                <p class="name-Surname">Name Surname</p>
-                <p class="user-Identity">Patient</p>
+                <p class="name-Surname" id="userName"></p>
+                <p class="user-Identity" id="userRole"></p>
             </address>
         </section>
     </aside>
@@ -54,149 +54,161 @@
             </nav>
 >>>>>>> 11d006d55dde3e1f4517f68c27e2cefff7d4c4d4
 
-           <!-- EMPTY STATES -->
-            <section class="main-content">
 
-        <header class="setcion-header">
-            <h1>Welcome back, Mothsekhene</h1>
-            <p>Wednesday, 2 April 2026</p>
-        </header>
+     
+     <section  id ="emptyStates" class="main-content" >
+          
+                            
 
-        <!-- NEXT APPOINTMENT (EMPTY) -->
-        <section class="appt-section">
-            <header class="section-header">
-                <h2 class="section-label">Next Appointment</h2>
-            </header>
+                        <header class="setcion-header">
+                            <h1 id="welcomeMessage"></h1>
+                            <p id="currentDate"></p>
+                        </header>
 
-            <article class="carousel-outer">
-                <article class="appointment-card">
-                    <p class="card-clinic">No Upcoming Appointments</p>
 
-                    <ul class="card-meta">
-                        <li class="meta-item">You currently have no upcoming appointments</li>
-                    </ul>
+                        <!-- EMPTY STATES -->
+                <section class="main-content" style="display: none;">
+                        <!-- NEXT APPOINTMENT (EMPTY) -->
+                        <section class="appt-section">
+                            <header class="section-header">
+                                <h2 class="section-label">Next Appointment</h2>
+                            </header>
 
-                    <nav class="appointment-actions">
-                        <a href="BookAppointments.html">
-                            <button class="reschedule-btn">Book Appointment</button>
-                        </a>
-                    </nav>
-                </article>
-            </article>
-        </section>
+                            <article class="carousel-outer">
+                                <article class="appointment-card">
+                                    <p class="card-clinic">No Upcoming Appointments</p>
 
-        <!-- PATIENT STATISTICS (EMPTY) -->
-        <section class="appt-section">
-            <header class="section-header">
-                <h2 class="section-label">Patient Statistics</h2>
-            </header>
+                                    <ul class="card-meta">
+                                        <li class="meta-item">You currently have no upcoming appointments</li>
+                                    </ul>
 
-            <article class="carousel-outer">
-                <article class="appointment-card">
-                    <p class="card-clinic">No statistics available yet</p>
+                                    <nav class="appointment-actions">
+                                        <a href="BookAppointments.html">
+                                            <button class="reschedule-btn">Book Appointment</button>
+                                        </a>
+                                    </nav>
+                                </article>
+                            </article>
+                        </section>
 
-                    <ul class="card-meta">
-                        <li class="meta-item">Book an appointment to generate statistics</li>
-                    </ul>
-                </article>
-            </article>
-        </section>
+                        <!-- PATIENT STATISTICS (EMPTY) -->
+                        <section class="appt-section">
+                            <header class="section-header">
+                                <h2 class="section-label">Patient Statistics</h2>
+                            </header>
 
-        <!-- QUEUE STATUS (EMPTY) -->
-        <section class="appt-section">
-            <header class="section-header">
-                <h2 class="section-label">Current Queue Status</h2>
-            </header>
+                            <article class="carousel-outer">
+                                <article class="appointment-card">
+                                    <p class="card-clinic">No statistics available yet</p>
 
-            <article class="carousel-outer">
-                <article class="appointment-card">
-                    <p class="card-clinic">No active queue</p>
+                                    <ul class="card-meta">
+                                        <li class="meta-item">Book an appointment to generate statistics</li>
+                                    </ul>
+                                </article>
+                            </article>
+                        </section>
 
-                    <ul class="card-meta">
-                        <li class="meta-item">You are not currently in a queue</li>
-                    </ul>
-                </article>
-            </article>
-        </section>
+                        <!-- QUEUE STATUS (EMPTY) -->
+                        <section class="appt-section">
+                            <header class="section-header">
+                                <h2 class="section-label">Current Queue Status</h2>
+                            </header>
 
-        <!-- FILLED STATES -->
-           <!-- NEXT APPOINTMENT (FILLED) -->
-        <!-- <section class="appt-section">
-            <header class="section-header">
-                <h2 class="section-label">Next Appointment</h2>
-            </header>
+                            <article class="carousel-outer">
+                                <article class="appointment-card">
+                                    <p class="card-clinic">No active queue</p>
 
-            <article class="carousel-outer">
-                <article class="appointment-card">
-                    <p class="card-clinic">Zola Community Clinic</p>
+                                    <ul class="card-meta">
+                                        <li class="meta-item">You are not currently in a queue</li>
+                                    </ul>
+                                </article>
+                            </article>
+                        </section>
+            </section>
 
-                    <ul class="card-meta">
-                        <li class="meta-item">Thursday, 3 April</li>
-                        <li class="meta-item">09:30</li>
-                        <li class="meta-item">General Consultation</li>
-                    </ul>
 
-                    <nav class="appointment-actions">
-                        <a href="Queues.html">
-                            <button class="view-btn">Track Queue</button>
-                        </a>
 
-                        <a href="BookAppointments.html">
-                            <button class="reschedule-btn">Reschedule</button>
-                        </a>
+             <!-- FILLED STATES -->
+            <section id="filledStates" class="main-content">
+                        
+                            <!-- NEXT APPOINTMENT (FILLED) -->
+                            <section class="appt-section">
+                                <header class="section-header">
+                                    <h2 class="section-label">Next Appointment</h2>
+                                </header>
 
-                        <button class="cancel-btn">Cancel</button>
-                    </nav>
-                </article>
-            </article>
-        </section> -->
+                                <article class="carousel-outer">
+                                    <article class="appointment-card">
+                                        <p class="card-clinic">Zola Community Clinic</p>
 
-        <!-- PATIENT STATISTICS (FILLED) -->
-        <!-- <section class="appt-section">
-            <header class="section-header">
-                <h2 class="section-label">Patient Statistics</h2>
-            </header>
+                                        <ul class="card-meta">
+                                            <li class="meta-item">Thursday, 3 April</li>
+                                            <li class="meta-item">09:30</li>
+                                            <li class="meta-item">General Consultation</li>
+                                        </ul>
 
-            <ul class="card-meta">
-                <li class="meta-item">
-                    <p>Visits this year</p>
-                    <h3>3</h3>
-                </li>
+                                        <nav class="appointment-actions">
+                                            <a href="Queues.html">
+                                                <button class="view-btn">Track Queue</button>
+                                            </a>
 
-                <li class="meta-item">
-                    <p>Position in queue</p>
-                    <h3>4</h3>
-                </li>
+                                            <a href="BookAppointments.html">
+                                                <button class="reschedule-btn">Reschedule</button>
+                                            </a>
 
-                <li class="meta-item">
-                    <p>Est. wait time</p>
-                    <h3>~22m</h3>
-                </li>
-            </ul>
-        </section> -->
+                                            <button class="cancel-btn">Cancel</button>
+                                        </nav>
+                                    </article>
+                                </article>
+                            </section>
 
-        <!-- QUEUE STATUS (FILLED)
-        <section class="appt-section">
-            <header class="section-header">
-                <h2 class="section-label">Current Queue Status</h2>
-            </header>
+                            <!-- PATIENT STATISTICS (FILLED) -->
+                            <section class="appt-section">
+                                <header class="section-header">
+                                    <h2 class="section-label">Patient Statistics</h2>
+                                </header>
 
-            <article class="carousel-outer">
-                <article class="appointment-card">
-                    <p class="card-clinic">4 in queue</p>
+                                <ul class="card-meta">
+                                    <li class="meta-item">
+                                        <p>Visits this year</p>
+                                        <h3>3</h3>
+                                    </li>
 
-                    <ul class="card-meta">
-                        <li class="meta-item">Patients ahead of you</li>
-                    </ul>
-                </article>
-            </article>
-        </section> -->
+                                    <li class="meta-item">
+                                        <p>Position in queue</p>
+                                        <h3>4</h3>
+                                    </li>
 
-    </section>
+                                    <li class="meta-item">
+                                        <p>Est. wait time</p>
+                                        <h3>~22m</h3>
+                                    </li>
+                                </ul>
+                            </section>
 
+                            <!-- QUEUE STATUS (FILLED) -->
+                            <section class="appt-section">
+                                <header class="section-header">
+                                    <h2 class="section-label">Current Queue Status</h2>
+                                </header>
+
+                                <article class="carousel-outer">
+                                    <article class="appointment-card">
+                                        <p class="card-clinic">4 in queue</p>
+
+                                        <ul class="card-meta">
+                                            <li class="meta-item">Patients ahead of you</li>
+                                        </ul>
+                                    </article>
+                                </article>
+                            </section>
+
+                        </section>
+     </section>
 
     </main>
 
-<script src="firebase.js"></script>
+<script type="module" src="firebase.js"></script>
+<script type="module" src="PatientDashboard.js"></script>
 </body>
 </html>
