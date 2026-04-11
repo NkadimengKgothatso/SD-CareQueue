@@ -145,29 +145,56 @@ async function loadAppointments(userId) {
 
         const clinic = clinicsMap.get(String(next.clinicID));
         const clinicName = clinic ? clinic.name : "Unknown Clinic";
+                container.innerHTML = `
+                    <article class="appointment-card"style="background:#f0fdf4;">
 
-        container.innerHTML = `
-            <article class="appointment-card">
+                     
+                          <section class="card-body" >
+                            <header class="card-header">
+                            <div class="clinic">
+                                
+                                <h2 class="clinic-name">${clinicName}</h2>
+                            </div>
 
-                <p class="card-clinic">${clinicName}</p>
+                           
+                        </header>
+                             <span class="status-badge ${next.status?.toLowerCase() || "scheduled"}">
+                                <i class="fa-solid fa-circle-check"></i>
+                                ${next.status || "Scheduled"}
+                            </span>
+                            <div class="info-row">
+                                <span class="label">
+                                    <i class="fa-regular fa-calendar"></i> Date
+                                </span>
+                                <span class="value">${next.date}</span>
+                            </div>
 
-                <ul class="card-meta">
-                    <li>${next.date}</li>
-                    <li>${next.time}</li>
-                    <li>${next.reason || "Appointment"}</li>
-                    <li>${next.status || "Scheduled"}</li>
-                </ul>
+                            <div class="info-row">
+                                <span class="label">
+                                    <i class="fa-regular fa-clock"></i> Time
+                                </span>
+                                <span class="value">${next.time}</span>
+                            </div>
 
-                <nav class="appointment-actions">
-                    <button class="view-btn" onclick="goToAppointments()">
-                        View
-                    </button>
-                    
-                </nav>
+                            <div class="info-row">
+                                <span class="label">
+                                    <i class="fa-solid fa-notes-medical"></i> Reason
+                                </span>
+                                <span class="value">${next.reason || "General Appointment"}</span>
+                            </div>
 
-            </article>
-        `;
+                        </section>
 
+                      
+
+                        <footer class="card-footer">
+                            <button class="view-btn" onclick="goToAppointments()">
+                                <i></i> View
+                            </button>
+                        </footer>
+
+                    </article>
+                            `;
     } catch (error) {
         console.error("Firestore error:", error);
         showEmpty();
