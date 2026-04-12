@@ -148,7 +148,7 @@ As a logged-in patient, I want to see my next appointment details and queue stat
 <li>Implement confirm button to redirect you to My Appointment page</li>
 </ul>
 </td>
-<td align="center">5</td>
+<td align="center">6</td>
 </tr>
 
 <tr>
