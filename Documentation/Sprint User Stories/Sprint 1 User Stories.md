@@ -37,7 +37,7 @@
 
 <tr>
 <td>2</td>
-<td>Kea User Story</td>
+<td>As a patient, clinic staff member, or admin, I want to sign in with my Google account and select whether I am a Patient, Clinic Staff, or Admin, so that I land on the correct dashboard for my role.</td>
 <td>...</td>
 <td>...</td>
 <td align="center">5</td>
