@@ -41,7 +41,7 @@
   
 <td>
 <ul>
-<li><b>Given</b> I am on the Care Queue login page and I select "Patient", <b>When</b>b> I click "Continue with Google" and complete sign-in, <b>Then</b> I am redirected to the Patient dashboard.</li>
+<li><b>Given</b> I am on the Care Queue login page and I select "Patient", <b>When</b> I click "Continue with Google" and complete sign-in, <b>Then</b> I am redirected to the Patient dashboard.</li>
 <li><b>Given</b> I am on the Care Queue login page and I select "Clinic Staff" or "Admin", <b>When</b> I click "Continue with Google" and complete sign-in, <b>Then</b> a placeholder message is shown and nothing breaks.</li>
 <li><b> Given</b> I am signing in for the first time, <b>When</b> I click "Continue with Google" and complete sign-in, <b>Then</b> a confirmation modal appears asking me to confirm my selected role before proceeding.</li>
 <li><b>Given</b> I have previously signed in and my role was saved as "Patient", <b>When</b> I return to the login page,<b>Then</b> I am automatically redirected to the Patient dashboard without being prompted to select a role.</b></li>
@@ -49,8 +49,15 @@
 </ul>
 </td>
 
-<td>...</td>
-<td align="center">5</td>
+<td>
+<ul>
+ <li> Setup Google OAuth authentication</li> 
+ <li> Implement role selection( Patient, Staff, Admin)</li>
+ <li>Redirect Patient role to patient dashboard after login</li> 
+ <li>Test login and redirection flow</li> 
+</ul>
+</td>
+<td align="center">4</td>
 </tr>
 
 <tr>
