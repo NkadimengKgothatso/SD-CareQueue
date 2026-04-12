@@ -70,7 +70,14 @@
 </ul>
 </td>
 <td>
-
+<ul>
+<li>Create “Book Appointment” page UI</li>
+<li>Allow user to search clinics which are from the clinic json file</li>
+<li>Handle case when same time slot is selected at same clinics</li>
+<li>Allow to book appointment</li>
+<li>Update database when appointment is booked</li>
+<li>Implement confirm button to redirect you to My Appointment page</li>
+</ul>
 </td>
 <td align="center">5</td>
 </tr>
