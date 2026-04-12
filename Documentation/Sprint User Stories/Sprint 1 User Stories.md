@@ -134,7 +134,7 @@ As a logged-in patient, I want to see my next appointment details and queue stat
 <td>
 <ul>
 <li><b>Given</b> I am on the Book Appointment page, when I search for a clinic by name or area and select one, then the clinic details are shown and I can proceed to the next step.</li>
-<li><b>Given</b> a time slot is fully booked, when I view available slots, then that slot is shown as unavailable and I cannot select it.</li>
+<li><b>Given</b>a time slot is fully booked, when I view available slots, then I cannot select it since its fully booked.</li>
 <li><b>Given</b> I have selected a clinic, when I choose an available time slot, then I can confirm my appointment and it appears under My Appointments.</li>
 </ul>
 </td>
