@@ -153,10 +153,31 @@ As a logged-in patient, I want to see my next appointment details on my dashboar
 
 <tr>
 <td>6</td>
-<td>Karabo User Story</td>
-<td>...</td>
-<td>...</td>
-<td align="center">5</td>
+<td>As a patient, I want to search for clinics by location or name,
+So that I can find clinics near me and view their details before booking an appointment.</td>
+<td>
+<ul>
+<li><b>Given</b> the user is on the dashboard,<b>When</b> they click the "Find Clinic" button <b>then</b> the system navigates to the "Find CLinic" page.</li>
+<li><b>Given</b> the system has filtered clinics <b>When</b> the list is displayed,<b>then</b> each clinic shows name, contact number, and basic info. </li>
+<li><b>Given</b> the user submits with no matching clinics,<b>When</b> the search is executed,<b>then</b> the system displays a "No results found" message. </li>
+<li><b>Given</b> the user submits an empty or invalid search, <b>When</b> the search is executed,<b>then</b> the system prompts the user to enter a valid search term. </li>
+</ul>
+</td>
+
+<td>
+<ul>
+<li>Filter clinics by location </li>
+<li>Display clinic list</li>
+<li>Integrate SA clinic dataset</li>
+<li>Handle no result</li>
+<li>Create find a clinic UI</li>
+<li>Implement search clinic part</li>
+<li>Implement near me button</li>
+<li>Implement Open Now button</li>
+</ul>
+</td>
+
+    <td align="center">5</td>
 </tr>
 
 </table>
