@@ -75,7 +75,7 @@
 <td>4</td>
 Kgothatso NKadimeng User Story
 <td>
-As a logged-in patient, I want to see my next appointment details and queue status on my dashboard, so that I have a quick overview of my care.
+As a logged-in patient, I want to see my next appointment details on my dashboard, so that I have a quick overview of my care.
 </td>
 
 <td>
@@ -83,6 +83,12 @@ As a logged-in patient, I want to see my next appointment details and queue stat
 <li><b>Given</b> I am logged in as a patient with no upcoming appointments, <b>when</b> I open the dashboard, <b>then</b> I see three cards: Next Appointment, Current Queue Details, and Patient Statistics in an empty or placeholder state.</li>
 
 <li><b>Given</b> I am logged in as a patient with a booked appointment, <b>when</b> I view the dashboard, <b>then</b> the Next Appointment card displays the clinic name, date, and time.</li>
+
+<li><b>Given</b> no upcoming appointments, when I open dashboard, then I see empty/placeholder cards.</li>
+
+<li><b>Given</b> a booked appointment, when I view dashboard, then Next Appointment card shows clinic name, date, and time.</li>
+
+
 </ul>
 </td>
 
@@ -114,13 +120,7 @@ As a logged-in patient, I want to see my next appointment details and queue stat
 </ul>
 </td>
 
-<td>
-<ul>
-<li>Given no upcoming appointments, when I open dashboard, then I see empty/placeholder cards.</li>
 
-<li>Given a booked appointment, when I view dashboard, then Next Appointment card shows clinic name, date, and time.</li>
-</ul>
-</td>
 
 <td align="center">5</td>
 </tr>
