@@ -141,10 +141,12 @@ function handleRedirect(role, user) {
   if (role === "patient") {
     // Redirect patient to their dashboard
     window.location.href = "../Patients_WebPages/PatientDashboard.html";
-  } else {
-    // Show placeholder for staff and admin (coming in future sprints)
+  } else if(role== "staff"){
+    // Show dashboard for staff
     window.location.href = "../Staff_Webpages/Queues.html";
   }
+  else{
+    showPlaceholder(role, user); }
 }
 
 // Staff / Admin Placeholder
@@ -202,8 +204,11 @@ onAuthStateChanged(auth, async (user) => {
 
         if (savedRole === "patient") {
           window.location.href = "../Patients_WebPages/PatientDashboard.html";
-        } else {
+        } else if (savedRole === "staff") {
           window.location.href = "../Staff_Webpages/Queues.html";
+        }
+        else{
+          handleRedirect(savedRole, user);
         }
       }
     } catch (e) {
