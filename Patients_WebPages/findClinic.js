@@ -242,3 +242,4 @@ openNowBtn.addEventListener("click", () => {
 // START APP
 // =========================
 loadClinics();
+

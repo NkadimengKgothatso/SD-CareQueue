@@ -283,3 +283,4 @@ if (rescheduleBtn) {
         console.log("Reschedule clicked - step 2 ready");
     });
 }
+

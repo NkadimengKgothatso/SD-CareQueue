@@ -556,3 +556,19 @@ main {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* default link style */
+aside nav ul li a {
+    display: block;
+    padding: 10px;
+    color: #333;
+    text-decoration: none;
+    border-radius: 6px;
+}
+
+/* active page highlight */
+aside nav ul li a.active {
+    background-color: #1D9E75;
+    color: white;
+    font-weight: bold;
+}
