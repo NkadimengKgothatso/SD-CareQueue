@@ -27,7 +27,7 @@
 <li>Allow cancel and reschedule</li>
 <li>Update database when appointment is cancelled</li>
 <li>Update database on changes</li>
-<li>Implement Track button</li>
+<li>Implement Track button to redirect you to Queues page</li>
 </ul>
 </td>
 <td align="center">8</td>
