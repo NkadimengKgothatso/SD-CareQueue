@@ -130,7 +130,7 @@ As a logged-in patient, I want to see my next appointment details and queue stat
 
 <tr>
 <td>5</td>
-<td>As a patient, I want to book an appointment at a clinic by selecting a clinic and picking an available date and time slot, so that I can secure a consultation without having to queue in person.</td>
+<td>As a patient, I want to book an appointment at a clinic by selecting a clinic and picking a date and time slot, so that I can secure a consultation without having to queue in person.</td>
 <td>
 <ul>
 <li><b>Given</b> I am on the Book Appointment page, when I search for a clinic by name or area and select one, then the clinic details are shown and I can proceed to the next step.</li>
