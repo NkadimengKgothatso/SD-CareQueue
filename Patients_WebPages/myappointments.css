@@ -486,3 +486,12 @@ meter::-webkit-meter-optimum-value {
     background: linear-gradient(90deg, #22c55e, #16a34a);
     border-radius: 30px;
 }
+
+
+
+/* active page highlight */
+aside nav ul li a.active {
+    background-color: #1D9E75;
+    color: white;
+    font-weight: bold;
+}

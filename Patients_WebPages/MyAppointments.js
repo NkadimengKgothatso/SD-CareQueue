@@ -315,3 +315,4 @@ onAuthStateChanged(auth, async (user) => {
         upcomingList.innerHTML = "<p>Please log in to view your appointments.</p>";
     }
 });
+
