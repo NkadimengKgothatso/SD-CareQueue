@@ -29,8 +29,10 @@ const statusMap = {
 let selectedAppointment = null;
 let selectedElement = null;
 
-
-//gets these by id from html
+// Select DOM elements from the HTML document:
+// nameSurnameEl: element displaying the user's name and surname (selected by class)
+// upcomingList: container for upcoming items (selected by ID "upcoming")
+// pastList: container for past items (selected by ID "past")
 const nameSurnameEl = document.querySelector(".name-Surname");
 const upcomingList = document.getElementById("upcoming");
 const pastList = document.getElementById("past");
@@ -41,7 +43,7 @@ const modal = document.createElement("dialog");
 modal.setAttribute("id", "cancelModal");
 
 
-//modal popup for cancel button
+// Displays a confirmation popup for cancelling an appointment
 modal.innerHTML = `
     <section>
         <header>
@@ -65,12 +67,16 @@ modal.innerHTML = `
     </section>
 `;
 
-//adds cancel modal to document
+//Add the modal element to the webpage so it becomes visible and usable
 document.body.appendChild(modal);
 
+
+//selects these buttons by class from html
 const confirmBtn = modal.querySelector("#confirmCancelBtn");
 const closeBtn = modal.querySelector("#closeModalBtn");
 
+
+//modal closes after close button clicked
 closeBtn.addEventListener("click", () => {
     modal.close();
 });
@@ -92,6 +98,9 @@ confirmBtn.addEventListener("click", async () => {
     modal.close();
 });
 
+
+// Asynchronously fetch clinic data from a JSON file and store each clinic
+// in a map using its ID as the key for easy access later
 async function loadClinics() {
     try {
         const response = await fetch("./clinics.json");
@@ -111,6 +120,10 @@ function setEmptyState(container, message) {
     }
 }
 
+
+// Generate a list item for an appointment, determine its status,
+// classify it as past or upcoming, and apply the appropriate styling.
+// Fetches the associated clinic name from the clinicsMap.
 function renderAppointment(appointment) {
 
     const status = (appointment.status || "scheduled")
@@ -219,6 +232,8 @@ function renderAppointment(appointment) {
     const trackBtn = li.querySelector(".track-btn");
     const rescheduleBtn = li.querySelector(".reschedule-btn");
 
+
+    //reschedule button redirects user to bookappointments page
     rescheduleBtn.addEventListener("click", () => {
         window.location.href = `BookAppointments.html?mode=reschedule&id=${appointment.id}`;
     });
@@ -229,6 +244,7 @@ function renderAppointment(appointment) {
         modal.showModal();
     });
 
+    //track buttons redirects user to Queues page
     trackBtn.addEventListener("click", () => {
         window.location.href = "Queues.html";
     });
@@ -239,6 +255,12 @@ function renderAppointment(appointment) {
 //shows this everytime page refreshes
 upcomingList.innerHTML = "<p>Loading appointments...</p>";
 
+
+// Monitor authentication state and update the UI accordingly.
+// When a user is authenticated, retrieve their appointments from the database,
+// categorize them into upcoming and past based on the current date,
+// and render them on the page. Also handles empty states.
+// If no user is authenticated, display a guest message and prompt login.
 onAuthStateChanged(auth, async (user) => {
     if (user) {
 
