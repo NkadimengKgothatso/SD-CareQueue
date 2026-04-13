@@ -187,7 +187,7 @@ So that I can find clinics near me and view their details before booking an appo
 </ul>
 </td>
 
-    <td align="center">5</td>
+<td align="center">5</td>
 </tr>
 
 </table>
