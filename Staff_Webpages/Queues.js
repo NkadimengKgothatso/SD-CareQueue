@@ -28,19 +28,16 @@ const auth = getAuth(app);
 const db   = getFirestore(app);
 
 // ─── Status Pipeline ────────────────────────────────────────────────────────
-// Ordered: advancing a patient moves them one step forward.
 const STATUS_PIPELINE = ["waiting", "in consultation", "completed"];
 
 const STATUS_LABELS = {
     "waiting":         "Waiting",
     "in consultation": "In Consultation",
     "completed":       "Completed",
-    "cancelled":       "Cancelled",
-    "scheduled":       "Scheduled"
+    "cancelled":       "Cancelled"
 };
 
-// Statuses that still count as active in the queue
-const ACTIVE_STATUSES = new Set(["waiting", "scheduled", "in consultation"]);
+const ACTIVE_STATUSES = new Set(["waiting", "in consultation"]);
 
 // ─── DOM References ─────────────────────────────────────────────────────────
 const nameSurnameEl = document.querySelector(".name-Surname");
@@ -48,12 +45,9 @@ const queueList     = document.getElementById("upcoming");
 const confirmButton = document.querySelector(".confirm-Button");
 
 // ─── State ──────────────────────────────────────────────────────────────────
-let clinicsMap    = new Map();
-let staffClinicId = null;
-let queueData     = []; // local mirror of today's appointments
+let queueData = [];
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
-
 function getTodayString() {
     const d  = new Date();
     const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -69,17 +63,6 @@ function getCurrentTimeString() {
 function getNextQueuePosition() {
     if (!queueData.length) return 1;
     return Math.max(...queueData.map(a => a.queuePosition || 0)) + 1;
-}
-
-// ─── Load Clinics ────────────────────────────────────────────────────────────
-async function loadClinics() {
-    try {
-        const res     = await fetch("./clinics.json");
-        const clinics = await res.json();
-        clinics.forEach(c => clinicsMap.set(c.id.toString(), c));
-    } catch (err) {
-        console.error("Failed to load clinics:", err);
-    }
 }
 
 // ─── Render: Empty State ─────────────────────────────────────────────────────
@@ -161,18 +144,11 @@ function buildCard(appointment, positionLabel) {
         </article>
     `;
 
-    // Wire up buttons
     const advBtn = li.querySelector(".advance-btn");
     const canBtn = li.querySelector(".cancel-btn-queue");
 
-    if (advBtn) {
-        advBtn.addEventListener("click", () =>
-            updateStatus(appointment.id, advBtn.dataset.next));
-    }
-    if (canBtn) {
-        canBtn.addEventListener("click", () =>
-            updateStatus(appointment.id, "cancelled"));
-    }
+    if (advBtn) advBtn.addEventListener("click", () => updateStatus(appointment.id, advBtn.dataset.next));
+    if (canBtn) canBtn.addEventListener("click", () => updateStatus(appointment.id, "cancelled"));
 
     return li;
 }
@@ -197,7 +173,6 @@ function renderQueue() {
         a => !ACTIVE_STATUSES.has((a.status || "").toLowerCase())
     );
 
-    // Active patients
     active.forEach((appt, idx) => {
         queueList.appendChild(buildCard(appt, idx + 1));
     });
@@ -206,13 +181,11 @@ function renderQueue() {
         renderEmptyState();
     }
 
-    // Divider + completed/cancelled
     if (done.length) {
         const divider = document.createElement("li");
         divider.className = "section-divider";
         divider.innerHTML = `<span>Completed &amp; Cancelled</span>`;
         queueList.appendChild(divider);
-
         done.forEach(appt => queueList.appendChild(buildCard(appt, "—")));
     }
 }
@@ -229,7 +202,6 @@ async function updateStatus(appointmentId, newStatus) {
         if (appt) appt.status = newStatus;
 
         renderQueue();
-
     } catch (err) {
         console.error("Failed to update status:", err);
         alert("Could not update patient status. Please try again.");
@@ -257,7 +229,17 @@ function createWalkInModal() {
 
             <div class="modal-field">
                 <label for="walkInReason">Reason for Visit</label>
-                <input type="text" id="walkInReason" placeholder="Optional" autocomplete="off"/>
+                <select id="walkInReason" class="reason-select">
+                    <option value="">Select reason</option>
+                    <option>General Checkup</option>
+                    <option>Vaccination</option>
+                    <option>Follow-up</option>
+                    <option>Prescription Refill</option>
+                    <option>Family Planning</option>
+                    <option>Child Health</option>
+                    <option>Chronic Medication</option>
+                    <option>Other</option>
+                </select>
             </div>
 
             <p id="walkInError" class="modal-error" hidden></p>
@@ -275,9 +257,7 @@ function createWalkInModal() {
 
     document.body.appendChild(modal);
 
-    modal.querySelector("#walkInClose").addEventListener("click", () => {
-        modal.close();
-    });
+    modal.querySelector("#walkInClose").addEventListener("click", () => modal.close());
 
     modal.querySelector("#walkInConfirm").addEventListener("click", async () => {
         const nameInput   = modal.querySelector("#walkInName");
@@ -285,7 +265,7 @@ function createWalkInModal() {
         const errorEl     = modal.querySelector("#walkInError");
 
         const name   = nameInput.value.trim();
-        const reason = reasonInput.value.trim();
+        const reason = reasonInput.value;
 
         if (!name) {
             errorEl.textContent = "Please enter the patient's name.";
@@ -296,10 +276,12 @@ function createWalkInModal() {
         errorEl.hidden = true;
 
         const position = getNextQueuePosition();
-        const newAppt  = {
-            clinicID:      staffClinicId,
-            date:          getTodayString(),
-            time:          getCurrentTimeString(),
+        const todayStr = getTodayString();
+        const timeStr  = getCurrentTimeString();
+
+        const firestorePayload = {
+            date:          todayStr,
+            time:          timeStr,
             status:        "waiting",
             reason:        reason,
             patientName:   name,
@@ -309,19 +291,27 @@ function createWalkInModal() {
         };
 
         try {
-            const docRef = await addDoc(collection(db, "Appointments"), newAppt);
+            const docRef = await addDoc(collection(db, "Appointments"), firestorePayload);
 
-            // Add to local state (serverTimestamp won't resolve immediately, that's fine)
-            queueData.push({ id: docRef.id, ...newAppt });
+            queueData.push({
+                id:            docRef.id,
+                date:          todayStr,
+                time:          timeStr,
+                status:        "waiting",
+                reason:        reason,
+                patientName:   name,
+                isWalkIn:      true,
+                queuePosition: position
+            });
+
             renderQueue();
-
             modal.close();
             nameInput.value   = "";
             reasonInput.value = "";
 
         } catch (err) {
-            console.error("Failed to add walk-in:", err);
-            errorEl.textContent = "Failed to add patient. Please try again.";
+            console.error("Walk-in addDoc failed:", err.code, err.message);
+            errorEl.textContent = `Failed to add patient: ${err.message}`;
             errorEl.hidden = false;
         }
     });
@@ -337,20 +327,15 @@ function injectWalkInButton() {
     btn.innerHTML = `<i class="fa-solid fa-person-walking"></i> Add Walk-in Patient`;
     btn.addEventListener("click", () => document.getElementById("walkInModal")?.showModal());
 
-    // Insert before the carousel / queue list
     const anchor = document.querySelector(".carousel-outer") || queueList;
     anchor.parentElement?.insertBefore(btn, anchor);
 }
 
 // ─── Setup Confirm Button ────────────────────────────────────────────────────
-// The existing "Confirm Appointment" button is repurposed to advance the
-// current "In Consultation" patient to Completed, or pull the next Waiting
-// patient into Consultation.
 function setupConfirmButton() {
     if (!confirmButton) return;
 
-    confirmButton.innerHTML =
-        `<i class="fa-solid fa-circle-check"></i> Complete Active Patient`;
+    confirmButton.innerHTML = `<i class="fa-solid fa-circle-check"></i> Complete Active Patient`;
 
     confirmButton.addEventListener("click", () => {
         const inConsult = queueData.find(
@@ -362,7 +347,6 @@ function setupConfirmButton() {
             return;
         }
 
-        // If nobody is in consultation, pull the next waiting patient in
         const nextWaiting = queueData
             .filter(a => (a.status || "").toLowerCase() === "waiting")
             .sort((a, b) => (a.queuePosition || 999) - (b.queuePosition || 999))[0];
@@ -376,7 +360,7 @@ function setupConfirmButton() {
 }
 
 // ─── Load Today's Queue ──────────────────────────────────────────────────────
-async function loadTodaysQueue(clinicId) {
+async function loadTodaysQueue() {
     queueList.innerHTML = `
         <li class="loading-state">
             <i class="fa-solid fa-spinner fa-spin"></i> Loading today's queue…
@@ -385,28 +369,32 @@ async function loadTodaysQueue(clinicId) {
     try {
         const q = query(
             collection(db, "Appointments"),
-            where("date",     "==", getTodayString())
+            where("date", "==", getTodayString())
         );
 
         const snapshot = await getDocs(q);
         queueData = [];
         let autoPosition = 1;
 
-        snapshot.forEach(docSnap => {
-            const d = docSnap.data();
-            queueData.push({
-                id:            docSnap.id,
-                clinicID:      d.clinicID,
-                date:          d.date,
-                time:          d.time          || "",
-                status:        d.status        || "waiting",
-                reason:        d.reason        || "",
-                patientName:   d.patientName   || null,
-                isWalkIn:      d.isWalkIn      || false,
-                queuePosition: d.queuePosition || autoPosition++,
-                userID:        d.userID        || null 
-            });
+    snapshot.forEach(docSnap => {
+        const d = docSnap.data();
+        let status = (d.status || "waiting").toLowerCase().trim();
+
+        // Auto-convert scheduled → waiting
+        if (status === "scheduled") status = "waiting";
+
+        queueData.push({
+            id:            docSnap.id,
+            date:          d.date,
+            time:          d.time          || "",
+            status:        status,
+            reason:        d.reason        || "",
+            patientName:   d.patientName   || null,
+            isWalkIn:      d.isWalkIn      || false,
+            queuePosition: d.queuePosition || autoPosition++,
+            userID:        d.userID        || null
         });
+    });
 
         // Fetch patient names from Users collection
         for (let appt of queueData) {
@@ -423,7 +411,6 @@ async function loadTodaysQueue(clinicId) {
         }
 
         renderQueue();
-
 
     } catch (err) {
         console.error("Failed to load queue:", err);
@@ -445,32 +432,11 @@ onAuthStateChanged(auth, async (user) => {
 
     if (nameSurnameEl) nameSurnameEl.textContent = user.displayName || "Staff";
 
-    await loadClinics();
-
-    // Resolve the staff member's clinic
-    try {
-        const staffSnap = await getDocs(
-            query(collection(db, "Staff"), where("uid", "==", user.uid))
-        );
-
-        if (!staffSnap.empty) {
-            staffClinicId = staffSnap.docs[0].data().clinicID;
-        } else {
-            // Dev fallback – first clinic in the JSON
-            staffClinicId = clinicsMap.keys().next().value;
-            console.warn("No staff profile found – falling back to clinic:", staffClinicId);
-        }
-
-    } catch (err) {
-        console.error("Failed to fetch staff profile:", err);
-        queueList.innerHTML = `<li class="empty-state">Unable to load your clinic. Please contact support.</li>`;
-        return;
-    }
-
     createWalkInModal();
     injectWalkInButton();
     setupConfirmButton();
 
-    await loadTodaysQueue(staffClinicId);
+    await loadTodaysQueue();
 });
+
 console.log("Today string:", getTodayString());

@@ -11,11 +11,11 @@
 
 <tr>
 <td>1</td>
-<td>As a patient, I want to view all my upcoming and past appointments and be able to reschedule or cancel them if needed.</td>
+<td>As a patient, I want to view all my upcoming and past appointments so that I can be able to reschedule or cancel them if needed.</td>
 <td>
 <ul>
 <li><b>Given</b> I have a scheduled appointment, <b>when</b> I open "My Appointments", <b>then</b> it appears under Upcoming.</li>
-<li><b>Given</b> I click "Cancel", <b>when</b> I confirm, <b>then</b> the appointment is removed and the slot becomes available.</li>
+<li><b>Given</b> I click "Cancel", <b>when</b> I confirm, <b>then</b> the appointment is removed and and put under past appointments.</li>
 </ul>
 </td>
 <td>
@@ -63,12 +63,38 @@
 
 <tr>
 <td>3</td>
-<td>Rea User Story</td>
-<td>...</td>
-<td>...</td>
-<td align="center">5</td>
-</tr>
+<td>As a clinic staff member, I want to manage the patient queue and update patient statuses, so that I can control the flow of patients during the day.</td>
 
+<td>
+<ul>
+<li><b>Given</b> the staff member is logged in, <b>When</b> they access the queue management page, <b>Then</b> the system displays all patients scheduled for that day.</li>
+
+<li><b>Given</b> a patient is in the queue, <b>When</b> the staff updates the status (e.g., to “In Consultation”), <b>Then</b> the system saves the updated status in the database.</li>
+
+<li><b>Given</b> there are multiple patients in the queue, <b>When</b> the staff completes a patient, <b>Then</b> the next patient becomes active in the queue.</li>
+
+<li><b>Given</b> a walk-in patient arrives, <b>When</b> the staff adds them to the system, <b>Then</b> the patient is added to the queue with a valid position.</li>
+
+<li><b>Given</b> there are no patients in the queue, <b>When</b> the staff views the queue page, <b>Then</b> the system displays a “No patients in queue” message.</li>
+</ul>
+</td>
+
+<td>
+<ul>
+<li>Create queue management UI (staff view)</li>
+<li>Display list of patients for the day</li>
+<li>Show patient details (name, time, status)</li>
+<li>Add buttons to update status (Waiting, In Consultation, Complete)</li>
+<li>Add functionality to add walk-in patients</li>
+<li>Connect to backend/database</li>
+<li>Update appointment status in database</li>
+<li>Handle empty queue state</li>
+<li>Test queue management functionality</li>
+</ul>
+</td>
+
+<td align="center">6</td>
+</tr>
 
 
 <tr>
@@ -161,7 +187,7 @@ So that I can find clinics near me and view their details before booking an appo
 </ul>
 </td>
 
-    <td align="center">5</td>
+<td align="center">5</td>
 </tr>
 
 </table>
