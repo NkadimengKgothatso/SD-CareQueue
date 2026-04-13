@@ -298,7 +298,7 @@ main {
 .clinic-card {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 20px;
     padding: 14px 16px;
     border: 0.5px solid var(--color-border-light);
     border-radius: var(--radius-md);
@@ -456,4 +456,21 @@ main {
 .clinic-meta i {
     color: var(--brand-mid);
     font-size: 14px;
+}
+
+/* default link style */
+aside nav ul li a {
+    display: block;
+    padding: 10px;
+    color: #333;
+    text-decoration: none;
+    border-radius: 6px;
+}
+
+
+/* active page highlight */
+aside nav ul li a.active {
+    background-color: #1D9E75;
+    color: white;
+    font-weight: bold;
 }

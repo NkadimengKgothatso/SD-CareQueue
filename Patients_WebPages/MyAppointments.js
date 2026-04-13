@@ -29,6 +29,10 @@ const statusMap = {
 let selectedAppointment = null;
 let selectedElement = null;
 
+// Select DOM elements from the HTML document:
+// nameSurnameEl: element displaying the user's name and surname (selected by class)
+// upcomingList: container for upcoming items (selected by ID "upcoming")
+// pastList: container for past items (selected by ID "past")
 const nameSurnameEl = document.querySelector(".name-Surname");
 const upcomingList = document.getElementById("upcoming");
 const pastList = document.getElementById("past");
@@ -38,6 +42,8 @@ let clinicsMap = new Map();
 const modal = document.createElement("dialog");
 modal.setAttribute("id", "cancelModal");
 
+
+// Displays a confirmation popup for cancelling an appointment
 modal.innerHTML = `
     <section>
         <header>
@@ -61,11 +67,16 @@ modal.innerHTML = `
     </section>
 `;
 
+//Add the modal element to the webpage so it becomes visible and usable
 document.body.appendChild(modal);
 
+
+//selects these buttons by class from html
 const confirmBtn = modal.querySelector("#confirmCancelBtn");
 const closeBtn = modal.querySelector("#closeModalBtn");
 
+
+//modal closes after close button clicked
 closeBtn.addEventListener("click", () => {
     modal.close();
 });
@@ -87,6 +98,9 @@ confirmBtn.addEventListener("click", async () => {
     modal.close();
 });
 
+
+// Asynchronously fetch clinic data from a JSON file and store each clinic
+// in a map using its ID as the key for easy access later
 async function loadClinics() {
     try {
         const response = await fetch("./clinics.json");
@@ -99,15 +113,17 @@ async function loadClinics() {
     }
 }
 
-/* ======================================================
-   🔥 NEW: EMPTY STATE HANDLER (SAFE ADDITION)
-====================================================== */
+// empy state case
 function setEmptyState(container, message) {
     if (!container.children.length) {
         container.innerHTML = `<li class="empty-state">${message}</li>`;
     }
 }
 
+
+// Generate a list item for an appointment, determine its status,
+// classify it as past or upcoming, and apply the appropriate styling.
+// Fetches the associated clinic name from the clinicsMap.
 function renderAppointment(appointment) {
 
     const status = (appointment.status || "scheduled")
@@ -131,9 +147,7 @@ function renderAppointment(appointment) {
         li.classList.add("upcoming-card");
     }
 
-    // =========================
-    // PAST APPOINTMENTS (NO BUTTONS)
-    // =========================
+ //past appointments section
     if (isPast) {
         li.innerHTML = `
             <span class="card-accent accent-past"></span>
@@ -173,9 +187,7 @@ function renderAppointment(appointment) {
         return;
     }
 
-    // =========================
-    // UPCOMING APPOINTMENTS
-    // =========================
+   //upcoming appointments section
     li.innerHTML = `
         <span class="card-accent accent-upcoming"></span>
 
@@ -220,6 +232,8 @@ function renderAppointment(appointment) {
     const trackBtn = li.querySelector(".track-btn");
     const rescheduleBtn = li.querySelector(".reschedule-btn");
 
+
+    //reschedule button redirects user to bookappointments page
     rescheduleBtn.addEventListener("click", () => {
         window.location.href = `BookAppointments.html?mode=reschedule&id=${appointment.id}`;
     });
@@ -230,6 +244,7 @@ function renderAppointment(appointment) {
         modal.showModal();
     });
 
+    //track buttons redirects user to Queues page
     trackBtn.addEventListener("click", () => {
         window.location.href = "Queues.html";
     });
@@ -237,8 +252,15 @@ function renderAppointment(appointment) {
     upcomingList.appendChild(li);
 }
 
+//shows this everytime page refreshes
 upcomingList.innerHTML = "<p>Loading appointments...</p>";
 
+
+// Monitor authentication state and update the UI accordingly.
+// When a user is authenticated, retrieve their appointments from the database,
+// categorize them into upcoming and past based on the current date,
+// and render them on the page. Also handles empty states.
+// If no user is authenticated, display a guest message and prompt login.
 onAuthStateChanged(auth, async (user) => {
     if (user) {
 
@@ -291,5 +313,18 @@ onAuthStateChanged(auth, async (user) => {
     } else {
         nameSurnameEl.textContent = "Guest";
         upcomingList.innerHTML = "<p>Please log in to view your appointments.</p>";
+    }
+});
+
+// ================= highlight active page =================
+  const currentPage = window.location.pathname.split("/").pop();
+
+const links = document.querySelectorAll("aside nav ul li a");
+
+links.forEach(link => {
+    const linkPage = link.getAttribute("href");
+
+    if (linkPage === currentPage) {
+        link.classList.add("active");
     }
 });
