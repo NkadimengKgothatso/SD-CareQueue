@@ -11,11 +11,11 @@
 
 <tr>
 <td>1</td>
-<td>As a patient, I want to view all my upcoming and past appointments and be able to reschedule or cancel them if needed.</td>
+<td>As a patient, I want to view all my upcoming and past appointments so that I can be able to reschedule or cancel them if needed.</td>
 <td>
 <ul>
 <li><b>Given</b> I have a scheduled appointment, <b>when</b> I open "My Appointments", <b>then</b> it appears under Upcoming.</li>
-<li><b>Given</b> I click "Cancel", <b>when</b> I confirm, <b>then</b> the appointment is removed and the slot becomes available.</li>
+<li><b>Given</b> I click "Cancel", <b>when</b> I confirm, <b>then</b> the appointment is removed and and put under past appointments.</li>
 </ul>
 </td>
 <td>
