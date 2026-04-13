@@ -556,3 +556,12 @@ main {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+
+
+/* active page highlight */
+aside nav ul li a.active {
+    background-color: #1D9E75;
+    color: white;
+    font-weight: bold;
+}

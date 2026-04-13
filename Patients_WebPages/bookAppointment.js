@@ -36,6 +36,12 @@ const mode = urlParams.get("mode");
 const appointmentId = urlParams.get("id");
 const isRescheduleMode = mode === "reschedule";
 
+const pageTitle = document.getElementById("pageTitle");
+
+if (isRescheduleMode && pageTitle) {
+    pageTitle.textContent = "Reschedule Appointment";
+}
+
 // =========================
 // TIME SLOT FUNCTIONALITY
 // =========================
@@ -277,3 +283,16 @@ if (rescheduleBtn) {
         console.log("Reschedule clicked - step 2 ready");
     });
 }
+// ================= highlight active page =================
+  const currentPage = window.location.pathname.split("/").pop();
+
+const links = document.querySelectorAll("aside nav ul li a");
+
+links.forEach(link => {
+    const linkPage = link.getAttribute("href");
+
+    if (linkPage === currentPage) {
+        link.classList.add("active");
+    }
+});
+
