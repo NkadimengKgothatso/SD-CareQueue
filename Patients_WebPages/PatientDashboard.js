@@ -236,7 +236,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
                 nameEl.textContent = data.displayName || "User";
                 roleEl.textContent = data.role || "Unknown";
-                welcomeEl.textContent = `Welcome back, ${data.displayName || "User"}`;
+                welcomeEl.textContent = `Welcome , ${data.displayName || "User"}`;
             }
 
             dateEl.textContent = new Date().toLocaleDateString("en-ZA", {
@@ -259,3 +259,15 @@ window.signOut = async function () {
     await firebaseSignOut(auth);
     window.location.href = "../Login/index.html";
 };
+// ================= highlight active page =================
+  const currentPage = window.location.pathname.split("/").pop();
+
+const links = document.querySelectorAll("aside nav ul li a");
+
+links.forEach(link => {
+    const linkPage = link.getAttribute("href");
+
+    if (linkPage === currentPage) {
+        link.classList.add("active");
+    }
+});

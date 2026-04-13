@@ -5,13 +5,13 @@
 
 /* ── CSS Variables ──────────────────────────────────────── */
 :root {
-    --clr-primary:       #1a7f5a;
+    --clr-primary:       #185FA5;
     --clr-primary-light: #e8f5f0;
     --clr-danger:        #dc3545;
     --clr-danger-light:  #fdecea;
     --clr-warning:       #e07b00;
     --clr-warning-light: #fff3e0;
-    --clr-success:       #198754;
+    --clr-success:       #185FA5;
     --clr-success-light: #eaf4ef;
     --clr-muted:         #6c757d;
     --clr-border:        #dee2e6;
@@ -35,6 +35,70 @@
     flex-direction: column;
     gap: 14px;
 }
+/* Sidebar */
+aside {
+    width: 19%;
+    background-color: #185FA5;
+    padding: 20px;
+    border-radius: var(--radius-md);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+aside ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+aside ul li {
+    margin-bottom: 10px;
+}
+
+aside ul li a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--color-bg-secondary);
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    transition: 0.3s;
+    font-weight: 500;
+}
+
+aside ul li a:hover {
+    background-color: var(--color-brand);
+    color: white;
+}
+
+.user-Section {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background-color: #f3f4f6;
+    border-radius: var(--radius-lg);
+}
+
+.user-Section i {
+    color: var(--color-brand);
+    font-size: 20px;
+}
+
+.name-Surname {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.user-Identity {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+}
+
 
 /* ── Queue Card ─────────────────────────────────────────── */
 .queue-card {
