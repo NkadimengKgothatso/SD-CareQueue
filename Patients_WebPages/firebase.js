@@ -27,15 +27,3 @@
             window.location.href = "../Login/index.html";
         };
    
-// ================= highlight active page =================
-  const currentPage = window.location.pathname.split("/").pop();
-
-const links = document.querySelectorAll("aside nav ul li a");
-
-links.forEach(link => {
-    const linkPage = link.getAttribute("href");
-
-    if (linkPage === currentPage) {
-        link.classList.add("active");
-    }
-});
