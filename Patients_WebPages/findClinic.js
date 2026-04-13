@@ -61,8 +61,6 @@ function displayClinics(clinicList) {
                     ${isOpen ? "Open Now" : "Closed"}
                 </p>
             </section>
-
-            <button class="select-btn">Select</button>
         `;
 
         clinicResults.appendChild(clinicCard);
