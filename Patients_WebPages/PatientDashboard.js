@@ -87,6 +87,22 @@ window.goToAppointments = function () {
     window.location.href = "MyAppointments.html";
 };
 
+// coming soon placeholder for notifications
+window.showComingSoon = function(featureName, iconClass) {
+  const mainContent = document.querySelector("section.main-content");
+  mainContent.innerHTML = `
+    <section class="placeholder-wrap">
+      <h2 class="placeholder-title">Coming Soon</h2>
+      <p class="placeholder-role">${featureName}</p>
+      <p class="placeholder-msg">
+        The <strong>${featureName}</strong> feature is not yet available.<br/>
+        It will be implemented in the next sprint.
+      </p>
+      <p class="placeholder-badge badge-blue">${featureName}</p>
+      <button class="sign-out-btn" onclick="window.location.href='PatientDashboard.html'">← Back to Dashboard</button>
+    </section>
+  `;
+}
 // ================= LOAD APPOINTMENTS =================
 async function loadAppointments(userId) {
 
