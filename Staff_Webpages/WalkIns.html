@@ -7,7 +7,8 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" >
         <link rel="stylesheet" href="../Patients_WebPages/bookAppointments.css">
-        <link rel="stylesheet" href="../Login/bookAppointments.css">     
+        <link rel="stylesheet" href="../Login/bookAppointments.css">   
+        <link rel="stylesheet" href="walkin.css">  
         
     </head>
 
@@ -73,15 +74,77 @@
             </section>
         </section>
     </aside>
-        <main>
-            <h2>Manage </h2>
+       <main class="walkin-main">
+
+    <h2>Walk-in management</h2><br></br>
 
 
-                
-            </section>
-            <button class="confirm-Button">Confirm Appointment</button>
+    <p class="subtitle">Register and manage walk-in patients</p>
 
-        </main>
+    <!-- QUEUE SECTION -->
+    <section class="queue-section">
+
+        <h3 class="queue-title">CURRENT WALK-IN QUEUE (8 PATIENTS)</h3>
+
+        <table class="queue-table">
+
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Patient</th>
+                    <th>Reason</th>
+                    
+                </tr>
+            </thead>
+
+            <tbody id="walkinTable" >
+
+               
+
+            </tbody>
+
+        </table>
+
+        
+
     </section>
+
+    <!-- REGISTER SECTION -->
+    <section class="register-section">
+
+        <h3>REGISTER NEW WALK-IN PATIENT</h3>
+
+        <form class="register-form">
+
+            <label>Full name(s)</label>
+            <input type="text" placeholder="Patient full name">
+
+            <label>Reason for visit</label>
+            <select>
+                <option>General Checkup</option>
+                <option>Vaccination</option>
+                <option>Follow up</option>
+                <option>Prescription Refill</option>
+                <option>Family Planning</option>
+                <option>Child Health</option>
+                <option>Chronic Medication</option>
+                <option>Other</option>
+            </select>
+
+            
+
+            <button type="button" class="add-btn">Add to queue</button>
+
+        </form>
+
+    </section>
+
+</main>
+            
+    </section>
+
+    <script type="module" src="walkin.js"></script>
     </body>
+
+    
 </html>
