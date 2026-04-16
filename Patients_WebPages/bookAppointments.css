@@ -84,7 +84,7 @@ span.logo-name {
 /* Layout */
 .container {
     display: flex;
-    gap: 20px;
+   
 }
 
 /* Sidebar */
@@ -118,7 +118,7 @@ aside ul li a {
     padding: 10px 12px;
     border-radius: var(--radius-md);
     transition: 0.3s;
-    font-weight: 500;
+    font-weight:normal;
 }
 
 aside ul li a:hover {
@@ -154,7 +154,7 @@ aside ul li a:hover {
 /* Main Content */
 main {
     flex: 1;
-    padding: 20px;
+   
 }
 
 /* Search row for input + near me button */

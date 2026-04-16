@@ -96,11 +96,18 @@ const clinicResults = document.getElementById("clinicResults");
 let clinics = [];
 let selectedClinicId;
 
-// Fetch clinics from JSON file
+// Fetch clinics from firestore
 async function loadClinics() {
     try {
-        const response = await fetch("./clinics.json");
-        clinics = await response.json();
+        // 🔥 Get clinics from Firestore
+        const snapshot = await getDocs(collection(db, "clinicsObjects"));
+
+        // Convert Firebase docs → usable array
+        clinics = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
         displayClinics(clinics);
 
         if (isRescheduleMode) {
@@ -179,7 +186,7 @@ clinicSearchInput.addEventListener("input", () => {
     const searchValue = clinicSearchInput.value.toLowerCase().trim();
 
     const filteredClinics = clinics.filter(clinic =>
-        clinic.name && clinic.name.toLowerCase().includes(searchValue)
+        clinic.name && clinic.name.toLowerCase().includes(searchValue) && clinic.address.toLowerCase().includes(searchValue)
     );
 
     displayClinics(filteredClinics);
@@ -520,4 +527,3 @@ links.forEach(link => {
         link.classList.add("active");
     }
 });
-
