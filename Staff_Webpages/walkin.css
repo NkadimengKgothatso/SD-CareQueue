@@ -113,3 +113,12 @@
 .register-form .add-btn:hover {
     background: #0ea5e9 !important;
 }
+
+.badge {
+    margin-left: 8px;
+    background: #00bcd4;
+    color: white;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+}

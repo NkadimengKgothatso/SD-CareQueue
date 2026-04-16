@@ -1,6 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
     getFirestore,
     collection,
@@ -8,10 +7,15 @@ import {
     query,
     orderBy,
     addDoc,
-    serverTimestamp
+    serverTimestamp,
+    getDocs,
+    where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+
+
 // Firebase config
+
 const firebaseConfig = {
     apiKey: "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
     authDomain: "carequeue-284bb.firebaseapp.com",
@@ -21,51 +25,97 @@ const firebaseConfig = {
     appId: "1:702048481855:web:1bb9675ecadb9e22043e8a"
 };
 
+
+
 // Initialize Firebase
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Table reference by id
+
+
+// DOM references
+
 const tableBody = document.getElementById("walkinTable");
+const addBtn = document.querySelector(".add-btn");
+const nameInput = document.getElementById("nameInput");
+const reasonInput = document.getElementById("reasonInput");
 
-// Firestore query
-const q = query(
-    collection(db, "walkins"),
-    orderBy("createdAt", "asc")
-);
 
-// Real-time listener,to avoid refreshing pages
-onSnapshot(q, (snapshot) => {
 
-    let rows = "";
-    let index = 1;
+// Clinic context (TEMP fallback until staff fix)
 
-    snapshot.forEach((doc) => {
-        const data = doc.data();
+let assignedClinic = "TEMP_CLINIC";
 
-        rows += `
-            <tr>
-                <td>${index++}</td>           
-                <td>${data.name}</td>        
-                <td>${data.reason}</td>
-            </tr>
-        `;
+
+
+// Get clinic from approvedStaff
+
+async function getStaffClinic(email) {
+
+    const q = query(
+        collection(db, "approvedStaff"),
+        where("addedBy", "==", email)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+        return snapshot.docs[0].data().assignedClinic;
+    }
+
+    throw new Error("Clinic not found for staff");
+}
+
+
+
+// Load appointments (filtered by clinic)
+
+function loadAppointments() {
+
+    const q = query(
+        collection(db, "Appointments"),
+        where("assignedClinic", "==", assignedClinic),
+        orderBy("createdAt", "asc")
+    );
+
+    onSnapshot(q, (snapshot) => {
+
+        let rows = "";
+        let index = 1;
+
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+
+            const isWalkIn = data.isWalkIn === true;
+
+            rows += `
+                <tr>
+                    <td>${index++}</td>
+
+                    <td>
+                        ${data.patientName || "Unknown"}
+                        ${isWalkIn ? `<span class="badge">Walk-in</span>` : ""}
+                    </td>
+
+                    <td>${data.reason || ""}</td>
+
+                    <td>${data.status || "waiting"}</td>
+                </tr>
+            `;
+        });
+
+        tableBody.innerHTML = rows;
     });
-
-    tableBody.innerHTML = rows;   //appends to the rows
-});
+}
 
 
 
-const addBtn = document.querySelector(".add-btn");    //references button from html by class, hence the .
+// Add walk-in patient
 
-const nameInput = document.getElementById("nameInput");   //references name input form from html by id
-const reasonInput = document.getElementById("reasonInput");  //references reason for coming to clinic by id
-
-
-//adds walkin patient to firestore @walkin collection
 addBtn.addEventListener("click", async () => {
+
     const name = nameInput.value.trim();
     const reason = reasonInput.value;
 
@@ -75,19 +125,57 @@ addBtn.addEventListener("click", async () => {
     }
 
     try {
-        await addDoc(collection(db, "walkins"), {
-            name: name,
-            reason: reason,
+
+        // ── Duplicate check (same clinic only)
+        const duplicateQuery = query(
+            collection(db, "Appointments"),
+            where("assignedClinic", "==", assignedClinic),
+            where("patientName", "==", name),
+            where("reason", "==", reason),
+            where("status", "==", "waiting")
+        );
+
+        const existing = await getDocs(duplicateQuery);
+
+        if (!existing.empty) {
+            alert("This patient is already in the queue.");
+            return;
+        }
+
+        // ── Add walk-in to Appointments
+        await addDoc(collection(db, "Appointments"), {
+            assignedClinic,
+            patientName: name,
+            reason,
             status: "waiting",
+            isWalkIn: true,
             createdAt: serverTimestamp()
         });
 
-        // clear form after adding
+        // clear form
         nameInput.value = "";
         reasonInput.value = "";
 
     } catch (error) {
         console.error("Error adding walk-in:", error);
         alert("Failed to add patient");
+    }
+});
+
+
+// ─────────────────────────────────────────────
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) return;
+
+    try {
+        assignedClinic = await getStaffClinic(user.email);
+
+        console.log("Clinic loaded:", assignedClinic);
+
+        loadAppointments();
+
+    } catch (err) {
+        console.error("Clinic load failed:", err);
     }
 });
