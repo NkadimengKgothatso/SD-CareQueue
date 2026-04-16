@@ -220,3 +220,21 @@ dialog {
 .confirm-btn:hover {
     background: #0ea5e9;
 }
+
+.queue-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.queue-table tbody {
+    display: block;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.queue-table thead,
+.queue-table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
