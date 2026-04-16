@@ -4,80 +4,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Appointments</title>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="myappointments.css">
-    <link rel="stylesheet" href="bookAppointments.css">
-    
+    <link rel="stylesheet" href="sidebar.css">
+    <link rel="stylesheet" href="MyAppointments.css">
 </head>
+
 <body>
 
-    <header class="top-bar">
-        <nav class="logo">
-            <span class="logo-icon"></span>
-            <span class="logo-name">Care Queue</span>
+<header class="top-bar">
+    <nav class="logo">
+        <span class="logo-icon">+</span>
+        <span class="logo-name">Care Queue</span>
+    </nav>
+</header>
+
+<main class="container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <nav>
+            <ul>
+                <li><a href="PatientDashboard.html"><i class="fa-solid fa-chart-bar"></i> Dashboard</a></li>
+
+                <li><a href="BookAppointments.html"><i class="fa-solid fa-calendar-plus"></i> Book Appointment</a></li>
+
+                <li><a href="MyAppointments.html"><i class="fa-solid fa-calendar-check"></i> My Appointments</a></li>
+
+                <li><a href="Queues.html"><i class="fa-solid fa-users"></i> Queue Status</a></li>
+
+                <li><a href="#"><i class="fa-solid fa-bell"></i> Notifications</a></li>
+            </ul>
         </nav>
-    </header>
 
-    <main class="container">
+        <section class="user-section">
+            <i class="fa-solid fa-user"></i>
+            <address>
+                <p class="name-surname" id="userName"></p>
+                <p class="user-identity" id="userRole"></p>
+            </address>
+        </section>
+    </aside>
 
-        <aside>
-            <nav>
-                <ul>
-                    <li><a href="PatientDashboard.html"><i class="fa-solid fa-chart-bar"></i> Dashboard</a></li>
-                    <li><a href="BookAppointments.html"><i class="fa-solid fa-calendar-plus"></i> Book Appointment</a></li>
-                    <li><a href="MyAppointments.html"><i class="fa-solid fa-calendar-check"></i> My Appointments</a></li>
-                    <li><a href="Queues.html"><i class="fa-solid fa-users"></i> Queue Status</a></li>
-                    <li><a href="#"><i class="fa-solid fa-bell"></i> Notifications</a></li>
-                </ul>
-            </nav>
+    <!-- MAIN CONTENT -->
+    <section class="main-content">
 
-            <section class="user-Section">
-                <i class="fa-solid fa-user" style="padding: 5px;"></i>
-                <address>
-                    <p class="name-Surname">Name Surname</p>
-                    <p class="user-Identity">Patient</p>
-                </address>
-            </section>
-        </aside>
+        <h1>My Appointments</h1>
 
-        <section class="main-content">
-            <h1>My Appointments</h1>
+        <!-- UPCOMING -->
+        <section class="appt-section">
+            <header class="section-header">
+                <h2 class="section-label">Upcoming Appointments</h2>
+            </header>
 
-            <!-- Upcoming Appointments -->
-            <section class="appt-section">
-                <header class="section-header">
-                    <h2 class="section-label">Upcoming Appointments</h2>
-                   
-                </header>
-
-                <article class="carousel-outer">
-                    <ul class="carousel-track" id="upcoming">
-
-
-                    </ul>
-                </article>
-            </section>
-
-            <!-- Past Appointments -->
-           
-                <section class="appt-section">
-                    <header class="section-header">
-                        <h2 class="section-label">Past Appointments</h2>
-                    </header>
-
-                    <article class="past-outer">
-                        <ul id="past"></ul>
-                    </article>
-                </section>
-
+            <article class="carousel-outer">
+                <ul class="carousel-track" id="upcoming"></ul>
+            </article>
         </section>
 
-    </main>
+        <!-- PAST -->
+        <section class="appt-section">
+            <header class="section-header">
+                <h2 class="section-label">Past Appointments</h2>
+            </header>
 
-    
+            <article class="past-outer">
+                <ul id="past"></ul>
+            </article>
+        </section>
 
-   
-    <script type="module" src="MyAppointments.js"></script>
-    <script type="module" src="firebase.js"></script>
+    </section>
+
+</main>
+
+<script type="module" src="MyAppointments.js"></script>
+<script type="module" src="firebase.js"></script>
+
 </body>
 </html>

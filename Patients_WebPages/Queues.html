@@ -11,50 +11,44 @@
     <!-- Font Awesome library for icons used throughout the page -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Stylesheet for appointments layout and shared components -->
-    <link rel="stylesheet" href="myappointments.css">
-    <!-- Stylesheet for booking and general page layout -->
-    <link rel="stylesheet" href="bookAppointments.css">
+    <link rel="stylesheet" href="sidebar.css">
+   
 </head>
 <body>
 
-    <!-- Top navigation bar with the CareQueue logo -->
-    <header class="top-bar">
-        <nav class="logo">
-            <!-- Green square with CSS plus sign — no image file used -->
-            <span class="logo-icon"></span>
-            <span class="logo-name">Care Queue</span>
+<header class="top-bar">
+    <nav class="logo">
+        <span class="logo-icon">+</span>
+        <span class="logo-name">Care Queue</span>
+    </nav>
+</header>
+
+<main class="container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <nav>
+            <ul>
+                <li><a href="PatientDashboard.html"><i class="fa-solid fa-chart-bar"></i> Dashboard</a></li>
+
+                <li><a href="BookAppointments.html"><i class="fa-solid fa-calendar-plus"></i> Book Appointment</a></li>
+
+                <li><a href="MyAppointments.html"><i class="fa-solid fa-calendar-check"></i> My Appointments</a></li>
+
+                <li><a href="Queues.html"><i class="fa-solid fa-users"></i> Queue Status</a></li>
+
+                <li><a href="#"><i class="fa-solid fa-bell"></i> Notifications</a></li>
+            </ul>
         </nav>
-    </header>
 
-    <!-- Main layout: sidebar on the left, content on the right -->
-    <main class="container">
-
-        <!-- Sidebar navigation -->
-        <aside>
-            <nav>
-                <ul>
-                    <!-- Each li is one navigation link -->
-                    <li><a href="PatientDashboard.html"><i class="fa-solid fa-chart-bar"></i> Dashboard</a></li>
-                    <li><a href="BookAppointments.html"><i class="fa-solid fa-calendar-plus"></i> Book Appointment</a></li>
-                    <li><a href="MyAppointments.html"><i class="fa-solid fa-calendar-check"></i> My Appointments</a></li>
-                    <!-- class="active" highlights this link since we are currently on this page -->
-                    <li><a href="Queues.html" class="active"><i class="fa-solid fa-users"></i> Queue Status</a></li>
-                    <li><a href="Notifications.html"><i class="fa-solid fa-bell"></i> Notifications</a></li>
-                </ul>
-            </nav>
-
-            <!-- User info section at the bottom of the sidebar -->
-            <section class="user-Section">
-                <!-- Generic user icon -->
-                <i class="fa-solid fa-user" style="padding: 5px;"></i>
-                <address>
-                    <!-- These are filled in dynamically by PatientDashboard.js using the logged in user's Firebase data -->
-                    <p class="name-Surname" id="userName"></p>
-                    <p class="user-Identity" id="userRole"></p>
-                </address>
-            </section>
-        </aside>
-
+        <section class="user-section">
+            <i class="fa-solid fa-user"></i>
+            <address>
+                <p class="name-surname" id="userName"></p>
+                <p class="user-identity" id="userRole"></p>
+            </address>
+        </section>
+    </aside>
         <!-- Main content area -->
         <section class="main-content">
 
