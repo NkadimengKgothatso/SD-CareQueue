@@ -48,6 +48,13 @@ if (isRescheduleMode && pageTitle) {
 const timeSlotsContainer = document.getElementById("timeSlots");
 const selectedTimeInput = document.getElementById("selectedTime");
 
+const nearMeBtn = document.getElementById("nearMeBtn");
+const openNowBtn = document.getElementById("openNowBtn");
+
+let nearMeActive = false;   // Tracks if "Near Me" filter is active
+let openNowActive = false;  // Tracks if "Open Now" filter is active
+let userLocation = null;    // Stores user's coordinates
+
 function renderTimeSlots() {
     timeSlotsContainer.innerHTML = "";
 
@@ -137,7 +144,12 @@ function displayClinics(clinicList) {
 
             <section class="clinic-info">
                 <p class="clinic-name">${clinic.name}</p>
-                <p class="clinic-services">Primary healthcare services</p>
+
+                <!-- Distance info -->
+                <p class="clinic-bookings">
+                    <i class="fa-solid fa-location-dot"></i>
+                    ${clinic.distance !== undefined ? `${clinic.distance.toFixed(2)} km away` : "Click Near Me to see distance"}
+                </p>
             </section>
 
             <button class="open-btn">Select</button>
@@ -171,6 +183,219 @@ clinicSearchInput.addEventListener("input", () => {
     );
 
     displayClinics(filteredClinics);
+});
+
+
+// =========================
+// HAVERSINE FORMULA
+// =========================
+function calculateDistance(lat1, lon1, lat2, lon2) {
+
+    // Radius of Earth in kilometers
+    const R = 6371;
+
+    // Convert differences to radians
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+
+    // Haversine formula
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) *
+        Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    // Distance in km
+    return R * c;
+}
+
+// =========================
+// GET USER LOCATION
+// =========================
+function getUserLocation() {
+    return new Promise((resolve, reject) => {
+
+        // Check if browser supports geolocation
+        if (!navigator.geolocation) {
+            reject("Geolocation is not supported by this browser.");
+            return;
+        }
+
+        // Get current position
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                resolve({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                });
+            },
+            (error) => {
+                reject("Unable to retrieve your location.");
+            }
+        );
+    });
+}
+
+// =========================
+// CHECK IF CLINIC IS OPEN NOW
+// Supports format: "Mo-Fr 08:00-17:00"
+// =========================
+function isClinicOpenNow(openingHours) {
+
+    // If no opening hours provided → assume closed
+    if (!openingHours) return false;
+
+    const now = new Date();
+
+    // Current day (0 = Sunday, 6 = Saturday)
+    const currentDay = now.getDay();
+
+    // Current time in minutes
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    // Map short day names to numbers
+    const dayMap = {
+        "Su": 0,
+        "Mo": 1,
+        "Tu": 2,
+        "We": 3,
+        "Th": 4,
+        "Fr": 5,
+        "Sa": 6
+    };
+
+    try {
+        // Split into day range and time range
+        const [daysPart, timePart] = openingHours.split(" ");
+        if (!daysPart || !timePart) return false;
+
+        // Extract start and end day
+        const [startDay, endDay] = daysPart.split("-");
+
+        // Extract opening and closing times
+        const [openTime, closeTime] = timePart.split("-");
+
+        const startDayNum = dayMap[startDay];
+        const endDayNum = dayMap[endDay];
+
+        // Validate day values
+        if (startDayNum === undefined || endDayNum === undefined) return false;
+
+        // Check if today falls within range
+        if (currentDay < startDayNum || currentDay > endDayNum) return false;
+
+        // Convert times to minutes
+        const [openHour, openMinute] = openTime.split(":").map(Number);
+        const [closeHour, closeMinute] = closeTime.split(":").map(Number);
+
+        const openMinutes = openHour * 60 + openMinute;
+        const closeMinutes = closeHour * 60 + closeMinute;
+
+        // Check if current time is within range
+        return currentMinutes >= openMinutes && currentMinutes <= closeMinutes;
+
+    } catch (error) {
+        console.error("Invalid opening_hours format:", openingHours);
+        return false;
+    }
+}
+
+// =========================
+// APPLY FILTERS
+// =========================
+function applyFilters() {
+
+    // Start with all clinics
+    let filteredClinics = [...clinics];
+
+    // Get search input value
+    const searchValue = clinicSearchInput.value.toLowerCase().trim();
+
+    // ================= SEARCH FILTER =================
+    if (searchValue !== "") {
+        filteredClinics = filteredClinics.filter(clinic =>
+            clinic.name?.toLowerCase().includes(searchValue) ||
+            clinic.address?.toLowerCase().includes(searchValue)
+        );
+    }
+
+    // ================= OPEN NOW FILTER =================
+    if (openNowActive) {
+        filteredClinics = filteredClinics.filter(clinic =>
+            isClinicOpenNow(clinic.opening_hours)
+        );
+    }
+
+    // ================= NEAR ME SORT =================
+    if (nearMeActive && userLocation) {
+
+        // Calculate distance for each clinic
+        filteredClinics.forEach(clinic => {
+            clinic.distance = calculateDistance(
+                userLocation.latitude,
+                userLocation.longitude,
+                clinic.latitude,
+                clinic.longitude
+            );
+        });
+
+        // Sort clinics by nearest distance
+        filteredClinics.sort((a, b) => a.distance - b.distance);
+    }
+
+    // Display final filtered list
+    displayClinics(filteredClinics);
+}
+
+// =========================
+// SEARCH EVENT
+// =========================
+
+// Trigger filtering when user types
+clinicSearchInput.addEventListener("input", applyFilters);
+
+// =========================
+// NEAR ME BUTTON
+// =========================
+nearMeBtn.addEventListener("click", async () => {
+    try {
+        if (!nearMeActive) {
+
+            // Get user's location when activated
+            userLocation = await getUserLocation();
+
+            nearMeActive = true;
+            nearMeBtn.classList.add("active");
+
+        } else {
+
+            // Disable filter
+            nearMeActive = false;
+            nearMeBtn.classList.remove("active");
+        }
+
+        applyFilters();
+
+    } catch (error) {
+        console.error(error);
+        alert("Could not get your location. Please allow location access.");
+    }
+});
+
+// =========================
+// OPEN NOW BUTTON
+// =========================
+openNowBtn.addEventListener("click", () => {
+
+    // Toggle state
+    openNowActive = !openNowActive;
+
+    // Toggle button style
+    openNowBtn.classList.toggle("active");
+
+    applyFilters();
 });
 
 loadClinics();
