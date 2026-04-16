@@ -1,20 +1,46 @@
-// Login feature - User Acceptance Tests
-// Unit tests will be expanded in future sprints
+// Login/login.test.js
 
-// UAT 1: Patient role redirects to patient dashboard
-test('Patient role is correctly identified', () => {
-  const role = 'patient';
-  expect(role).toBe('patient');
-});
+const { handleRedirect } = require("./Login/authLogic");
 
-// UAT 2: Staff role is correctly identified  
-test('Staff role is correctly identified', () => {
-  const role = 'staff';
-  expect(role).toBe('staff');
-});
+// Mock showPlaceholder (since it's used inside handleRedirect)
+global.showPlaceholder = jest.fn();
 
-// UAT 3: Admin role is correctly identified
-test('Admin role is correctly identified', () => {
-  const role = 'admin';
-  expect(role).toBe('admin');
+// Mock window.location properly
+delete window.location;
+window.location = { href: "" };
+
+describe("Login Role Redirect Tests", () => {
+
+  beforeEach(() => {
+    window.location.href = "";
+    jest.clearAllMocks();
+  });
+
+  test("Patient role redirects to patient dashboard", () => {
+    handleRedirect("patient", { displayName: "John" });
+
+    expect(window.location.href).toBe(
+      "../Patients_WebPages/PatientDashboard.html"
+    );
+  });
+
+  test("Staff role redirects to staff queue page", () => {
+    handleRedirect("staff", { displayName: "Jane" });
+
+    expect(window.location.href).toBe(
+      "../Staff_Webpages/Queues.html"
+    );
+  });
+
+  test("Admin role shows placeholder instead of redirect", () => {
+    handleRedirect("admin", { displayName: "AdminUser" });
+
+    expect(global.showPlaceholder).toHaveBeenCalledWith(
+      "admin",
+      { displayName: "AdminUser" }
+    );
+
+    expect(window.location.href).toBe("");
+  });
+
 });
