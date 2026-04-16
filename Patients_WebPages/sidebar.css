@@ -1,19 +1,19 @@
-/* RESET */
+/* ===== RESET ===== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: "Segoe UI", sans-serif;
 }
 
-/* LAYOUT */
 body {
     display: flex;
     flex-direction: column;
-    background: #f5f7f6;
+    background: #f4f7f6;
+    color: #1e1e1e;
 }
 
-/* TOP BAR */
+/* ===== TOP BAR ===== */
 .top-bar {
     height: 60px;
     background: white;
@@ -34,6 +34,15 @@ body {
     height: 30px;
     background: #1f9d7a;
     border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: white;
+    font-weight: bold;
+    font-size: 30px;
+    text-align: justify;
 }
 
 .logo-name {
@@ -41,15 +50,18 @@ body {
     font-size: 18px;
 }
 
-/* MAIN CONTAINER */
+/* ===== MAIN LAYOUT ===== */
 .container {
     display: flex;
     height: calc(100vh - 60px);
+    align-items: flex-start;
+    width: 100%;
 }
 
-/* SIDEBAR */
+/* ===== SIDEBAR ===== */
 .sidebar {
     width: 240px;
+    height: 100%;
     background: white;
     padding: 20px 0;
     border-right: 1px solid #ddd;
@@ -78,12 +90,7 @@ body {
     border-radius: 8px;
 }
 
-/* ACTIVE + HOVER */
-.sidebar li.active a,
-.sidebar a:hover {
-    background: #dff3ec;
-    color: #1f9d7a;
-}
+
 
 /* USER SECTION */
 .user-section {
@@ -103,80 +110,288 @@ body {
     color: gray;
 }
 
-/* DASHBOARD CONTENT */
-.dashboard-content {
+/* ===== MAIN CONTENT ===== */
+.main-content {
     flex: 1;
-    padding: 25px;
+    padding: 30px;
+    overflow-y: auto;
+    width: 100%;
+    max-width: none; 
 }
-
-/* WELCOME */
-.welcome h1 {
+/* ===== HEADER ===== */
+.section-header h1 {
     font-size: 24px;
-    margin-bottom: 5px;
+    font-weight: 600;
 }
 
-.welcome p {
-    color: gray;
+.section-header p {
+    color: #6b7280;
+    margin-top: 5px;
 }
 
-/* CARD */
-.card {
-    background: #cfe7df;
-    padding: 20px;
+/* ===== SECTION ===== */
+.appt-section {
+    margin-top: 30px;
+}
+
+.section-label {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+/* ===== APPOINTMENT CARD ===== */
+.appointment-card {
+    background: #dff3ec;
+    padding: 4px;
     border-radius: 10px;
-    margin-top: 20px;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-/* BUTTONS */
-.card button {
-    margin-top: 10px;
-    margin-right: 10px;
-    padding: 10px 15px;
-    border: none;
+.card-clinic {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.card-meta {
+    list-style: none;
+    margin: 0 0 15px 0;
+    padding: 0;
+    color: #374151;
+}
+
+.meta-item {
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+/* ===== BUTTONS ===== */
+.appointment-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.appointment-actions button {
+    padding: 10px 16px;
     border-radius: 6px;
+    border: none;
     cursor: pointer;
+    font-weight: 500;
 }
 
-.track {
-    background: #1f9d7a;
+.primary-btn {
+    background-color: #1f9d7a;
     color: white;
 }
 
-.cancel {
-    color: red;
-    background: transparent;
+.primary-btn:hover {
+    background-color: #188f6d;
 }
 
-/* STATS */
-.stats {
+/* ===== EMPTY STATE ===== */
+.empty-card {
+    background: white;
+    border: 1px dashed #ccc;
+    padding: 20px;
+    border-radius: 10px;
+    color: #6b7280;
+    text-align: center;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ===== STATS GRID ===== */
+.stats-grid {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+/* ===== STAT CARD ===== */
+.stat-card {
+    flex: 1;
+    max-width: 100%;
+    padding: 20px;
+    border-radius: 10px;
+    background: white;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    box-sizing: border-box;
+}
+
+.stat-card h3 {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.stat-card p {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+/* ===== QUEUE CARD ===== */
+.queue-status-card {
+    background: white;
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* QUEUE HEADER */
+.queue-top {
     display: flex;
     justify-content: space-between;
-    margin-top: 30px;
+    align-items: center;
 }
 
-.stat {
-    text-align: center;
+/* FIX: remove default margin */
+.queue-top h3 {
+    font-size: 18px;
+    margin: 0;
 }
 
-.stat h2 {
-    font-size: 28px;
-}
-
-/* QUEUE BAR */
-.queue-bar {
-    margin-top: 30px;
-}
-
-.progress {
-    height: 8px;
-    background: #ddd;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.progress span {
-    display: block;
-    height: 100%;
+/* LIVE TAG */
+.queue-tag {
     background: #1f9d7a;
-    width: 70%;
+    color: white;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+/* QUEUE TEXT */
+.queue-sub {
+    margin-top: 10px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+/* ===== PROGRESS ===== */
+.progress-section {
+    margin-top: 15px;
+  max-width: 100%;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+/* ===== METER ===== */
+meter {
+    width: 100%;
+    height: 10px;             
+    border-radius: 10px;
+    overflow: hidden;         
+}
+
+/* Firefox support */
+meter::-moz-meter-bar {
+    background: #1f9d7a;
+    border-radius: 10px;
+}
+
+/* Chrome / Edge */
+meter::-webkit-meter-bar {
+    background: #e5e7eb;
+    border-radius: 10px;
+}
+
+meter::-webkit-meter-optimum-value {
+    background: #1f9d7a;
+    border-radius: 10px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .container {
+    display: flex;
+    height: calc(100vh - 60px);
+    align-items: flex-start;
+    width: 100%;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+    }
+
+    .main-content {
+        padding: 20px;
+        max-width: 100%;
+    }
+
+    .stats-grid {
+        flex-direction: column;
+    }
+}
+
+/* active page highlight */
+aside nav ul li a.active {
+    background: #dff3ec;
+    color: #1f9d7a;
+    font-weight: bold;
+}
+
+
+/* GLOBAL FONT FIX (IMPORTANT) */
+body,
+button,
+input,
+textarea,
+select {
+    font-family: "Segoe UI", sans-serif;
+}
+
+/* FORCE CARD TEXT CONSISTENCY */
+.appointment-card {
+    font-family: "Segoe UI", sans-serif;
+}
+
+.appointment-card * {
+    font-family: inherit;
+}
+
+/* KEEP FONT AWESOME WORKING */
+.appointment-card i {
+    font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands";
+    font-style: normal;
+}
+
+/* CARD CONTAINER */
+.appointment-card {
+    background: #dff3ec;
+    border-radius: 12px;
+    padding: 6px;
+}
+
+/* CLINIC NAME */
+.clinic-name {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: #1e1e1e;
+}
+
+
+
+/* BUTTON FIX */
+.view-btn,
+.reschedule-btn,
+.cancel-btn,
+.track-btn {
+    font-family: inherit;
+    font-size: 12px;
 }

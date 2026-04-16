@@ -162,7 +162,7 @@ async function loadAppointments(userId) {
         const clinic = clinicsMap.get(String(next.clinicID));
         const clinicName = clinic ? clinic.name : "Unknown Clinic";
                 container.innerHTML = `
-                    <article class="appointment-card"style="background:#f0fdf4;">
+                    <article class="appointment-card"style=" background: #dff3ec;">
 
                      
                           <section class="card-body" >
@@ -205,7 +205,7 @@ async function loadAppointments(userId) {
 
                         <footer class="card-footer">
                             <button class="view-btn" onclick="goToAppointments()"      style="
-                                background:#22c55e;
+                                background:#1f9d7a;;
                                 color:white;
                                 border:none;
                                 padding:8px 14px;
