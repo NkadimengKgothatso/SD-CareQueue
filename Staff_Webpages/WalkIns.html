@@ -7,8 +7,9 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" >
         <link rel="stylesheet" href="../Patients_WebPages/bookAppointments.css">
-        <link rel="stylesheet" href="../Login/bookAppointments.css">   
+        <!-- <link rel="stylesheet" href="../Login/bookAppointments.css">    -->
         <link rel="stylesheet" href="walkin.css">  
+        <link rel="stylesheet" href="Staff.css">
         
     </head>
 
@@ -27,32 +28,32 @@
     <!-- Sidebar -->
     <aside>
         <ul>
-            <li>
-                <a href="#">
+           <li>
+                <a href="StaffDashboard.html">
                     <i class="material-icons">bar_chart</i>
                     Dashboard
                 </a>
             </li>
             <li>
-                <a href="#">
+                <a href="Appointments.html">
                     <i class="material-icons">event</i>
                     Manage Appointment
                 </a>
             </li>
             <li>
-                <a href="#">
+                <a href="Queues.html">
                     <i class="material-icons">groups</i>
                     Queue Management
                 </a>
             </li>
             <li>
-                <a href="#">
+                <a href="Analytics.html">
                     <i class="fa-solid fa-chart-line"></i>
                     Analytics
                 </a>
             </li>
             <li>
-                <a href="#">
+                <a href="WalkIns.html">
                     <i class="material-icons">directions_walk</i>
                     Walk-in
                 </a>
@@ -70,7 +71,8 @@
             <i class="fa-solid fa-user" style="padding: 5px;"></i>
             <section>
                 <p class="name-Surname">Name Surname</p>
-                <p class="user-Identity" style="padding: 3px">Patient</p>
+                <p class="user-Identity" style="padding: 3px">Clinic Staff</p>
+                <p class="clinic-name"></p>
             </section>
         </section>
     </aside>
@@ -84,7 +86,7 @@
     <!-- QUEUE SECTION -->
     <section class="queue-section">
 
-        <h3 class="queue-title">CURRENT WALK-IN QUEUE (8 PATIENTS)</h3>
+        <h3 class="queue-title">CURRENT WALK-IN QUEUE</h3>
 
         <table class="queue-table">
 
@@ -93,6 +95,7 @@
                     <th>#</th>
                     <th>Patient</th>
                     <th>Reason</th>
+                    <th>Time</th>
                      <th>Status</th>
                     
                 </tr>
@@ -103,6 +106,8 @@
                
 
             </tbody>
+
+            
 
         </table>
 
