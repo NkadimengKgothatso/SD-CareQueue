@@ -40,8 +40,6 @@
 }
 
 
-
-
 .carousel-outer {
     background: #ffffff;
     border: 1px solid #e5e7eb;
@@ -114,7 +112,6 @@
     align-items: center;
     width: 100%;
 }
-
 
 .appointment-card:not(.past-card) .card-meta {
     display: flex;

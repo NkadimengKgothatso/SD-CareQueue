@@ -37,16 +37,13 @@
 
 <tr>
 <td>2</td>
-<td>As a patient, clinic staff member, or admin, I want to sign in with my Google account and select whether I am a Patient, Clinic Staff, or Admin, so that I land on the correct dashboard for my role.</td>
+<td>As a patient, I want to sign in with my Google account so that I land on the correct dashboard for my role.</td>
   
 <td>
 <ul>
 <li><b>Given</b> I am on the Care Queue login page and I select "Patient", <b>When</b> I click "Continue with Google" and complete sign-in, <b>Then</b> I am redirected to the Patient dashboard.</li>
-<li><b>Given</b> I am on the Care Queue login page and I select "Staff", <b>When</b> I click "Continue with Google" and complete sign-in, <b>Then</b> I am redirected to the Staff dashboard.</li>
-<li><b>Given</b> I am on the Care Queue login page and I select "Admin", <b>When</b> I click "Continue with Google" and complete sign-in, <b>Then</b> a placeholder dashboard is shown and nothing breaks.</li>
 <li><b> Given</b> I am signing in for the first time, <b>When</b> I click "Continue with Google" and complete sign-in, <b>Then</b> a confirmation modal appears asking me to confirm my selected role before proceeding.</li>
 <li><b>Given</b> I have previously signed in and my role was saved as "Patient", <b>When</b> I return to the login page,<b>Then</b> I am automatically redirected to the Patient dashboard without being prompted to select a role.</b></li>
-<li><b>Given</b> I have previously signed in and my role was saved as "Staff", <b>When</b> I return to the login page,<b>Then</b> I am automatically redirected to the Staff dashboard without being prompted to select a role.</b></li>
 </ul>
 </td>
 
