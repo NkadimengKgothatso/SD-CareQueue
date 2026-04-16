@@ -1,11 +1,14 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 import {
     getFirestore,
     collection,
     onSnapshot,
     query,
-    orderBy
+    orderBy,
+    addDoc,
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // Firebase config
@@ -43,12 +46,48 @@ onSnapshot(q, (snapshot) => {
 
         rows += `
             <tr>
-                <td>${index++}</td>
-                <td>${data.name}</td>
+                <td>${index++}</td>           
+                <td>${data.name}</td>        
                 <td>${data.reason}</td>
             </tr>
         `;
     });
 
-    tableBody.innerHTML = rows;
+    tableBody.innerHTML = rows;   //appends to the rows
+});
+
+
+
+const addBtn = document.querySelector(".add-btn");    //references button from html by class, hence the .
+
+const nameInput = document.getElementById("nameInput");   //references name input form from html by id
+const reasonInput = document.getElementById("reasonInput");  //references reason for coming to clinic by id
+
+
+//adds walkin patient to firestore @walkin collection
+addBtn.addEventListener("click", async () => {
+    const name = nameInput.value.trim();
+    const reason = reasonInput.value;
+
+    if (!name) {
+        alert("Please enter patient name");
+        return;
+    }
+
+    try {
+        await addDoc(collection(db, "walkins"), {
+            name: name,
+            reason: reason,
+            status: "waiting",
+            createdAt: serverTimestamp()
+        });
+
+        // clear form after adding
+        nameInput.value = "";
+        reasonInput.value = "";
+
+    } catch (error) {
+        console.error("Error adding walk-in:", error);
+        alert("Failed to add patient");
+    }
 });
