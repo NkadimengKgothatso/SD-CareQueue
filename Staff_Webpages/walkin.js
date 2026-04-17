@@ -13,9 +13,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
-// ─────────────────────────────
+
 // Firebase Config
-// ─────────────────────────────
+
 const firebaseConfig = {
     apiKey: "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
     authDomain: "carequeue-284bb.firebaseapp.com",
@@ -30,9 +30,9 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 
-// ─────────────────────────────
+
 // DOM
-// ─────────────────────────────
+
 const tableBody = document.getElementById("walkinTable");
 const addBtn = document.querySelector(".add-btn");
 const nameInput = document.getElementById("nameInput");
@@ -42,16 +42,17 @@ const nameSurnameEl = document.querySelector(".name-Surname");
 const clinicEl = document.querySelector(".clinic-name");
 
 
-// ─────────────────────────────
+
 // STATE
-// ─────────────────────────────
+
 let assignedClinic = null;
+let clinicId = null;
 let unsubscribe = null;
 
 
-// ─────────────────────────────
+
 // STAFF FETCH (FIXED + SAFER)
-// ─────────────────────────────
+
 async function getStaffProfile(email) {
 
     const cleanEmail = (email || "").trim().toLowerCase();
@@ -75,9 +76,9 @@ async function getStaffProfile(email) {
 }
 
 
-// ─────────────────────────────
+
 // TIME HELPERS
-// ─────────────────────────────
+
 function minutesToTime(m) {
     const h = String(Math.floor(m / 60)).padStart(2, "0");
     const mm = String(m % 60).padStart(2, "0");
@@ -85,9 +86,9 @@ function minutesToTime(m) {
 }
 
 
-// ─────────────────────────────
+
 // SCHEDULING
-// ─────────────────────────────
+
 function getNextAvailableTime(appointments) {
 
     const START = 8 * 60;   // 08:00
@@ -126,20 +127,21 @@ function getNextAvailableTime(appointments) {
 }
 
 
-// ─────────────────────────────
+
 // LOAD APPOINTMENTS
-// ─────────────────────────────
+
 function loadAppointments() {
 
     if (!assignedClinic) return;
 
     if (unsubscribe) unsubscribe();
 
-    const q = query(
-        collection(db, "Appointments"),
-        where("assignedClinic", "==", assignedClinic),
-        orderBy("createdAt", "asc")
-    );
+ const q = query(
+    collection(db, "Appointments"),
+    where("clinicId", "==", clinicId),
+    where("isWalkIn", "==", true),
+    orderBy("createdAT", "asc")
+);
 
     unsubscribe = onSnapshot(q, (snapshot) => {
 
@@ -171,6 +173,7 @@ function loadAppointments() {
 
 function showConfirmModal(message) {
     return new Promise((resolve) => {
+
         if (document.getElementById("confirmModal")) {
             document.getElementById("confirmModal").remove();
         }
@@ -179,30 +182,30 @@ function showConfirmModal(message) {
         modal.id = "confirmModal";
 
         modal.innerHTML = `
-            <div class="modal-overlay">
-                <div class="modal-card">
+            <article class="modal-card">
 
-                    <div class="modal-header">
-                        <i class="fa-solid fa-triangle-exclamation warning-icon"></i>
-                        <h3>Confirm Action</h3>
-                    </div>
+                <header class="modal-header">
+                    <i class="fa-solid fa-triangle-exclamation warning-icon"></i>
+                    <h2>Confirm Action</h2>
+                </header>
 
-                    <p class="modal-message">${message}</p>
+                <section class="modal-body">
+                    <p>${message}</p>
+                </section>
 
-                    <div class="modal-actions">
-                        <button id="cancelBtn" class="btn cancel-btn">
-                            <i class="fa-solid fa-xmark"></i>
-                            Cancel
-                        </button>
+                <footer class="modal-actions">
+                    <button id="cancelBtn" class="btn cancel-btn">
+                        <i class="fa-solid fa-xmark"></i>
+                        Cancel
+                    </button>
 
-                        <button id="okBtn" class="btn confirm-btn">
-                            <i class="fa-solid fa-user-plus"></i>
-                            Add Patient
-                        </button>
-                    </div>
+                    <button id="okBtn" class="btn confirm-btn">
+                        <i class="fa-solid fa-user-plus"></i>
+                        Add Patient
+                    </button>
+                </footer>
 
-                </div>
-            </div>
+            </article>
         `;
 
         document.body.appendChild(modal);
@@ -212,7 +215,6 @@ function showConfirmModal(message) {
             modal.close();
             modal.remove();
             resolve(false);
-           
         };
 
         modal.querySelector("#okBtn").onclick = () => {
@@ -223,9 +225,9 @@ function showConfirmModal(message) {
     });
 }
 
-// ─────────────────────────────
+
 // ADD WALK-IN
-// ─────────────────────────────
+
 addBtn?.addEventListener("click", async () => {
 
     const name = nameInput?.value.trim();
@@ -271,15 +273,15 @@ addBtn?.addEventListener("click", async () => {
             return alert("Already in queue");
         }
 
-        await addDoc(collection(db, "Appointments"), {
-            assignedClinic,
+       await addDoc(collection(db, "Appointments"), {
+            clinicId,
             patientName: name,
             reason,
             status: "waiting",
             isWalkIn: true,
             time: assignedTime,
-            createdAt: serverTimestamp()
-        });
+            createdAT: serverTimestamp()
+});
 
         nameInput.value = "";
         reasonInput.value = "";
@@ -312,15 +314,15 @@ onAuthStateChanged(auth, async (user) => {
         if (clinicEl) clinicEl.textContent = "";
         return;
     }
-
+    clinicId = staff.clinicId;
     assignedClinic = staff.assignedClinic;
 
-    // NAME DISPLAY
+    // Name Display on UI
     if (nameSurnameEl) {
         nameSurnameEl.textContent = staff.displayName || "Staff";
     }
 
-    // CLINIC DISPLAY
+    // Clinic Display on UI
     if (clinicEl) {
         clinicEl.textContent = staff.assignedClinic || "No clinic assigned";
     }
