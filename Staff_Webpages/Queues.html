@@ -28,32 +28,32 @@
     <!-- Sidebar -->
     <aside>
         <ul>
-            <li>
-                <a href="#">
+           <li>
+                <a href="StaffDashboard.html">
                     <i class="material-icons">bar_chart</i>
                     Dashboard
                 </a>
             </li>
             <li>
-                <a href="#">
+                <a href="Appointments.html">
                     <i class="material-icons">event</i>
                     Manage Appointment
                 </a>
             </li>
             <li>
-                <a href="#">
+                <a href="Queues.html">
                     <i class="material-icons">groups</i>
                     Queue Management
                 </a>
             </li>
             <li>
-                <a href="#">
+                <a href="Analytics.html">
                     <i class="fa-solid fa-chart-line"></i>
                     Analytics
                 </a>
             </li>
             <li>
-                <a href="#">
+                <a href="WalkIns.html">
                     <i class="material-icons">directions_walk</i>
                     Walk-in
                 </a>
@@ -77,15 +77,31 @@
     </aside>
         <main >
             <h1>Manage Queue </h1>
-
+            <!-- ── Day Stats ─────────────────────────────────────── -->
+            <section class="day-stats">
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-total">—</span>
+                    <span class="stat-label">Total today</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-inqueue">—</span>
+                    <span class="stat-label">In queue now</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-avgwait">—</span>
+                    <span class="stat-label">Avg wait</span>
+                    <span class="stat-sub" id="stat-avgwait-trend"></span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-completed">—</span>
+                    <span class="stat-label">Completed</span>
+                </div>
+            </section>
             <h2>Appointments</h2>
-
             <!-- Upcoming Appointments -->
             <section class="appt-section">
                 <ul id="upcoming"></ul>
             </section>
-
-            <button class="confirm-Button">Confirm Appointment</button>
 
         </main>
     </section>

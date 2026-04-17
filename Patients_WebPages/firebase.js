@@ -18,12 +18,12 @@
 
         // If not signed in, redirect back to login
         onAuthStateChanged(auth, (user) => {
-            if (!user) window.location.href = "../Login/index.html";
+            if (!user) window.location.href = "/index.html";
         });
 
         // Sign out
         window.signOut = async function() {
             await signOut(auth);
-            window.location.href = "../Login/index.html";
+            window.location.href = "/index.html";
         };
    

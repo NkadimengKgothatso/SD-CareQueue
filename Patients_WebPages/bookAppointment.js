@@ -55,21 +55,48 @@ let nearMeActive = false;   // Tracks if "Near Me" filter is active
 let openNowActive = false;  // Tracks if "Open Now" filter is active
 let userLocation = null;    // Stores user's coordinates
 
-function renderTimeSlots() {
+async function renderTimeSlots(selectedDate, selectedClinic) {
+    
+   
     timeSlotsContainer.innerHTML = "";
+  
+    const bookedSlots = [];
+
+    const q = query(
+        collection(db, "Appointments"),
+        where("date", "==", selectedDate),
+        where("clinicID", "==", selectedClinic)
+    );
+
+    const snapshot = await getDocs(q);
+
+    snapshot.forEach(doc => {
+        const data = doc.data();
+        bookedSlots.push(data.time);
+    });
 
     for (let hour = 8; hour <= 17; hour++) {
         for (let minute of [0, 30]) {
             if (hour === 17 && minute === 30) continue;
 
+            const formattedTime = formatTime(hour, minute);
+
             const slotBtn = document.createElement("button");
             slotBtn.classList.add("time-slot");
-
-            const formattedTime = formatTime(hour, minute);
             slotBtn.textContent = formattedTime;
 
+            //CHECKING IF TIME IS BOOKED THEN CROSS IT OUT
+            if (bookedSlots.includes(formattedTime)) {
+                slotBtn.style.textDecoration = "line-through";
+                slotBtn.style.color = "#999";
+                slotBtn.style.backgroundColor = "#f2f2f2";
+                slotBtn.style.cursor = "not-allowed";
+            }
+
             slotBtn.addEventListener("click", () => {
-                document.querySelectorAll(".time-slot").forEach(btn => btn.classList.remove("selected"));
+                document.querySelectorAll(".time-slot")
+                    .forEach(btn => btn.classList.remove("selected"));
+
                 slotBtn.classList.add("selected");
                 selectedTimeInput.value = formattedTime;
             });
@@ -85,7 +112,10 @@ function formatTime(hour, minute) {
     return `${h}:${m}`;
 }
 
-renderTimeSlots();
+//on change of selected clinic render the times accordingly
+
+
+
 
 // =========================
 // CLINIC SEARCH FUNCTIONALITY
@@ -95,6 +125,8 @@ const clinicResults = document.getElementById("clinicResults");
 
 let clinics = [];
 let selectedClinicId;
+
+
 
 // Fetch clinics from firestore
 async function loadClinics() {
@@ -133,9 +165,13 @@ async function loadAppointmentForReschedule() {
 
     selectedClinicId = data.clinicID;
 
+
     document.getElementById("appt-date").value = data.date;
     selectedTimeInput.value = data.time;
     document.querySelector(".reason-select").value = data.reason;
+
+    //load times
+    renderTimeSlots(data.date, data.clinicID);
 }
 
 // Display clinics
@@ -164,19 +200,24 @@ function displayClinics(clinicList) {
 
         clinicCard.querySelector(".open-btn").addEventListener("click", () => {
 
-            document.querySelectorAll(".open-btn").forEach(btn => {
-                btn.textContent = "Select";
-                btn.style.backgroundColor = "#E1F5EE";
-                btn.style.color = "#085041";
-            });
-
-            selectedClinicId = clinic.id;
-
-            const btn = clinicCard.querySelector(".open-btn");
-            btn.textContent = "Selected";
-            btn.style.backgroundColor = "#1D9E75";
-            btn.style.color = "#fff";
+        document.querySelectorAll(".open-btn").forEach(btn => {
+            btn.textContent = "Select";
+            btn.style.backgroundColor = "#E1F5EE";
+            btn.style.color = "#085041";
         });
+
+        selectedClinicId = clinic.id;
+
+        const btn = clinicCard.querySelector(".open-btn");
+        btn.textContent = "Selected";
+        btn.style.backgroundColor = "#1D9E75";
+        btn.style.color = "#fff";
+
+        // ✅ ONLY render if date exists
+        if (dateInput.value) {
+            renderTimeSlots(dateInput.value, selectedClinicId);
+        }
+    });
 
         clinicResults.appendChild(clinicCard);
     });
@@ -418,6 +459,17 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
+// SET MIN DATE TO TOMORROW
+const dateInput = document.getElementById("appt-date");
+
+const today = new Date();
+const tomorrow = new Date(today);
+tomorrow.setDate(today.getDate() + 1);
+
+const minDate = tomorrow.toISOString().split("T")[0];
+dateInput.setAttribute("min", minDate);
+
+
 // CONFIRM APPOINTMENT BUTTON
 const confirmBtn = document.querySelector(".confirm-Button");
 
@@ -432,6 +484,19 @@ confirmBtn.addEventListener("click", async () => {
     const date = document.getElementById("appt-date").value;
     const time = selectedTimeInput.value;
     const reason = document.querySelector(".reason-select").value;
+
+    // VALIDATE DATE (TOMORROW ONWARDS ONLY)
+    const selectedDate = new Date(date);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const tomorrowCheck = new Date(now);
+    tomorrowCheck.setDate(now.getDate() + 1);
+
+    if (selectedDate < tomorrowCheck) {
+        alert("Please select a date from tomorrow onwards.");
+        return;
+    }
 
     if (!selectedClinicId || !date || !time || reason === "Select reason") {
         alert("Please fill in all fields");
@@ -506,7 +571,6 @@ confirmBtn.addEventListener("click", async () => {
         alert("Failed to book appointment");
     }
 });
-
 // Reschedule button
 const rescheduleBtn = document.querySelector(".reschedule-Button");
 
@@ -525,5 +589,12 @@ links.forEach(link => {
 
     if (linkPage === currentPage) {
         link.classList.add("active");
+    }
+});
+
+//on change of selected date render the times accordingly
+dateInput.addEventListener("change", () => {
+    if (dateInput.value && selectedClinicId) {
+        renderTimeSlots(dateInput.value, selectedClinicId);
     }
 });

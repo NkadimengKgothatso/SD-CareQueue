@@ -1,76 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Sets character encoding to UTF-8 to support most characters -->
   <meta charset="UTF-8">
-
-  <!-- Makes page responsive on mobile devices -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Page title shown in browser tab -->
+  
+  
   <title>Care Queue — Sign In</title>
-
-  <!-- Link to login-specific stylesheet -->
   <link rel="stylesheet" href="Login/style.css">
-
-  <!-- Link to login-specific JS -->
   <script type="module" src="Login/login.js" defer></script>
 </head>
 <body>
-
-  <!-- Top navigation bar -->
   <header class="top-bar">
     <nav class="logo">
-      <!-- Logo icon: green square with CSS plus sign, no image file used -->
       <figure class="logo-icon"></figure>
       <figcaption class="logo-name">Care Queue</figcaption>
     </nav>
   </header>
 
-  <!-- Main content: left info panel + right login card -->
   <main class="split">
-
-    <!-- Left panel: product info and feature bullets -->
     <section class="left-panel">
       <p class="lp-tag">Community clinic access</p>
       <h1 class="lp-h">Healthcare made easier for every South African.</h1>
       <p class="lp-p">Join thousands of patients who skip the queue, book ahead, and get notified when it's their turn — all from their phone.</p>
-
-      <!-- Feature bullet points -->
       <ul class="lp-bullets">
-        <li class="bullet">
-          <figure class="bullet-dot"><b class="bullet-check"></b></figure>
-          <p class="bullet-text">Find any public clinic from the SA National Health Facility Register</p>
-        </li>
-        <li class="bullet">
-          <figure class="bullet-dot"><b class="bullet-check"></b></figure>
-          <p class="bullet-text">Book ahead or join the walk-in queue remotely</p>
-        </li>
-        <li class="bullet">
-          <figure class="bullet-dot"><b class="bullet-check"></b></figure>
-          <p class="bullet-text">Real-time queue updates so you know exactly when to arrive</p>
-        </li>
-        <li class="bullet">
-          <figure class="bullet-dot"><b class="bullet-check"></b></figure>
-          <p class="bullet-text">Secure sign-in — your details stay private and protected</p>
-        </li>
+        <li class="bullet"><figure class="bullet-dot"><b class="bullet-check"></b></figure><p class="bullet-text">Find any public clinic from the SA National Health Facility Register</p></li>
+        <li class="bullet"><figure class="bullet-dot"><b class="bullet-check"></b></figure><p class="bullet-text">Book ahead or join the walk-in queue remotely</p></li>
+        <li class="bullet"><figure class="bullet-dot"><b class="bullet-check"></b></figure><p class="bullet-text">Real-time queue updates so you know exactly when to arrive</p></li>
+        <li class="bullet"><figure class="bullet-dot"><b class="bullet-check"></b></figure><p class="bullet-text">Secure sign-in — your details stay private and protected</p></li>
       </ul>
     </section>
 
-    <!-- Right panel: login card with role selector and Google sign-in -->
     <section class="right-panel">
       <article class="login-card">
-
         <h2 class="lc-title">Welcome back.</h2>
         <p class="lc-sub">Select your role to continue. You'll be directed to the right portal after sign-in.</p>
 
-        <!-- Role selector — uses real radio inputs for semantic correctness -->
         <fieldset class="role-fieldset">
           <legend class="role-label">Select your role</legend>
-
           <ul class="role-options">
-
-            <!-- Patient role -->
             <li class="role-opt selected" id="opt-patient" onclick="selectRole('patient')">
               <input type="radio" name="role" id="role-patient" class="role-radio" checked>
               <label for="role-patient" class="role-text-wrap">
@@ -79,8 +47,6 @@
               </label>
               <mark class="role-badge rb-g">Patient</mark>
             </li>
-
-            <!-- Clinic staff role -->
             <li class="role-opt" id="opt-staff" onclick="selectRole('staff')">
               <input type="radio" name="role" id="role-staff" class="role-radio">
               <label for="role-staff" class="role-text-wrap">
@@ -89,8 +55,6 @@
               </label>
               <mark class="role-badge rb-b">Staff</mark>
             </li>
-
-            <!-- Admin role -->
             <li class="role-opt" id="opt-admin" onclick="selectRole('admin')">
               <input type="radio" name="role" id="role-admin" class="role-radio">
               <label for="role-admin" class="role-text-wrap">
@@ -99,50 +63,28 @@
               </label>
               <mark class="role-badge rb-p">Admin</mark>
             </li>
-
           </ul>
         </fieldset>
 
-        <!-- Divider using hr — semantic horizontal rule -->
         <hr class="divider">
         <p class="divider-label">Continue with</p>
 
-        <!-- Google sign-in button — only provider for Sprint 1 -->
         <section class="providers">
-          <button class="provider-btn" id="google-btn"
-                  style="border-color:#4285F4;"
-                  onclick="signInWithGoogle()">
+          <button class="provider-btn" id="google-btn" onclick="signInWithGoogle()">
             <figure class="provider-logo">
-              <!-- Google coloured letters using bold tags -->
               <b class="g-b">G</b><b class="g-r">o</b><b class="g-y">o</b><b class="g-b">g</b><b class="g-gr">l</b><b class="g-r">e</b>
             </figure>
             <strong class="provider-name">Continue with Google</strong>
           </button>
         </section>
 
-        <!-- POPIA compliance notice -->
         <footer class="terms">
           By continuing you agree to our <a>Terms of Service</a> and <a>Privacy Policy</a>. Your data is handled in compliance with POPIA.
         </footer>
-
       </article>
     </section>
-
   </main>
 
-
-
-  <!-- Custom role confirmation modal -->
-  <dialog class="confirm-modal" id="confirm-modal">
-    <article class="modal-card">
-      <h2 class="modal-title">Confirm your role</h2>
-      <p class="modal-msg">You are signing in as <strong id="modal-role-name"></strong>. You will not be able to change your role later.</p>
-      <p class="modal-question">Are you sure you want to continue?</p>
-      <footer class="modal-actions">
-        <button class="modal-cancel" id="modal-cancel">Go back</button>
-        <button class="modal-confirm" id="modal-confirm">Yes, continue</button>
-      </footer>
-    </article>
-  </dialog>
+ 
 </body>
 </html>

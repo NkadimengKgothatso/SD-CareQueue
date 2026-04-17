@@ -239,7 +239,7 @@ window.addEventListener("DOMContentLoaded", () => {
     onAuthStateChanged(auth, async (user) => {
 
         if (!user) {
-            window.location.href = "../Login/index.html";
+            window.location.href = "/index.html";
             return;
         }
 
@@ -273,7 +273,7 @@ window.addEventListener("DOMContentLoaded", () => {
 // ================= SIGN OUT =================
 window.signOut = async function () {
     await firebaseSignOut(auth);
-    window.location.href = "../Login/index.html";
+    window.location.href = "/index.html";
 };
 // ================= highlight active page =================
   const currentPage = window.location.pathname.split("/").pop();
