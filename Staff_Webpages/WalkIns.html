@@ -78,7 +78,10 @@
     </aside>
        <main class="walkin-main">
 
-    <h2>Walk-in management</h2><br></br>
+    <h2 class="page-title">
+    <i class="fa-solid fa-hospital-user"></i>
+    Walk-in Management
+</h2><br></br>
 
 
     <p class="subtitle">Register and manage walk-in patients</p>
@@ -86,19 +89,39 @@
     <!-- QUEUE SECTION -->
     <section class="queue-section">
 
-        <h3 class="queue-title">CURRENT WALK-IN QUEUE</h3>
+        <h3 class="queue-title">TODAY'S WALK-IN PATIENTS</h3>
 
         <table class="queue-table">
 
             <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Patient</th>
-                    <th>Reason</th>
-                    <th>Time</th>
-                     <th>Status</th>
-                    
-                </tr>
+               <tr>
+    <th>#</th>
+
+    <th>
+        <i class="fa-solid fa-ticket"></i>
+        Ticket Number
+    </th>
+
+    <th>
+        <i class="fa-solid fa-user"></i>
+        Patient
+    </th>
+
+    <th>
+        <i class="fa-solid fa-notes-medical"></i>
+        Reason
+    </th>
+
+    <th>
+        <i class="fa-regular fa-clock"></i>
+        Time
+    </th>
+
+    <th>
+        <i class="fa-solid fa-circle-info"></i>
+        Status
+    </th>
+</tr>
             </thead>
 
             <tbody id="walkinTable" >
@@ -118,14 +141,17 @@
     <!-- REGISTER SECTION -->
     <section class="register-section">
 
-        <h3>REGISTER NEW WALK-IN PATIENT</h3>
+      <h3 class="section-title">
+    <i class="fa-solid fa-user-plus"></i>
+    Add Walk-in Patient
+     </h3>
 
         <form class="register-form">
 
             <label>Full name(s)</label>
            <input type="text" id="nameInput" placeholder="Patient full name">
 
-          
+          <label>Clinic visitation reason</label>
             <select id="reasonInput">
                 <option>General Checkup</option>
                 <option>Vaccination</option>
