@@ -26,6 +26,51 @@
     --transition: 0.2s ease;
 }
 
+/* ── Day Stats Bar ──────────────────────────────────────── */
+.day-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.stat-card {
+    background: #ffffff;
+    border: 1px solid #e4eaf2;
+    border-radius: 10px;
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #185FA5;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.82rem;
+    color: #6c757d;
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+.stat-sub {
+    font-size: 0.78rem;
+    color: #1a9e6e;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+@media (max-width: 640px) {
+    .day-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 /* ── Queue List ─────────────────────────────────────────── */
 #upcoming {
     list-style: none;

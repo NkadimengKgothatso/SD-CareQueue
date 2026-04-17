@@ -1,0 +1,240 @@
+.walkin-main {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.subtitle {
+    margin-top: -10px;
+    color: #666;
+}
+
+/* ===================== */
+/* QUEUE SECTION */
+/* ===================== */
+
+.queue-title {
+    margin-top: 20px;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+}
+
+.queue-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.queue-table th {
+    text-align: left;
+    font-weight: bold;
+    padding: 10px;
+    font-size: 13px;
+}
+
+.queue-table td {
+    padding: 12px 10px;
+    vertical-align: top;
+    font-size: 13px;
+}
+
+.sub-id {
+    font-size: 11px;
+    color: #777;
+}
+
+.queue-table a {
+    color: #00a3a3;
+    text-decoration: none;
+}
+
+.more-text {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #555;
+}
+
+/* ===================== */
+/* REGISTER SECTION */
+/* ===================== */
+
+.register-section {
+    margin-top: 40px;
+}
+
+.register-form {
+    margin-top: 10px;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px; 
+}
+
+.register-form label {
+    display: block;
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+}
+
+.register-form input,
+.register-form select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.register-form input:focus,
+.register-form select:focus {
+    outline: none;
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 2px rgba(31, 191, 117, 0.15);
+}
+
+.add-btn {
+    margin-top: 18px;
+    background: #38bdf8;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-weight: 600;
+    border-radius: 6px;
+
+    width: fit-content;   /* key fix */
+    display: inline-block;
+}
+
+.register-form .add-btn:hover {
+    background: #0ea5e9 !important;
+}
+
+.badge {
+    margin-left: 8px;
+    background: #00bcd4;
+    color: white;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.queue-table {
+    display: block;          /* enables scrolling */
+    max-height: 320px;       /* adjust height as needed */
+    overflow-y: auto;
+    width: 100%;
+}
+
+.queue-table thead,
+.queue-table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.queue-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.queue-table tbody tr:hover {
+    background-color: #e0f7ff;
+    cursor: pointer;
+}
+
+dialog {
+    border: none;
+    padding: 0;
+    background: transparent;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-card {
+    background: white;
+    width: 360px;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    animation: pop 0.2s ease;
+}
+
+@keyframes pop {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.warning-icon {
+    color: #f59e0b;
+    font-size: 18px;
+}
+
+.modal-message {
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 20px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.cancel-btn {
+    background: #eee;
+}
+
+.confirm-btn {
+    background: #38bdf8;
+    color: white;
+}
+
+.confirm-btn:hover {
+    background: #0ea5e9;
+}
+
+.queue-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.queue-table tbody {
+    display: block;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.queue-table thead,
+.queue-table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
