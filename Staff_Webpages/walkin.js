@@ -13,9 +13,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
-
 // Firebase Config
-
 const firebaseConfig = {
     apiKey: "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
     authDomain: "carequeue-284bb.firebaseapp.com",
@@ -30,9 +28,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 
-
 // DOM
-
 const tableBody = document.getElementById("walkinTable");
 const addBtn = document.querySelector(".add-btn");
 const nameInput = document.getElementById("nameInput");
@@ -42,17 +38,21 @@ const nameSurnameEl = document.querySelector(".name-Surname");
 const clinicEl = document.querySelector(".clinic-name");
 
 
-
 // STATE
-
 let assignedClinic = null;
 let clinicId = null;
 let unsubscribe = null;
 
 
 
-// STAFF FETCH (FIXED + SAFER)
+// DATE HELPERS (NEW), HELPS WITH RESETTING TICKET NUMBERS DAILY
 
+function getToday() {
+    return new Date().toISOString().split("T")[0];
+}
+
+
+// STAFF FETCH
 async function getStaffProfile(email) {
 
     const cleanEmail = (email || "").trim().toLowerCase();
@@ -64,10 +64,7 @@ async function getStaffProfile(email) {
         return (data.email || "").trim().toLowerCase() === cleanEmail;
     });
 
-    if (!match) {
-        console.warn("No staff match for:", cleanEmail);
-        return null;
-    }
+    if (!match) return null;
 
     return {
         id: match.id,
@@ -76,9 +73,7 @@ async function getStaffProfile(email) {
 }
 
 
-
 // TIME HELPERS
-
 function minutesToTime(m) {
     const h = String(Math.floor(m / 60)).padStart(2, "0");
     const mm = String(m % 60).padStart(2, "0");
@@ -86,62 +81,53 @@ function minutesToTime(m) {
 }
 
 
-
 // SCHEDULING
-
 function getNextAvailableTime(appointments) {
 
-    const START = 8 * 60;   // 08:00
-    const END   = 17 * 60;  // 17:00
-    const SLOT  = 30;
+    const START = 8 * 60;
+    const END = 17 * 60;
+    const SLOT = 30;
 
-    // 1. Normalize used slots safely
     const used = new Set();
 
     for (const a of appointments) {
         if (!a || !a.time) continue;
 
         const status = (a.status || "").toLowerCase().trim();
-
-        // ignore cancelled appointments
         if (status === "cancelled") continue;
 
         used.add(a.time.trim());
     }
 
-    // 2. Build full slot list (more predictable than looping blindly)
     const slots = [];
-
     for (let t = START; t < END; t += SLOT) {
         slots.push(minutesToTime(t));
     }
 
-    // 3. Find first free slot
     for (const slot of slots) {
-        if (!used.has(slot)) {
-            return slot;
-        }
+        if (!used.has(slot)) return slot;
     }
 
     return "FULL";
 }
 
 
-
-// LOAD APPOINTMENTS
-
+// LOAD APPOINTMENTS (ONLY WALK-INS TODAY)
 function loadAppointments() {
 
-    if (!assignedClinic) return;
+    if (!clinicId) return;
 
     if (unsubscribe) unsubscribe();
 
- const q = query(
-    collection(db, "Appointments"),
-    where("clinicId", "==", clinicId),
-    where("isWalkIn", "==", true),
-    orderBy("createdAT", "asc")
-);
+    const today = getToday();
+
+    const q = query(
+        collection(db, "Appointments"),
+        where("clinicId", "==", clinicId),
+        where("isWalkIn", "==", true),
+        where("walkInDate", "==", today),
+        orderBy("createdAT", "asc")
+    );
 
     unsubscribe = onSnapshot(q, (snapshot) => {
 
@@ -150,15 +136,12 @@ function loadAppointments() {
 
         snapshot.forEach(docSnap => {
             const d = docSnap.data();
-            const isWalkIn = d.isWalkIn === true;
 
             rows += `
                 <tr>
                     <td>${index++}</td>
-                    <td>
-                        ${d.patientName || "Unknown"}
-                        ${isWalkIn ? `<span class="badge">Walk-in</span>` : ""}
-                    </td>
+                    <td>${d.ticketNumber || "-"}</td>
+                    <td>${d.patientName || "Unknown"}</td>
                     <td>${d.reason || ""}</td>
                     <td>${d.time || "—"}</td>
                     <td>${d.status || "waiting"}</td>
@@ -171,6 +154,7 @@ function loadAppointments() {
 }
 
 
+// MODAL FOR CONFIRMING PATIENT
 function showConfirmModal(message) {
     return new Promise((resolve) => {
 
@@ -194,15 +178,8 @@ function showConfirmModal(message) {
                 </section>
 
                 <footer class="modal-actions">
-                    <button id="cancelBtn" class="btn cancel-btn">
-                        <i class="fa-solid fa-xmark"></i>
-                        Cancel
-                    </button>
-
-                    <button id="okBtn" class="btn confirm-btn">
-                        <i class="fa-solid fa-user-plus"></i>
-                        Add Patient
-                    </button>
+                    <button id="cancelBtn" class="btn cancel-btn">Cancel</button>
+                    <button id="okBtn" class="btn confirm-btn">Add Patient</button>
                 </footer>
 
             </article>
@@ -226,16 +203,14 @@ function showConfirmModal(message) {
 }
 
 
-// ADD WALK-IN
-
+// ADD WALK-IN (WITH TICKET SYSTEM)
 addBtn?.addEventListener("click", async () => {
 
     const name = nameInput?.value.trim();
     const reason = reasonInput?.value || "";
 
     if (!name) return alert("Please enter patient name");
-    if (!assignedClinic) return alert("Clinic not loaded yet");
-
+    if (!clinicId) return alert("Clinic not loaded yet");
 
     const confirmed = await showConfirmModal(
         `Add ${name} to ${assignedClinic} queue?`
@@ -245,44 +220,35 @@ addBtn?.addEventListener("click", async () => {
 
     try {
 
+        const today = getToday();
+
         const snap = await getDocs(
             query(
                 collection(db, "Appointments"),
-                where("assignedClinic", "==", assignedClinic)
+                where("clinicId", "==", clinicId),
+                where("isWalkIn", "==", true),
+                where("walkInDate", "==", today)
             )
         );
 
-        const appointments = snap.docs.map(d => d.data());
-        const assignedTime = getNextAvailableTime(appointments);
+        const count = snap.size + 1;
+        const ticketNumber = `W-${String(count).padStart(3, "0")}`;
 
-        if (assignedTime === "FULL") {
-            return alert("Clinic fully booked");
-        }
+        const existingAppointments = snap.docs.map(d => d.data());
 
-        const dup = await getDocs(
-            query(
-                collection(db, "Appointments"),
-                where("assignedClinic", "==", assignedClinic),
-                where("patientName", "==", name),
-                where("reason", "==", reason),
-                where("status", "==", "waiting")
-            )
-        );
+        const assignedTime = getNextAvailableTime(existingAppointments);
 
-        if (!dup.empty) {
-            return alert("Already in queue");
-        }
-
-       await addDoc(collection(db, "Appointments"), {
-            clinicId,
-            patientName: name,
-            reason,
-            status: "waiting",
-            isWalkIn: true,
-            time: assignedTime,
-            createdAT: serverTimestamp()
+        await addDoc(collection(db, "Appointments"), {
+        clinicId,
+        patientName: name,
+        reason,
+        status: "waiting",
+        isWalkIn: true, 
+        walkInDate: getToday(),
+        ticketNumber: `W-${String(count).padStart(3, "0")}`,
+        time: assignedTime,
+        createdAT: serverTimestamp()
 });
-
         nameInput.value = "";
         reasonInput.value = "";
 
@@ -293,9 +259,7 @@ addBtn?.addEventListener("click", async () => {
 });
 
 
-// ─────────────────────────────
-// AUTH BOOTSTRAP
-// ─────────────────────────────
+// AUTH BOOTSTRAP (UNCHANGED)
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -306,23 +270,15 @@ onAuthStateChanged(auth, async (user) => {
 
     const staff = await getStaffProfile(user.email);
 
-    console.log("AUTH:", user.email);
-    console.log("STAFF:", staff);
+    if (!staff) return;
 
-    if (!staff) {
-        if (nameSurnameEl) nameSurnameEl.textContent = "Staff";
-        if (clinicEl) clinicEl.textContent = "";
-        return;
-    }
     clinicId = staff.clinicId;
     assignedClinic = staff.assignedClinic;
 
-    // Name Display on UI
     if (nameSurnameEl) {
         nameSurnameEl.textContent = staff.displayName || "Staff";
     }
 
-    // Clinic Display on UI
     if (clinicEl) {
         clinicEl.textContent = staff.assignedClinic || "No clinic assigned";
     }

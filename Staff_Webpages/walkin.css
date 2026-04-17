@@ -221,17 +221,20 @@ dialog {
     background: #0ea5e9;
 }
 
+/* FIXED SCROLL CONTAINER */
 .queue-table {
     width: 100%;
     border-collapse: collapse;
 }
 
+/* wrapper scroll ONLY tbody */
 .queue-table tbody {
     display: block;
-    max-height: 300px;
+    max-height: calc(5 * 40px); /* 5 rows × row height */
     overflow-y: auto;
 }
 
+/* keep header aligned */
 .queue-table thead,
 .queue-table tbody tr {
     display: table;
@@ -307,4 +310,28 @@ dialog {
 
 .confirm-btn:hover {
     background: #0ea5e9;
+}
+
+th i {
+    margin-right: 6px;
+    color: #4a90e2;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 10px;
+    letter-spacing: 0.3px;
+    text-transform: capitalize;
+}
+
+.section-title i {
+    margin-right: 6px;
+    color: #38bdf8;
+}
+
+.page-title i {
+    margin-right: 8px;
+    color: #38bdf8;
 }
