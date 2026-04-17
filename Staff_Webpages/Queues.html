@@ -77,15 +77,31 @@
     </aside>
         <main >
             <h1>Manage Queue </h1>
-
+            <!-- ── Day Stats ─────────────────────────────────────── -->
+            <section class="day-stats">
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-total">—</span>
+                    <span class="stat-label">Total today</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-inqueue">—</span>
+                    <span class="stat-label">In queue now</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-avgwait">—</span>
+                    <span class="stat-label">Avg wait</span>
+                    <span class="stat-sub" id="stat-avgwait-trend"></span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-completed">—</span>
+                    <span class="stat-label">Completed</span>
+                </div>
+            </section>
             <h2>Appointments</h2>
-
             <!-- Upcoming Appointments -->
             <section class="appt-section">
                 <ul id="upcoming"></ul>
             </section>
-
-            <button class="confirm-Button">Confirm Appointment</button>
 
         </main>
     </section>
