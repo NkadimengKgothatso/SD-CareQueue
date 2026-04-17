@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinic Management page</title>
+    <link rel="stylesheet" href="clinicManagement.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">    
+</head>
+<body>
+
+    <!-- Top navigation bar -->
+    <header class="top-bar">
+        <nav class="logo">
+        <!-- Logo icon (green square with plus sign created with CSS) -->
+        <span class="logo-icon"></span>
+        <span class="logo-name" style="vertical-align: middle;">Care Queue</span>
+        </nav>
+
+        <section class="user-Section">
+            <section class="profile">
+                <p class="name-Surname" id="name-Surname">Name Surname</p>
+                <!-- <p class="user-Identity" >Staff</p> -->
+            </section>
+            <i class="fa-solid fa-user" style="padding: 5px;"></i>
+        </section>
+    </header>
+
+
+
+
+    <main>
+        <!-- Sidebar -->
+        <aside>
+            <ul>
+            <li><a href="#"><i class="fa-solid fa-chart-bar"></i> Dashboard</a></li>
+            <li><a href="#"><i class="fa-brands fa-buffer"></i></i> Clinic Management</a></li>
+            <li><a href="#"><i class="fa-solid fa-users"></i> Staff Management</a></li>
+            <li><a href="#"><i class="fa-solid fa-chart-simple"></i> Analytics </a></li>
+            </ul>
+        </aside>
+
+
+
+
+        <section class="content">
+            <p class="title"> Manage Clinics<p>
+
+            <section class="search-Bar">
+                <i class="fa-solid fa-magnifying-glass-location" style="color: var(--color-brand);"></i>
+                <input id="clinicSearch" type="search" placeholder="Search clinic by name">
+            </section>
+            <section class="clinicsCard">
+                <section class="clinicCardHeader">
+                    <p class="section-label" style="margin-right: auto; flex: 1; ">CLINICS</p>
+                    <button class="addBtn">+Add Clinic</button>
+                    
+                </section>
+                <section class="clinics">
+                     
+                        
+                </section>
+            </section>  
+            
+        </section>
+    </main>
+
+    <!-- 🔥 MODAL -->
+    <section class="modal" id="clinicModal">
+        <section class="modal-content">
+
+            <span class="close-btn">&times;</span>
+
+            <h3>Add Clinic</h3>
+
+            <form class="clinicForm">
+                <input type="text" placeholder="Clinic Name" class="form-control" id="clinicName" required>
+                <input type="text" placeholder="Location" class="form-control" id="Location" required>
+
+                <select required>
+                    <option value="" disabled selected>Select Province</option>
+                    <option>Gauteng</option>
+                    <option>Western Cape</option>
+                    <option>Eastern Cape</option>
+                    <option>KwaZulu-Natal</option>
+                    <option>Free State</option>
+                    <option>Limpopo</option>
+                    <option>Mpumalanga</option>
+                    <option>North West</option>
+                    <option>Northern Cape</option>
+                </select>
+
+                <button type="submit">Add Clinic</button>
+            </form>
+
+        </section>
+    </section>
+
+    <script type="module" src="clinicManagement.js"></script>
+</body>
+</html>
