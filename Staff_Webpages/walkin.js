@@ -212,6 +212,7 @@ function showConfirmModal(message) {
             modal.close();
             modal.remove();
             resolve(false);
+           
         };
 
         modal.querySelector("#okBtn").onclick = () => {
