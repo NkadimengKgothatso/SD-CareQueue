@@ -42,7 +42,6 @@ const ACTIVE_STATUSES = new Set(["waiting", "in consultation"]);
 // ─── DOM References ─────────────────────────────────────────────────────────
 const nameSurnameEl = document.querySelector(".name-Surname");
 const queueList     = document.getElementById("upcoming");
-const confirmButton = document.querySelector(".confirm-Button");
 
 // ─── State ──────────────────────────────────────────────────────────────────
 let queueData = [];
@@ -53,11 +52,6 @@ function getTodayString() {
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const dd = String(d.getDate()).padStart(2, "0");
     return `${d.getFullYear()}-${mm}-${dd}`;
-}
-
-function getCurrentTimeString() {
-    const d = new Date();
-    return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
 }
 
 function getNextQueuePosition() {
@@ -114,11 +108,6 @@ function buildCard(appointment, positionLabel) {
                 <li class="meta-item">
                     <i class="fa-solid fa-notes-medical meta-icon"></i>
                     ${appointment.reason}
-                </li>` : ""}
-                ${appointment.isWalkIn ? `
-                <li class="meta-item walk-in-tag">
-                    <i class="fa-solid fa-person-walking meta-icon"></i>
-                    Walk-in
                 </li>` : ""}
             </ul>
 
@@ -208,37 +197,6 @@ async function updateStatus(appointmentId, newStatus) {
     }
 }
 
-
-
-
-// ─── Setup Confirm Button ────────────────────────────────────────────────────
-function setupConfirmButton() {
-    if (!confirmButton) return;
-
-    confirmButton.innerHTML = `<i class="fa-solid fa-circle-check"></i> Complete Active Patient`;
-
-    confirmButton.addEventListener("click", () => {
-        const inConsult = queueData.find(
-            a => (a.status || "").toLowerCase() === "in consultation"
-        );
-
-        if (inConsult) {
-            updateStatus(inConsult.id, "completed");
-            return;
-        }
-
-        const nextWaiting = queueData
-            .filter(a => (a.status || "").toLowerCase() === "waiting")
-            .sort((a, b) => (a.queuePosition || 999) - (b.queuePosition || 999))[0];
-
-        if (nextWaiting) {
-            updateStatus(nextWaiting.id, "in consultation");
-        } else {
-            alert("No active patients to advance.");
-        }
-    });
-}
-
 // ─── Load Today's Queue ──────────────────────────────────────────────────────
 async function loadTodaysQueue() {
     queueList.innerHTML = `
@@ -256,25 +214,24 @@ async function loadTodaysQueue() {
         queueData = [];
         let autoPosition = 1;
 
-    snapshot.forEach(docSnap => {
-        const d = docSnap.data();
-        let status = (d.status || "waiting").toLowerCase().trim();
+        snapshot.forEach(docSnap => {
+            const d = docSnap.data();
+            let status = (d.status || "waiting").toLowerCase().trim();
 
-        // Auto-convert scheduled → waiting
-        if (status === "scheduled") status = "waiting";
+            if (status === "scheduled") status = "waiting";
 
-        queueData.push({
-            id:            docSnap.id,
-            date:          d.date,
-            time:          d.time          || "",
-            status:        status,
-            reason:        d.reason        || "",
-            patientName:   d.patientName   || null,
-            isWalkIn:      d.isWalkIn      || false,
-            queuePosition: d.queuePosition || autoPosition++,
-            userID:        d.userID        || null
+            queueData.push({
+                id:            docSnap.id,
+                date:          d.date,
+                time:          d.time          || "",
+                status:        status,
+                reason:        d.reason        || "",
+                patientName:   d.patientName   || null,
+                isWalkIn:      d.isWalkIn      || false,
+                queuePosition: d.queuePosition || autoPosition++,
+                userID:        d.userID        || null
+            });
         });
-    });
 
         // Fetch patient names from Users collection
         for (let appt of queueData) {
@@ -312,11 +269,5 @@ onAuthStateChanged(auth, async (user) => {
 
     if (nameSurnameEl) nameSurnameEl.textContent = user.displayName || "Staff";
 
-    createWalkInModal();
-    injectWalkInButton();
-    setupConfirmButton();
-
     await loadTodaysQueue();
 });
-
-console.log("Today string:", getTodayString());
