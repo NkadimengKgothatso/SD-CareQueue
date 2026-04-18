@@ -7,11 +7,7 @@ global.showPlaceholder = jest.fn();
 describe("Login Role Redirect Tests", () => {
 
   beforeEach(() => {
-    delete window.location;
-    Object.defineProperty(window, "location", {
-      value: { href: "" },
-      writable: true,
-    });
+    window.location.href = "";
     jest.clearAllMocks();
   });
 
