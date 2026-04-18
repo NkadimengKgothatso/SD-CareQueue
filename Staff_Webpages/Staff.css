@@ -54,13 +54,27 @@ span.logo-name {
     --clr-border:        #dee2e6;
     --clr-surface:       #ffffff;
     --clr-bg:            #f4f6f8;
-
+    --bg:                #f4f7f6;
     --radius-card: 12px;
     --radius-btn:  8px;
+    --radius:    14px;
     --shadow-card: 0 2px 8px rgba(0,0,0,0.08);
     --shadow-hover: 0 6px 18px rgba(0,0,0,0.13);
 
     --transition: 0.2s ease;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+main{
+    padding: 2rem;
 }
 
 /* ── Day Stats Bar ──────────────────────────────────────── */
@@ -129,6 +143,7 @@ aside,
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    
 }
 
 /* NAV LIST */
@@ -200,6 +215,11 @@ aside ul li a.active {
     font-size: 0.82rem;
     color: var(--clr-muted);
 }
+
+
+
+
+
 
 /* ── Queue Card ─────────────────────────────────────────── */
 .queue-card {
@@ -609,6 +629,26 @@ aside ul li a.active {
     background: var(--clr-primary-dark);
     box-shadow: 0 4px 14px rgba(24, 95, 165, 0.35);
 }
+/*View all BTN*/
+
+.view-all {
+  margin-top: 16px;
+  width: 100%;
+  color: white;
+  background: var(--clr-primary);
+  border: 1px solid var(--clr-primary-dark);
+  padding: 10px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.view-all:hover {
+  background: var(--clr-primary-dark);
+}
+
+
 
 /* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 600px) {
@@ -617,3 +657,149 @@ aside ul li a.active {
     .queue-actions  { flex-direction: column; align-items: flex-start; }
     .action-btn     { width: 100%; justify-content: center; }
 }
+
+
+/*WILSON ADDED THIS STYLES*/
+/* Content grid */
+.dashboard-content {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 20px;
+}
+
+.dashboard-header h2 {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  letter-spacing: -0.4px;
+}
+.dashboard-header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+
+/* Stats */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin: 28px 0;
+}
+
+.stat {
+  background: var(--clr-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat h2 {
+  margin: 0 0 4px;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+
+.stat p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+.stat .improving {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--green-600);
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--green-50);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+
+/* Appointment row */
+.appointment {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+
+.appointment .time {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--green-700);
+  background: var(--green-50);
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.appointment .details strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.appointment .details p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.appointments,
+.notifications {
+  background: var(--clr-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
+}
+
+.appointments h3,
+.notifications h3 {
+  margin: 0 0 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--soft);
+}
+
+
+/* Notifications */
+.notification {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease;
+}
+.notification:hover { background: #fafafa; }
+
+.notification p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text);
+}
+.notification small {
+  color: var(--soft);
+  font-size: 12px;
+}
+
+
+
+
