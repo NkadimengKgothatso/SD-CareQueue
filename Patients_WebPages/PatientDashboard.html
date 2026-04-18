@@ -16,6 +16,10 @@
         <span class="logo-icon">+</span>
         <span class="logo-name">Care Queue</span>
     </nav>
+
+    <button class="sign-out-btn" onclick="signOut()">
+        <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+    </button>
 </header>
 
 <!-- MAIN LAYOUT -->
@@ -40,13 +44,9 @@
                         <i class="fa-solid fa-calendar-check"></i> My Appointments
                     </a>
                 </li>
+               
                 <li>
-                    <a href="Queues.html">
-                        <i class="fa-solid fa-users"></i> Queue Status
-                    </a>
-                </li>
-                <li>
-                    <a href="#" onclick="showComingSoon('Notifications', 'fa-bell')">
+                    <a href="patientNotifications.html" >
                         <i class="fa-solid fa-bell"></i> Notifications
                     </a>
                 </li>
@@ -124,65 +124,59 @@
             </header>
 
             <article id="appointmentsContainer" class="appointment-card">
-                <p class="card-clinic">Dr. Smith Clinic</p>
+                <p class="card-clinic"></p>
 
                 <ul class="card-meta">
-                    <li>Date: Friday, 18 April 2026</li>
-                    <li>Time: 10:30 AM</li>
-                    <li>Reason: General Check-up</li>
+                    <li class="meta-date"></li>
+                    <li class="meta-time"></li>
+                    <li class="meta-status"></li>
                 </ul>
 
-                <nav class="appointment-actions">
-                    <button class="primary-btn">View Details</button>
-                    <button class="secondary-btn">Reschedule</button>
-                </nav>
             </article>
         </section>
 
         
 
        <!-- QUEUE -->
-<section class="appt-section">
-    <header class="section-header">
-        <h2 class="section-label">Current Queue Status</h2>
-    </header>
+            <section class="appt-section">
+                <header class="section-header">
+                    <h2 class="section-label">Current Queue Status</h2>
+                </header>
 
-    <!-- STATS GRID (COMBINED) -->
-    <ul class="stats-grid">
+                <!-- STATS GRID (COMBINED) -->
+                <ul class="stats-grid">
 
-        <li class="stat-card green">
-            <h3>Visits This Year</h3>
-            <p id="visitsCount">6</p>
-        </li>
+                    <li class="stat-card green">
+                        <h3>Visits This Year</h3>
+                        <p id="visitsCount"></p>
+                    </li>
 
-        <li class="stat-card blue">
-            <h3>Position in Queue</h3>
-            <p id="queuePosition">3</p>
-        </li>
+                    <li class="stat-card green">
+                        <h3>Position in Queue</h3>
+                        <p id="queuePosition"></p>
+                    </li>
 
-        <li class="stat-card yellow">
-            <h3>Est. Wait Time</h3>
-            <p id="waitTime">25 min</p>
-        </li>
+                    <li class="stat-card green">
+                        <h3>Est. Wait Time</h3>
+                        <p id="waitTime"></p>
+                    </li>
 
-    </ul>
+                </ul>
 
     <!-- QUEUE STATUS CARD -->
     <article class="queue-status-card">
 
         <header class="queue-top">
-            <h3 id="queueCount">12 in queue</h3>
+            <h3 id="queueCount"></h3>
             <span class="queue-tag">Live</span>
         </header>
 
-        <p class="queue-sub" id="queueProgressText">
-            You are moving steadily through the queue
-        </p>
+        <p class="queue-sub" id="queueProgressText"></p>
 
         <section class="progress-section">
             <header class="progress-header">
                 <span>Queue Progress</span>
-                <span id="progressPercent">45%</span>
+                <span id="progressPercent"></span>
             </header>
 
             <meter
