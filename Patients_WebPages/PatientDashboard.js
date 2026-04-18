@@ -187,9 +187,9 @@ function loadQueueStatus(userId) {
 
         const total = allClinicEntries.length;
 
-        // ================= UI: COUNT =================
+       // ================= UI: COUNT =================
         document.getElementById("queueCount").textContent =
-            `${total} in queue`;
+            `${position} out of ${total}`;
 
         // ================= PROGRESS =================
         const percent = total > 0
