@@ -57,7 +57,6 @@ let userLocation = null;    // Stores user's coordinates
 
 async function renderTimeSlots(selectedDate, selectedClinic) {
     
-   
     timeSlotsContainer.innerHTML = "";
   
     const bookedSlots = [];
@@ -75,6 +74,10 @@ async function renderTimeSlots(selectedDate, selectedClinic) {
         bookedSlots.push(data.time);
     });
 
+    //  Get current date & time
+    const now = new Date();
+    const today = now.toISOString().split("T")[0]; // format: YYYY-MM-DD
+
     for (let hour = 8; hour <= 17; hour++) {
         for (let minute of [0, 30]) {
             if (hour === 17 && minute === 30) continue;
@@ -85,15 +88,30 @@ async function renderTimeSlots(selectedDate, selectedClinic) {
             slotBtn.classList.add("time-slot");
             slotBtn.textContent = formattedTime;
 
-            //CHECKING IF TIME IS BOOKED THEN CROSS IT OUT
-            if (bookedSlots.includes(formattedTime)) {
+            let isPast = false;
+
+            //Check if selected date is today
+            if (selectedDate === today) {
+                const slotTime = new Date();
+                slotTime.setHours(hour, minute, 0, 0);
+
+                if (slotTime < now) {
+                    isPast = true;
+                }
+            }
+
+            //If booked OR past → disable
+            if (bookedSlots.includes(formattedTime) || isPast) {
                 slotBtn.style.textDecoration = "line-through";
                 slotBtn.style.color = "#999";
                 slotBtn.style.backgroundColor = "#f2f2f2";
                 slotBtn.style.cursor = "not-allowed";
+                slotBtn.disabled = true; // important
             }
 
             slotBtn.addEventListener("click", () => {
+                if (slotBtn.disabled) return; // extra safety
+
                 document.querySelectorAll(".time-slot")
                     .forEach(btn => btn.classList.remove("selected"));
 
@@ -464,7 +482,7 @@ const dateInput = document.getElementById("appt-date");
 
 const today = new Date();
 const tomorrow = new Date(today);
-tomorrow.setDate(today.getDate() + 1);
+tomorrow.setDate(today.getDate());
 
 const minDate = tomorrow.toISOString().split("T")[0];
 dateInput.setAttribute("min", minDate);
