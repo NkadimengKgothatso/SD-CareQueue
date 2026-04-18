@@ -2,9 +2,9 @@
 
 function handleRedirect(role, user) {
   if (role === "patient") {
-    window.location.href = "../Patients_WebPages/PatientDashboard.html";
+    window.location.assign("../Patients_WebPages/PatientDashboard.html");
   } else if (role === "staff") {
-    window.location.href = "../Staff_Webpages/Queues.html";
+    window.location.assign("../Staff_Webpages/Queues.html");
   } else if (role === "admin") {
     showPlaceholder(role, user);
   }
