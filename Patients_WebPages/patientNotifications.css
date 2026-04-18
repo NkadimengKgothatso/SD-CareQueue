@@ -1,0 +1,101 @@
+/* ===== RESET ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", sans-serif;
+}
+
+/* ===== BODY ===== */
+body {
+    min-height: 100vh;
+    background: #f4f7f6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #1e1e1e;
+}
+
+/* ===== PLACEHOLDER WRAP ===== */
+.placeholder-wrap {
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+
+    text-align: center;
+
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+
+    /* smooth entry */
+    opacity: 0;
+    transform: translateY(15px);
+    animation: fadeIn 0.6s ease forwards;
+}
+
+/* ===== TITLE ===== */
+.placeholder-title {
+    font-size: 26px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+/* ===== ROLE / LABEL ===== */
+.placeholder-role {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 15px;
+}
+
+/* ===== MESSAGE ===== */
+.placeholder-msg {
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+/* ===== BADGE ===== */
+.placeholder-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 25px;
+}
+
+/* blue badge */
+.badge-blue {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* ===== BUTTON (reuse your style but centered) ===== */
+.sign-out-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.sign-out-btn:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+}
+
+/* ===== ANIMATION ===== */
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

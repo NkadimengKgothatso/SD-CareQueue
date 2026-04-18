@@ -1,138 +1,18 @@
-/* Import font at the top */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+/* clinicManagement.css
+   Clinic-specific component styles ONLY.
+   Layout, sidebar, top bar, body, and :root variables all live in admin.css.
+   This file is loaded on top of admin.css on the Clinic Management page only.
+*/
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-:root {
-    --color-bg-primary: white;
-    --color-bg-secondary: #f8f7fc; /* subtle purple tint */
-    --color-text-primary: #111827;
-    --color-text-secondary: #6b7280;
-    --color-border-light: #e5e7eb;
-
-    /* 🔥 NEW PURPLE THEME */
-    --color-brand: #7C3AED; /* main purple */
-
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --font-sans: 'Inter', sans-serif;
-
-    /* Purple shades */
-    --brand-dark:       #4C1D95;
-    --brand-mid:        #7C3AED;
-    --brand-light-text: #C4B5FD;
-    --brand-lightest:   #EDE9FE;
-    --brand-tag:        #A78BFA;
-
-    /* Typography scale */
-    --text-xs: 12px;
-    --text-sm: 14px;
-    --text-md: 16px;
-    --text-lg: 18px;
-    --text-xl: 22px;
-
-    /* Font weights */
-    --fw-regular: 400;
-    --fw-medium: 500;
-    --fw-bold: 600;
-}
-
-/* Body */
-body {
-    font-family: var(--font-sans);
-    background-color: var(--color-bg-secondary);
-    color: var(--color-text-primary);
-}
-
-.clinics::-webkit-scrollbar {
-    width: 3px;
-}
-
-.clinics::-webkit-scrollbar-thumb {
-    background: var(--brand-light-text);
-    border-radius: 10px;
-}
-
-/* Top Bar */
-header.top-bar {
-    display: flex;
-    align-items: center;
-    padding: 7px 14px;
-    background: var(--color-bg-primary);
-    border-bottom: 1px solid var(--color-border-light);
-    border-bottom-left-radius: var(--radius-md);
-    border-bottom-left-radius: var(--radius-md);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-
-    position: sticky;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000; 
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-span.logo-icon {
-    width: 28px;
-    height: 28px;
-    background: var(--color-brand);
-    border-radius: 7px;
-    position: relative;
-    display: inline-block;
-}
-
-span.logo-icon::before {
-    content: '';
-    position: absolute;
-    background: white;
-    width: 3px; height: 13px;
-    left: 12px; top: 7px;
-    border-radius: 1px;
-}
-
-span.logo-icon::after {
-    content: '';
-    position: absolute;
-    background: white;
-    width: 13px; height: 3px;
-    left: 7px; top: 12px;
-    border-radius: 1px;
-}
-
-span.logo-name {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--color-text-primary);
-}
-
-main{
-    display: flex;
-}
-
+/* ── Search bar ────────────────────────────────────────────── */
 .search-Bar {
     display: flex;
     align-items: center;
     gap: 10px;
-    background-color: var(--brand-lightest);
+    background-color: var(--color-brand-soft);
     border-radius: 20px;
     padding: 5px 10px;
-    flex: 1; /* THIS makes it expand */
-
-    margin: 12px 10px;
-}
-
-.search-Bar input:hover{
-    border: 2px solid var(--color-brand);
-    border-color: var(--color-brand);
+    margin-bottom: 16px;
 }
 
 .search-Bar input {
@@ -141,54 +21,69 @@ main{
     flex: 1;
     padding: 10px;
     border-radius: 20px;
-    background-color: #f1f5f9;
+    background-color: var(--color-background-secondary);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--color-text-primary);
 }
 
+.search-Bar input:focus {
+    outline: 2px solid var(--color-brand);
+}
+
+/* ── Add Clinic button ─────────────────────────────────────── */
 .addBtn {
-    padding: 14px 18px;
-    border: 0.5px solid var(--radius-md);
-    border-radius: var(--radius-md);
-    background: var(--brand-tag);
-    color: var(--brand-dark);
+    padding: 10px 18px;
+    border: none;
+    border-radius: var(--border-radius-md);
+    background: var(--color-brand);
+    color: white;
     font-family: var(--font-sans);
-    font-size: 14px;
-    font-weight: 400;
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
     transition: 0.2s ease;
     white-space: nowrap;
-    box-shadow: 0 0 10px var(--color-text-primary);
-    align-items: center;
-    gap: 15px;
 }
 
-/* Small section heading */
+.addBtn:hover {
+    background: var(--color-brand-dark);
+    transform: translateY(-1px);
+}
+
+/* ── Section label ─────────────────────────────────────────── */
 .section-label {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--color-brand) !important;
-    margin-bottom: 12px;
-    margin-top: 12px;
-    padding-left: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-brand);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
 }
 
-
-
+/* ── Clinics card container ────────────────────────────────── */
 .clinicsCard {
-    height: 80vh; /* or 60vh (better) */
-    background: var(--brand-lightest);
-    border-radius: var(--radius-lg);
+    background: var(--color-brand-soft);
+    border-radius: var(--border-radius-lg);
     padding: 20px;
-
     margin-bottom: 20px;
-    box-shadow: 0 0 10px var(--brand-lightest);
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    border: 1px solid var(--color-border-light);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    gap: 16px;
+    border: 1px solid var(--color-border-tertiary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    min-height: 60vh;
 }
 
-.clinics{
+.clinicCardHeader {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ── Clinics grid ──────────────────────────────────────────── */
+.clinics {
     overflow-y: auto;
     display: flex;
     flex-direction: row;
@@ -196,332 +91,227 @@ main{
     flex-wrap: wrap;
 }
 
-.profile{
-
+.clinics::-webkit-scrollbar {
+    width: 3px;
 }
 
-.user-Section {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px;
-    /* background-color: var(--brand-lightest); */
-    /* border-radius: var(--radius-lg); */
-    justify-content: flex-end;
-    margin-left: auto;
-    border-left: 1px solid var(--color-border-light);
-    padding-left: 20px;
+.clinics::-webkit-scrollbar-thumb {
+    background: var(--color-brand-soft);
+    border-radius: 10px;
 }
 
-.user-Section, .title i {
-    color: var(--color-brand);
-    font-size: 20px;
-}
-
-.name-Surname {
-    font-size: 15px;
-    color: var(--color-text-secondary);
-}
-
-.user-Identity {
-    font-size: 14px;
-    color: var(--color-text-secondary);
-}
-
-
-/* Sidebar */
-aside {
-    width: 19%;
-    /* background-color: var(--brand-light-text); */
-    border-right: 1px solid var(--radius-md);
-    padding: 20px;
-    border-radius: var(--radius-md);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    margin: 3px;
-}
-
-aside ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 20px;
-}
-
-aside ul li {
-    margin-bottom: 10px;
-}
-
-aside ul li a {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-    color: var(--color-text-primary);
-    padding: 10px 12px;
-    border-radius: var(--radius-lg);
-    transition: 0.3s;
-    font-weight: 400;
-}
-
-aside ul li a:hover {
-    background-color: var(--color-brand);
-    color: white;
-}
-
-.content{
-    margin: 10px;
-    width: 80%;
-}
-.title {
-    border-bottom: 1px solid var(--color-border-light);
-    color: var(--color-text-primary);
-    padding-bottom: 20px;
-    padding-top: 15px;
-    font-size: 24px;
-    padding-left: 10px;
-}
-
+/* ── Individual clinic card ────────────────────────────────── */
 .clinic {
     display: flex;
     flex-direction: column;
     flex: 1 1 calc(50% - 20px);
-
     padding: 14px 16px;
-    gap: 30px;
-    border-radius: var(--radius-lg);
-
-    background: #ffffff;
-    border: 1px solid var(--color-border-light);
-
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    gap: 16px;
+    border-radius: var(--border-radius-lg);
+    background: var(--color-background-primary);
+    border: 1px solid var(--color-border-tertiary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     transition: 0.25s ease;
 }
 
-/* Hover effect */
 .clinic:hover {
-    transform: translateY(-3.5px);
-    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.15);
-}
-.clinic i {
-    color: var(--color-brand);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(83, 74, 183, 0.15);
 }
 
-.clinic-Btns{
-    display: flex;
-    flex: 1;
-    flex-direction: row;
-    gap: 10px;
-}
-
-.clinic button {
+/* ── Clinic card header ────────────────────────────────────── */
+.clinicHeader {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 16px;
-    border: 0.5px solid var(--color-border-light);
-    border-radius: var(--radius-md);
-    background: var(--color-bg-primary);
-    color: var(--color-text-primary);
-    font-family: var(--font-sans);
-    font-size: 13px;
-    font-weight: 400;
-    cursor: pointer;
-    transition: 0.2s ease;
-    white-space: nowrap;
-    box-shadow: 0 0 10px var(--brand-lightest);
-}
-
-
-/* icon */
-.clinic i {
-    font-size: 22px;
-    color: var(--color-brand);
-    background-color: var(--brand-lightest);
-    padding: 12px;
-    border-radius: 10px;
-}
-
-/* info block */
-.clinic-info {
-    flex: 1;
-}
-
-/* text hierarchy */
-.clinicName {
-    font-size: 16px;
-    color: var(--color-text-primary);
-}
-
-.Location {
-    font-size: 13px;
-}
-
-/* services tag */
-.services {
-    display: inline-block;
-    margin-top: 6px;
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 6px;
-    background: var(--brand-lightest);
-    color: var(--brand-mid);
-}
-
-#status{
-    font-size: 12px;
-    font-weight: 500;
-    padding: 9px 16px;
-    border-radius: 20px;
-
-    background: #DCFCE7;
-    color: #166534;
-    margin-left: auto;
-}
-
-.clinic button:hover {
-    background: var(--brand-tag);
-    color: var(--brand-dark);
-    transform: translateY(-2px);
-}
-
-.clinicInfo{
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    justify-content: space-evenly;
-}
-
-.clinicCardHeader{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    gap: 20px;
-}
-
-.clinicContainer{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    justify-content: space-evenly;
-}
-
-.clinicHeader{
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 1px solid var(--color-border-light);
-    padding-bottom: 10px;
-}
-
-.dropdown select {
-    appearance: none; /* removes default arrow */
-    padding: 10px 35px 10px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--color-border-light);
-    background: white;
-    cursor: pointer;
-}
-
-/* custom arrow */
-.dropdown {
-    position: relative;
-}
-
-.dropdown::after {
-    content: "";
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
-    font-size: 12px;
-    color: var(--color-text-secondary);
-}
-
-
-
-
-
-
-
-
-
-/* 🔥 overlay */
-.modal {
-    display: none; /* hidden by default */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-
-    background: rgba(0,0,0,0.5);
-
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-}
-
-/* popup box */
-.modal-content {
-    background: white;
-    padding: 25px;
-    border-radius: var(--radius-lg);
-    width: 350px;
-
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    position: relative;
-}
-
-/* close button */
-.close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 22px;
-    cursor: pointer;
-}
-
-/* form inside modal */
-.clinicForm {
-    display: flex;
-    flex-direction: column;
     gap: 12px;
-    margin-top: 15px;
+    border-bottom: 1px solid var(--color-border-tertiary);
+    padding-bottom: 12px;
 }
 
-.clinicForm input,
-.clinicForm select {
+.clinicHeader i {
+    font-size: 20px;
+    color: var(--color-brand);
+    background-color: var(--color-brand-soft);
     padding: 10px;
-    border-radius: 6px;
-    border: 1px solid var(--color-border-light);
-}
-
-.clinicForm button {
-    padding: 10px;
-    border: none;
-    border-radius: 6px;
-    background: var(--brand-mid);
-    color: white;
-    cursor: pointer;
-}
-
-#deleteBtn {
-    background: #FEE2E2;
-    color: #991B1B;
-}
-
-#deleteBtn:hover {
-    background: #DC2626;
-    color: white;
+    border-radius: 10px;
 }
 
 .clinicNameStatus {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    flex: 1;
+}
+
+.clinicName {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+}
+
+.Location {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+}
+
+/* ── Status badge ──────────────────────────────────────────── */
+#status {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: #DCFCE7;
+    color: #166534;
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+/* ── Clinic body ───────────────────────────────────────────── */
+.clinicContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.clinicInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.services {
+    display: inline-block;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: var(--color-brand-soft);
+    color: var(--color-brand-dark);
+}
+
+/* ── Clinic action buttons ─────────────────────────────────── */
+.clinic-Btns {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+
+.clinic button {
+    flex: 1;
+    padding: 9px 12px;
+    border: 1px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    background: var(--color-background-primary);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.clinic button:hover {
+    background: var(--color-brand-soft);
+    color: var(--color-brand-dark);
+    transform: translateY(-1px);
+}
+
+.clinic button.delete-btn {
+    background: #FEE2E2;
+    color: #991B1B;
+    border-color: #fca5a5;
+}
+
+.clinic button.delete-btn:hover {
+    background: #DC2626;
+    color: white;
+}
+
+/* ── Add Clinic Modal ──────────────────────────────────────── */
+/* Uses class .modal — separate from admin.css .modal-overlay */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.modal-content {
+    background: var(--color-background-primary);
+    padding: 28px;
+    border-radius: 20px;
+    width: 380px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.modal-content h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 4px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    line-height: 1;
+}
+
+.close-btn:hover {
+    color: var(--color-text-primary);
+}
+
+/* ── Add Clinic form ───────────────────────────────────────── */
+.clinicForm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.clinicForm input,
+.clinicForm select {
+    padding: 10px 12px;
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--color-border-secondary);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--color-text-primary);
+    width: 100%;
+}
+
+.clinicForm input:focus,
+.clinicForm select:focus {
+    outline: none;
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 2px rgba(83, 74, 183, 0.1);
+}
+
+.clinicForm button[type="submit"] {
+    padding: 11px;
+    border: none;
+    border-radius: var(--border-radius-md);
+    background: var(--color-brand);
+    color: white;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+    margin-top: 4px;
+}
+
+.clinicForm button[type="submit"]:hover {
+    background: var(--color-brand-dark);
 }

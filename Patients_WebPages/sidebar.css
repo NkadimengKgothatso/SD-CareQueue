@@ -9,7 +9,7 @@
 body {
     display: flex;
     flex-direction: column;
-    background: #f4f7f6;
+    background:white;
     color: #1e1e1e;
 }
 
@@ -19,7 +19,8 @@ body {
     background: white;
     display: flex;
     align-items: center;
-    padding: 0 20px;
+    justify-content: space-between;
+    padding: 12px 20px;
     border-bottom: 1px solid #ddd;
 }
 
@@ -110,6 +111,8 @@ body {
     color: gray;
 }
 
+
+
 /* ===== MAIN CONTENT ===== */
 .main-content {
     flex: 1;
@@ -122,11 +125,45 @@ body {
 .section-header h1 {
     font-size: 24px;
     font-weight: 600;
+
+    
 }
 
 .section-header p {
     color: #6b7280;
     margin-top: 5px;
+}
+
+
+.sign-out-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* Hover effect */
+.sign-out-btn:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+}
+
+/* Click effect */
+.sign-out-btn:active {
+    transform: translateY(0px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* ===== SECTION ===== */
@@ -138,59 +175,99 @@ body {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 15px;
+     color:#1f9d7a;
 }
 
-/* ===== APPOINTMENT CARD ===== */
+/* ===== CARD LAYOUT ===== */
 .appointment-card {
-    background: #dff3ec;
-    padding: 4px;
-    border-radius: 10px;
-    max-width: 100%;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.card-clinic {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 10px;
-}
-
-.card-meta {
-    list-style: none;
-    margin: 0 0 15px 0;
-    padding: 0;
-    color: #374151;
-}
-
-.meta-item {
-    font-size: 14px;
-    margin-bottom: 4px;
-}
-
-/* ===== BUTTONS ===== */
-.appointment-actions {
     display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 12px;
+    padding: 4px;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    position: relative;
 }
 
-.appointment-actions button {
-    padding: 10px 16px;
-    border-radius: 6px;
+/* left green line */
+.card-accent {
+    width: 4px;
+    border-radius: 4px;
+    align-self: stretch;
+}
+
+.accent-upcoming {
+    background: #1f9d7a;
+}
+
+/* ===== BODY ===== */
+.card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+/* clinic title */
+.card-header h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* ===== INFO STACK ===== */
+.info-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.info-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #6d806b;
+}
+
+.info-row i {
+    width: 16px;
+    color: #6b7280;
+}
+
+/* ===== FOOTER ===== */
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+
+
+/* ===== VIEW BUTTON ===== */
+.view-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
     border: none;
     cursor: pointer;
-    font-weight: 500;
+
+    background: #dcfce7;
+    color: #166534;
+
+    transition: 0.2s ease;
 }
 
-.primary-btn {
-    background-color: #1f9d7a;
-    color: white;
+.view-btn:hover {
+    background: #166534;
 }
 
-.primary-btn:hover {
-    background-color: #188f6d;
-}
 
 /* ===== EMPTY STATE ===== */
 .empty-card {
@@ -245,6 +322,8 @@ body {
     width: 100%;
     box-sizing: border-box;
     box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+
+    
 }
 
 /* QUEUE HEADER */
@@ -253,6 +332,7 @@ body {
     justify-content: space-between;
     align-items: center;
 }
+
 
 /* FIX: remove default margin */
 .queue-top h3 {
@@ -288,6 +368,33 @@ body {
     font-size: 14px;
     margin-bottom: 5px;
 }
+
+
+.stat-card {
+    flex: 1;
+    padding: 20px;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+
+    text-align: center;
+    transition: all 0.25s ease;
+}
+
+.stat-card h3 {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.stat-card p {
+    font-size: 22px;
+    font-weight: bold;
+}
+.stat-card.green {
+    border-left: 5px solid #1f9d7a;
+}
+
 
 /* ===== METER ===== */
 meter {
@@ -335,6 +442,7 @@ meter::-webkit-meter-optimum-value {
 
     .stats-grid {
         flex-direction: column;
+        list-style: none;
     }
 }
 
@@ -346,52 +454,19 @@ aside nav ul li a.active {
 }
 
 
-/* GLOBAL FONT FIX (IMPORTANT) */
-body,
-button,
-input,
-textarea,
-select {
-    font-family: "Segoe UI", sans-serif;
-}
-
-/* FORCE CARD TEXT CONSISTENCY */
-.appointment-card {
-    font-family: "Segoe UI", sans-serif;
-}
-
-.appointment-card * {
-    font-family: inherit;
-}
-
-/* KEEP FONT AWESOME WORKING */
-.appointment-card i {
-    font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands";
-    font-style: normal;
-}
-
-/* CARD CONTAINER */
-.appointment-card {
-    background: #dff3ec;
-    border-radius: 12px;
-    padding: 6px;
-}
-
-/* CLINIC NAME */
-.clinic-name {
-    font-size: 18px;
-    font-weight: 600;
+ul {
+    list-style: none;
+    padding-left: 0;
     margin: 0;
-    color: #1e1e1e;
 }
 
+body {
+    opacity: 0;
+    animation: pageFadeIn 0.5s ease forwards;
+}
 
-
-/* BUTTON FIX */
-.view-btn,
-.reschedule-btn,
-.cancel-btn,
-.track-btn {
-    font-family: inherit;
-    font-size: 12px;
+@keyframes pageFadeIn {
+    to {
+        opacity: 1;
+    }
 }
