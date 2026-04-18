@@ -77,7 +77,7 @@ async function loadAppointments(userId) {
 
         const today = new Date();
         const upcoming = appointments
-            .filter(a => new Date(a.date) >= today)
+            .filter(a => new Date(a.date) <= today)
             .sort((a, b) => new Date(a.date) - new Date(b.date));
 
         if (upcoming.length === 0) { showEmpty(); return; }
@@ -126,98 +126,106 @@ async function loadAppointments(userId) {
 }
 
 
-// ================= LOAD QUEUE STATUS (REAL-TIME) =================
+
+// ================= LOAD QUEUE STATUS (REAL-TIME FIXED) =================
 function loadQueueStatus(userId) {
-    // cancel any previous listener
+
     if (queueUnsubscribe) queueUnsubscribe();
 
     const setEmpty = () => {
-        document.getElementById("queueCount").textContent        = "Not in queue";
-        document.getElementById("queueProgressText").textContent = "You have no active queue entries.";
-        document.getElementById("progressPercent").textContent   = "0%";
-        document.getElementById("queueMeter").value              = 0;
-        const posEl  = document.getElementById("queuePosition");
-        const waitEl = document.getElementById("waitTime");
-        if (posEl)  posEl.textContent  = "-";
-        if (waitEl) waitEl.textContent = "-";
+        document.getElementById("queueCount").textContent = "Not in queue";
+        document.getElementById("queueProgressText").textContent = "No active queue entry.";
+        document.getElementById("progressPercent").textContent = "0%";
+        document.getElementById("queueMeter").value = 0;
+
+        document.getElementById("queuePosition").textContent = "-";
+        document.getElementById("waitTime").textContent = "-";
     };
 
     const q = query(collection(db, "Queues"), where("userID", "==", userId));
 
-    // ✅ onSnapshot = live listener, fires on every Firestore change
-    queueUnsubscribe = onSnapshot(q, async (snapshot) => {
-        if (snapshot.empty) { setEmpty(); return; }
+    queueUnsubscribe = onSnapshot(q, (snapshot) => {
 
-        let activeEntries = [];
+        if (snapshot.empty) {
+            setEmpty();
+            return;
+        }
+
+        let active = [];
+
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
-            // handles the "status " typo in Firestore AND correct "status"
-            const status = ((data["status "] || data["status"]) || "").toLowerCase().trim();
-            if (status === "waiting" || status === "scheduled" || status === "active") {
-                activeEntries.push(data);
+
+            const status = (data.status || "").toLowerCase().trim();
+
+            if (["waiting", "scheduled", "active"].includes(status)) {
+                active.push(data);
             }
         });
 
-        if (activeEntries.length === 0) { setEmpty(); return; }
-
-        activeEntries.sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
-        const queueData = activeEntries[0];
-        const position  = queueData.position ?? 1;
-
-        // ── Get live total count for this clinic ───────────────────
-        let totalInQueue = queueData.totalInQueue ?? queueData.total ?? null;
-        if (!totalInQueue) {
-            try {
-                const clinicSnap = await getDocs(query(
-                    collection(db, "Queues"),
-                    where("clinicID", "==", queueData.clinicID)
-                ));
-                let count = 0;
-                clinicSnap.forEach(d => {
-                    const s = ((d.data()["status "] || d.data()["status"]) || "").toLowerCase().trim();
-                    if (s === "waiting" || s === "scheduled" || s === "active") count++;
-                });
-                totalInQueue = count || position;
-            } catch {
-                totalInQueue = position;
-            }
+        if (active.length === 0) {
+            setEmpty();
+            return;
         }
 
-        // ── Queue count ────────────────────────────────────────────
-        document.getElementById("queueCount").textContent = `${totalInQueue} in queue`;
+        // sort by position (important for correctness)
+        active.sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
 
-        // ── Progress % ────────────────────────────────────────────
-        const percent = totalInQueue > 0
-            ? Math.round(((totalInQueue - position) / totalInQueue) * 100)
+        const queueData = active[0];
+
+        const position = queueData.position ?? 1;
+        const clinicID = queueData.clinicID;
+
+        // ================= TOTAL QUEUE COUNT =================
+        const allClinicEntries = snapshot.docs.filter(d => {
+            const s = (d.data().status || "").toLowerCase().trim();
+            return ["waiting", "scheduled", "active"].includes(s);
+        });
+
+        const total = allClinicEntries.length;
+
+        // ================= UI: COUNT =================
+        document.getElementById("queueCount").textContent =
+            `${total} in queue`;
+
+        // ================= PROGRESS =================
+        const percent = total > 0
+            ? Math.round(((total - position) / total) * 100)
             : 0;
+
         document.getElementById("progressPercent").textContent = `${percent}%`;
         document.getElementById("queueMeter").value = percent;
 
-        // ── Progress message ──────────────────────────────────────
-        let progressText;
-        if (position === 1) {
-            progressText = "You're next! Please get ready.";
-        } else if (percent >= 75) {
-            progressText = "Almost there — just a few people ahead of you.";
-        } else if (percent >= 40) {
-            progressText = "You are moving steadily through the queue.";
-        } else {
-            progressText = "You're in the queue. We'll keep you updated.";
-        }
-        document.getElementById("queueProgressText").textContent = progressText;
+        // ================= MESSAGE =================
+        let message = "";
 
-        // ── Position & wait time ───────────────────────────────────
-        let wait = queueData.estimateWait;
-        if (!wait || wait === 0) {
-            wait = position === 1 ? 5 : (position - 1) * 8;
+        if (position === 1) {
+            message = "You're next! Please get ready.";
+        } else if (percent >= 70) {
+            message = "Almost there — you're very close.";
+        } else if (percent >= 40) {
+            message = "You are moving steadily through the queue.";
+        } else {
+            message = "You're in the queue. We'll keep you updated.";
         }
-        const posEl  = document.getElementById("queuePosition");
+
+        document.getElementById("queueProgressText").textContent = message;
+
+        // ================= POSITION + WAIT =================
+        const posEl = document.getElementById("queuePosition");
         const waitEl = document.getElementById("waitTime");
-        if (posEl)  posEl.textContent  = position;
-        if (waitEl) waitEl.textContent = `${wait} min`;
+
+        let wait = queueData.estimateWait;
+
+        if (!wait || wait === 0) {
+            wait = (position - 1) * 8;
+        }
+
+        posEl.textContent = position;
+        waitEl.textContent = `${wait} min`;
 
     }, (error) => {
-        console.error("Queue snapshot error:", error);
+        console.error("Queue listener error:", error);
         setEmpty();
     });
 }
