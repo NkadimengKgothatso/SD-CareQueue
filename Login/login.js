@@ -1,5 +1,3 @@
-
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getAuth,
@@ -15,7 +13,9 @@ import {
   setDoc,
   serverTimestamp,
   collection,
-  getDocs
+  getDocs,
+  query,
+  where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -35,63 +35,47 @@ let selectedRole = "patient";
 let isRedirecting = false;
 
 const USERS_COLLECTION = "Users";
-const ADMINS_COLLECTION = "admins"; // lowercase — matches Firestore collection name
+const ADMINS_COLLECTION = "admins";
+const STAFF_COLLECTION = "ApprovedStaff";
 
 // ================= ROLE SELECTION =================
-// Default selected role is patient
-
-window.selectRole = function(role) {
-  
-
+window.selectRole = function (role) {
   selectedRole = role;
 
-  // Remove highlight from all role options
   ["patient", "staff", "admin"].forEach(r => {
     const el = document.getElementById("opt-" + r);
     el.classList.remove("selected", "selected-blue", "selected-purple");
   });
 
-  // Highlight the selected role with the correct color
   const el = document.getElementById("opt-" + role);
-  if (role === "patient")    el.classList.add("selected");        // Green
-  else if (role === "staff") el.classList.add("selected-blue");   // Blue
-  else                       el.classList.add("selected-purple"); // Purple
+  if (role === "patient")    el.classList.add("selected");
+  else if (role === "staff") el.classList.add("selected-blue");
+  else                       el.classList.add("selected-purple");
 };
 
 // ================= ADMIN CHECK =================
-// Reads all docs in admins collection and matches by email field
 async function isAuthorizedAdmin(email) {
   try {
     const snapshot = await getDocs(collection(db, ADMINS_COLLECTION));
-    const match = snapshot.docs.find(doc => {
-      const stored = (doc.data().email || "").toLowerCase().trim();
-      return stored === email.toLowerCase().trim();
-    });
-    return !!match;
+    return snapshot.docs.some(
+      d => (d.data().email || "").toLowerCase().trim() === email.toLowerCase().trim()
+    );
   } catch (error) {
     console.error("Error checking admin status:", error);
     return false;
   }
 }
 
-// ================= PATIENT RECORD =================
-async function createPatientRecord(user) {
+// ================= STAFF CHECK =================
+// Only emails that exist in ApprovedStaff can log in as staff
+async function isApprovedStaff(email) {
   try {
-    const userRef = doc(db, USERS_COLLECTION, user.uid);
-    const userDoc = await getDoc(userRef);
-    if (!userDoc.exists()) {
-      await setDoc(userRef, {
-        uid: user.uid,
-        displayName: user.displayName,
-        email: user.email,
-        photoURL: user.photoURL,
-        role: "patient",
-        createdAt: serverTimestamp()
-      });
-    }
-    return true;
+    const snapshot = await getDocs(collection(db, STAFF_COLLECTION));
+    return snapshot.docs.some(
+      d => (d.data().email || "").toLowerCase().trim() === email.toLowerCase().trim()
+    );
   } catch (error) {
-    console.error("Error creating patient record:", error);
+    console.error("Error checking staff status:", error);
     return false;
   }
 }
@@ -101,16 +85,15 @@ function handleRedirect(role) {
   isRedirecting = true;
   if (role === "patient") {
     window.location.href = "/Patients_WebPages/PatientDashboard.html";
-  } else if(role== "staff"){
-    // Show dashboard for staff
-     window.location.href = "../Staff_Webpages/StaffDashboard.html";  
-    }
-    else  {
-      window.location.href = "/Admin_WebPages/StaffManagement.html"; }
-  
+  } else if (role === "staff") {
+    window.location.href = "../Staff_Webpages/Queues.html";
+  } else {
+    window.location.href = "/Admin_WebPages/StaffManagement.html";
+  }
 }
 
-window.signInWithGoogle = async function() {
+// ================= SIGN IN =================
+window.signInWithGoogle = async function () {
   isRedirecting = true;
 
   const btn = document.getElementById("google-btn");
@@ -123,61 +106,95 @@ window.signInWithGoogle = async function() {
     const user = result.user;
     const email = user.email.toLowerCase();
 
-    const userRef = doc(db, USERS_COLLECTION, user.uid);
-    const userSnap = await getDoc(userRef);
-
-    // ================= ADMIN =================
+    // ── ADMIN ──────────────────────────────────────────────
     if (selectedRole === "admin") {
       const isAdmin = await isAuthorizedAdmin(email);
-
       if (!isAdmin) {
-        isRedirecting = false;
         await signOut(auth);
         showError("Access denied: You are not authorized as an administrator.");
-        btn.disabled = false;
-        btn.querySelector("strong.provider-name").textContent = "Continue with Google";
+        resetBtn(btn);
+        isRedirecting = false;
         return;
       }
-
       handleRedirect("admin");
       return;
     }
 
-    // ================= PATIENT + STAFF =================
+    // ── STAFF ──────────────────────────────────────────────
+    if (selectedRole === "staff") {
+      const isStaff = await isApprovedStaff(email);
+      if (!isStaff) {
+        await signOut(auth);
+        showError("Access denied: Your email is not registered as clinic staff. Please contact your administrator.");
+        resetBtn(btn);
+        isRedirecting = false;
+        return;
+      }
+      handleRedirect("staff");
+      return;
+    }
+
+    // ── PATIENT ────────────────────────────────────────────
+    const userRef = doc(db, USERS_COLLECTION, user.uid);
+    const userSnap = await getDoc(userRef);
+
     if (!userSnap.exists()) {
-      // First-time user → save to Users
+      // First time patient — create their record
       await setDoc(userRef, {
         uid: user.uid,
         displayName: user.displayName,
         email: user.email,
         photoURL: user.photoURL,
-        role: selectedRole, // THIS is what ensures staff is saved correctly
+        role: "patient",
         createdAt: serverTimestamp()
       });
-
-      handleRedirect(selectedRole);
-
-    } else {
-      // Returning user → use saved role
-      const savedRole = userSnap.data().role;
-      handleRedirect(savedRole);
     }
+
+    handleRedirect("patient");
 
   } catch (err) {
     isRedirecting = false;
-
     showError(
       err.code === "auth/popup-closed-by-user"
         ? "Sign-in was cancelled. Please try again."
         : "Something went wrong. Please try again."
     );
-
-    btn.disabled = false;
-    btn.querySelector("strong.provider-name").textContent = "Continue with Google";
+    resetBtn(btn);
   }
 };
 
-// ================= ERROR DISPLAY =================
+// ================= SESSION RESTORE =================
+// Handles users who are already signed in when they visit the login page
+onAuthStateChanged(auth, async (user) => {
+  if (isRedirecting) return;
+  if (!user) return;
+
+  const email = user.email.toLowerCase();
+
+  // Check admin first
+  const isAdmin = await isAuthorizedAdmin(email);
+  if (isAdmin) {
+    handleRedirect("admin");
+    return;
+  }
+
+  // Check staff
+  const isStaff = await isApprovedStaff(email);
+  if (isStaff) {
+    handleRedirect("staff");
+    return;
+  }
+
+  // Default to patient
+  handleRedirect("patient");
+});
+
+// ================= HELPERS =================
+function resetBtn(btn) {
+  btn.disabled = false;
+  btn.querySelector("strong.provider-name").textContent = "Continue with Google";
+}
+
 function showError(msg) {
   let el = document.getElementById("auth-error");
   if (!el) {
@@ -190,31 +207,3 @@ function showError(msg) {
   el.textContent = msg;
   el.style.display = "block";
 }
-
-// ================= SESSION RESTORE =================
-// Handles users who are already logged in when they visit the login page
-onAuthStateChanged(auth, async (user) => {
-  if (isRedirecting) return;
-
-  if (user) {
-    const email = user.email.toLowerCase();
-
-    // 🔹 Check admin first
-    const isAdmin = await isAuthorizedAdmin(email);
-    if (isAdmin) {
-      handleRedirect("admin");
-      return;
-    }
-
-    // 🔹 Then check Users (patient + staff)
-    const userRef = doc(db, USERS_COLLECTION, user.uid);
-    const userSnap = await getDoc(userRef);
-
-    if (userSnap.exists()) {
-      const role = userSnap.data().role;
-      handleRedirect(role);
-    } else {
-      handleRedirect("patient"); // fallback
-    }
-  }
-});
