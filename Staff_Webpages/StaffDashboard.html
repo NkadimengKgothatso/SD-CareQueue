@@ -68,19 +68,89 @@
         <section class="user-Section">
             <i class="fa-solid fa-user" style="padding: 5px;"></i>
             <section>
-                <p class="name-Surname">Name Surname</p>
+                <p class="name-Surname"></p>
                 <p class="user-Identity" style="padding: 3px">Staff</p>
             </section>
         </section>
     </aside>
         <main>
-            <h2>Manage </h2>
-
-
-                
+           
+            <!-- Header -->
+            <section class="dashboard-header" id="welcome">
+                <h2>Welcome, <strong class="name-Surname"></strong></h2>
+                <p id="clinicAndTime">Zola Community Clinic · Wednesday, 2 April 2026</p>
             </section>
 
+            <!-- Stats -->
+           <section class="stats">
+                <section class="stat">
+                    <h2 id="totalToday">0</h2>
+                    <p>Total today</p>
+                </section>
+
+                <section class="stat">
+                    <h2 id="inQueue">0</h2>
+                    <p>In queue now</p>
+                </section>
+
+                <section class="stat">
+                    <h2 id="avgWait">0m</h2>
+                    <p>Avg wait</p>
+                    <small class="improving">↓ improving</small>
+                </section>
+
+                <section class="stat">
+                    <h2 id="completed">0</h2>
+                    <p>Completed</p>
+                </section>
+            </section>
+
+            <!-- Content -->
+            <section class="dashboard-content">
+
+                <!-- Appointments -->
+                <section class="appointments">
+                    <h3>UPCOMING APPOINTMENTS</h3>
+                    
+                    <article class="appointment">
+                        <time class="time" datetime="10:00">10:00</time>
+                        <section class="details">
+                            <strong>Lerato Mokoena</strong>
+                            <p>Child health</p>
+                        </section>
+                        <mark class="badge">Booked</mark>
+                    </article>
+
+                    <button class="view-all">View all</button>
+                </section>
+
+                <!-- Notifications -->
+                <section class="notifications">
+                    <h3>NOTIFICATIONS</h3>
+
+                    <article class="notification red">
+                        <p>Sipho Mahlangu called but did not respond<br><small>2 min ago</small></p>
+                    </article>
+
+                    <article class="notification green">
+                        <p>Zanele Khumalo joined walk-in queue<br><small>8 min ago</small></p>
+                    </article>
+
+                    <article class="notification blue">
+                        <p>3 new appointments booked for tomorrow<br><small>1 hr ago</small></p>
+                    </article>
+
+                </section>
+
+            </section>
+
+       
+           
         </main>
     </section>
+
+    <script src="StaffDashboard.js" type="module"></script>
     </body>
+
+
 </html>
