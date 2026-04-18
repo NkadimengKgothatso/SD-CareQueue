@@ -76,12 +76,15 @@ async function loadAppointments(userId) {
         snapshot.forEach(docSnap => appointments.push({ id: docSnap.id, ...docSnap.data() }));
 
         const today = new Date();
-        const upcoming = appointments
-            .filter(a => new Date(a.date) <= today)
-            .sort((a, b) => new Date(a.date) - new Date(b.date));
+            today.setHours(0, 0, 0, 0);
 
-        if (upcoming.length === 0) { showEmpty(); return; }
-
+         const upcoming = appointments
+        .filter(a => {
+            const apptDate = new Date(a.date);
+            apptDate.setHours(0, 0, 0, 0);
+            return apptDate >= today;
+        })
+        .sort((a, b) => new Date(a.date) - new Date(b.date)); 
         const next = upcoming[0];
         showFilled();
         await loadVisitsCount(userId, next.clinicID);
