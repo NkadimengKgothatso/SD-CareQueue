@@ -258,7 +258,7 @@ function renderAppointment(appointment) {
 
     //track buttons redirects user to Queues page
     trackBtn.addEventListener("click", () => {
-        window.location.href = "Queues.html";
+        window.location.href = "PatientDashboard.html";
     });
 
     upcomingList.appendChild(li);
