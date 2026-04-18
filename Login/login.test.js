@@ -1,6 +1,6 @@
 // Login/login.test.js
 
-const { handleRedirect } = require("./Login/authLogic");
+const { handleRedirect } = require("./authLogic");
 
 // Mock showPlaceholder (since it's used inside handleRedirect)
 global.showPlaceholder = jest.fn();
