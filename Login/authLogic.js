@@ -1,10 +1,12 @@
 // Login/authLogic.js
 
-function handleRedirect(role, user) {
+function handleRedirect(role, user, navigate) {
+  const go = navigate || function(url) { window.location.href = url; };
+  
   if (role === "patient") {
-    window.location.assign("../Patients_WebPages/PatientDashboard.html");
+    go("../Patients_WebPages/PatientDashboard.html");
   } else if (role === "staff") {
-    window.location.assign("../Staff_Webpages/Queues.html");
+    go("../Staff_Webpages/Queues.html");
   } else if (role === "admin") {
     showPlaceholder(role, user);
   }
