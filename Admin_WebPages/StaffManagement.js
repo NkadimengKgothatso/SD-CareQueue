@@ -118,7 +118,7 @@ async function loadClinics() {
       const clinic = docSnap.data();
       if (!clinic.name) return;
       const option = document.createElement("option");
-      option.value = docSnap.id;
+      option.value = clinic.id
       option.textContent = clinic.name;
       select.appendChild(option);
     });

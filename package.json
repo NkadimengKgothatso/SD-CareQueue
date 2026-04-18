@@ -7,6 +7,9 @@
     "test": "jest",
     "coverage": "jest --coverage"
   },
+  "jest": {
+    "testEnvironment": "jsdom"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NkadimengKgothatso/SD-CareQueue.git"
@@ -19,6 +22,7 @@
   },
   "homepage": "https://github.com/NkadimengKgothatso/SD-CareQueue#readme",
   "devDependencies": {
-    "jest": "^30.3.0"
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0"
   }
 }
