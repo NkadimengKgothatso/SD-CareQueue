@@ -6,8 +6,11 @@ global.showPlaceholder = jest.fn();
 
 const assignMock = jest.fn();
 
-delete window.location;
-window.location = { assign: assignMock };
+Object.defineProperty(window, "location", {
+  value: { assign: assignMock },
+  writable: true,
+  configurable: true,
+});
 
 describe("Login Role Redirect Tests", () => {
 
