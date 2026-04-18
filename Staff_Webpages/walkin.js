@@ -125,7 +125,7 @@ function loadAppointments() {
         collection(db, "Appointments"),
         where("clinicId", "==", clinicId),
         where("isWalkIn", "==", true),
-        where("walkInDate", "==", today),
+        where("date", "==", today),
         orderBy("createdAT", "asc")
     );
 
@@ -227,7 +227,7 @@ addBtn?.addEventListener("click", async () => {
                 collection(db, "Appointments"),
                 where("clinicId", "==", clinicId),
                 where("isWalkIn", "==", true),
-                where("walkInDate", "==", today)
+                where("date", "==", today)
             )
         );
 
@@ -244,7 +244,7 @@ addBtn?.addEventListener("click", async () => {
         reason,
         status: "waiting",
         isWalkIn: true, 
-        walkInDate: getToday(),
+        date: getToday(),
         ticketNumber: `W-${String(count).padStart(3, "0")}`,
         time: assignedTime,
         createdAT: serverTimestamp()
