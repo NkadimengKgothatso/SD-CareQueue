@@ -269,19 +269,105 @@ body {
 }
 
 
-/* ===== EMPTY STATE ===== */
-.empty-card {
-    background: white;
-    border: 1px dashed #ccc;
-    padding: 20px;
-    border-radius: 10px;
-    color: #6b7280;
-    text-align: center;
-    max-width: 100%;
-    width: 100%;
-    box-sizing: border-box;
+/* ===== EMPTY STATE WRAPPER ===== */
+#emptyStates {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
+/* ===== EMPTY CARD (UPGRADED) ===== */
+.empty-card {
+    background: linear-gradient(135deg, #f9fafb, #ffffff);
+    border: 1px dashed #d1d5db;
+    padding: 30px 20px;
+    border-radius: 16px;
+    color: #6b7280;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+/* subtle hover effect */
+.empty-card:hover {
+    border-color: #10b981;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+}
+
+/* ===== EMPTY TEXT ===== */
+.empty-card p {
+    font-size: 15px;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* ===== ICON (OPTIONAL BUT RECOMMENDED) ===== */
+.empty-card::before {
+    content: "📭";
+    display: block;
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+/* ===== APPOINTMENT EMPTY CARD ===== */
+.appointment-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    padding: 20px;
+    border-radius: 14px;
+    text-align: center;
+    transition: all 0.25s ease;
+}
+
+.appointment-card:hover {
+    box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+}
+
+/* ===== CLINIC TITLE ===== */
+.card-clinic {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 10px;
+}
+
+/* ===== META TEXT ===== */
+.card-meta {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 15px 0;
+}
+
+.card-meta li {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+/* ===== BUTTON ===== */
+.primary-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.primary-btn:hover {
+    background: #059669;
+    transform: scale(1.03);
+}
+
+/* ===== SECTION SPACING ===== */
+.appt-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 /* ===== STATS GRID ===== */
 .stats-grid {
     display: flex;
