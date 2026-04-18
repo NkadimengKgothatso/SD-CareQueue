@@ -239,11 +239,15 @@ function startQueueListener() {
 
     const today = getTodayString();
 
-    // Filter by both today's date AND the staff member's clinicID
+    console.log("🔍 Querying appointments for clinicID:", staffClinicID);
+    console.log("🔍 Type:", typeof staffClinicID);
+    console.log("🔍 Today:", today);
+
+    // Cast clinicID to Number to match how it is stored in Appointments
     const q = query(
         collection(db, "Appointments"),
         where("date",     "==", today),
-        where("clinicID", "==", staffClinicID)
+        where("clinicID", "==", Number(staffClinicID))
     );
 
     unsubscribeQueue = onSnapshot(
@@ -315,17 +319,17 @@ onAuthStateChanged(auth, async (user) => {
 
     if (nameSurnameEl) nameSurnameEl.textContent = user.displayName || "Staff";
 
-    // Query ApprovedStaff by email instead of UID
+    // Query ApprovedStaff by email (documents are not keyed by UID)
     try {
-        const q = query(
+        const staffQuery = query(
             collection(db, "ApprovedStaff"),
             where("email", "==", user.email)
         );
-        const snapshot = await getDocs(q);
+        const snapshot = await getDocs(staffQuery);
 
         if (!snapshot.empty) {
-            staffClinicID = snapshot.docs[0].data().clinicId || null;
-            console.log("🏥 clinicId found:", staffClinicID);
+            staffClinicID = snapshot.docs[0].data().clinicId || null; // lowercase 'd'
+            console.log("🏥 clinicID found:", staffClinicID);
         }
     } catch (err) {
         console.error("Failed to fetch staff clinic:", err);
