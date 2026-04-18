@@ -7,6 +7,9 @@
     "test": "jest",
     "coverage": "jest --coverage"
   },
+   "jest": {
+    "testEnvironment": "jsdom"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NkadimengKgothatso/SD-CareQueue.git"
