@@ -78,18 +78,18 @@ async function loadAppointments(userId) {
         const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-        const upcoming = appointments
+       const upcoming = appointments
             .filter(a => {
                 const apptDate = new Date(a.date);
                 apptDate.setHours(0, 0, 0, 0);
-                return apptDate >= today;
+                const notCancelled = (a.status || "").toLowerCase().trim() !== "cancelled";
+                return apptDate >= today && notCancelled;
             })
             .sort((a, b) => {
                 const dateA = new Date(`${a.date}T${a.time || "00:00"}`);
                 const dateB = new Date(`${b.date}T${b.time || "00:00"}`);
                 return dateA - dateB;
             });
-
         const next = upcoming[0];
         showFilled();
         await loadVisitsCount(userId, next.clinicID);
