@@ -145,58 +145,47 @@ function loadQueueStatus(userId) {
         document.getElementById("queueProgressText").textContent = "No active queue entry.";
         document.getElementById("progressPercent").textContent = "0%";
         document.getElementById("queueMeter").value = 0;
-
         document.getElementById("queuePosition").textContent = "-";
         document.getElementById("waitTime").textContent = "-";
     };
 
     const q = query(collection(db, "Queues"), where("userID", "==", userId));
 
-    queueUnsubscribe = onSnapshot(q, (snapshot) => {
+    queueUnsubscribe = onSnapshot(q, async (snapshot) => {
 
-        if (snapshot.empty) {
-            setEmpty();
-            return;
-        }
+        if (snapshot.empty) { setEmpty(); return; }
 
         let active = [];
-
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
-
             const status = (data.status || "").toLowerCase().trim();
-
             if (["waiting", "scheduled", "active"].includes(status)) {
                 active.push(data);
             }
         });
 
-        if (active.length === 0) {
-            setEmpty();
-            return;
-        }
+        if (active.length === 0) { setEmpty(); return; }
 
-        // sort by position (important for correctness)
         active.sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
 
         const queueData = active[0];
-
         const position = queueData.position ?? 1;
         const clinicID = queueData.clinicID;
 
-        // ================= TOTAL QUEUE COUNT =================
-        const allClinicEntries = snapshot.docs.filter(d => {
+        // ================= TOTAL: query entire clinic queue =================
+        const clinicQ = query(
+            collection(db, "Queues"),
+            where("clinicID", "==", clinicID)
+        );
+        const clinicSnapshot = await getDocs(clinicQ);
+        const total = clinicSnapshot.docs.filter(d => {
             const s = (d.data().status || "").toLowerCase().trim();
             return ["waiting", "scheduled", "active"].includes(s);
-        });
+        }).length;
 
-        const total = allClinicEntries.length;
+        // ================= UI =================
+        document.getElementById("queueCount").textContent = `${position} out of ${total}`;
 
-       // ================= UI: COUNT =================
-        document.getElementById("queueCount").textContent =
-            `${position} out of ${total}`;
-
-        // ================= PROGRESS =================
         const percent = total > 0
             ? Math.round(((total - position) / total) * 100)
             : 0;
@@ -204,9 +193,7 @@ function loadQueueStatus(userId) {
         document.getElementById("progressPercent").textContent = `${percent}%`;
         document.getElementById("queueMeter").value = percent;
 
-        // ================= MESSAGE =================
         let message = "";
-
         if (position === 1) {
             message = "You're next! Please get ready.";
         } else if (percent >= 70) {
@@ -219,18 +206,11 @@ function loadQueueStatus(userId) {
 
         document.getElementById("queueProgressText").textContent = message;
 
-        // ================= POSITION + WAIT =================
-        const posEl = document.getElementById("queuePosition");
-        const waitEl = document.getElementById("waitTime");
-
         let wait = queueData.estimateWait;
+        if (!wait || wait === 0) wait = (position - 1) * 8;
 
-        if (!wait || wait === 0) {
-            wait = (position - 1) * 8;
-        }
-
-        posEl.textContent = position;
-        waitEl.textContent = `${wait} min`;
+        document.getElementById("queuePosition").textContent = position;
+        document.getElementById("waitTime").textContent = `${wait} min`;
 
     }, (error) => {
         console.error("Queue listener error:", error);
