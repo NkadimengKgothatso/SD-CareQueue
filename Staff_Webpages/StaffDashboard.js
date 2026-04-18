@@ -194,9 +194,11 @@ async function loadStats(clinicID) {
         console.error("Error loading stats:", error);
     }
 
+
+}
+
 // ================= SIGN OUT =================
-/*window.signOut = async function () {
+window.signOut = async function () {
     await signOut(auth);
     window.location.href = "/index.html";
-};*/
-}
+};
