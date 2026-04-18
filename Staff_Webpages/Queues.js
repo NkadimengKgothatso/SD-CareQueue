@@ -9,7 +9,8 @@ import {
     doc,
     updateDoc,
     serverTimestamp,
-    getDoc
+    getDoc,
+    getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ─── Firebase Config ────────────────────────────────────────────────────────
@@ -314,11 +315,17 @@ onAuthStateChanged(auth, async (user) => {
 
     if (nameSurnameEl) nameSurnameEl.textContent = user.displayName || "Staff";
 
-    // Fetch the staff member's clinicID from ApprovedStaff before starting the listener
+    // Query ApprovedStaff by email instead of UID
     try {
-        const staffDoc = await getDoc(doc(db, "ApprovedStaff", user.uid));
-        if (staffDoc.exists()) {
-            staffClinicID = staffDoc.data().clinicID || null;
+        const q = query(
+            collection(db, "ApprovedStaff"),
+            where("email", "==", user.email)
+        );
+        const snapshot = await getDocs(q);
+
+        if (!snapshot.empty) {
+            staffClinicID = snapshot.docs[0].data().clinicId || null;
+            console.log("🏥 clinicId found:", staffClinicID);
         }
     } catch (err) {
         console.error("Failed to fetch staff clinic:", err);
