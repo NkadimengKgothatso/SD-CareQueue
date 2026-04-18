@@ -77,7 +77,7 @@ async function loadAppointments(userId) {
 
         const today = new Date();
         const upcoming = appointments
-            .filter(a => new Date(a.date) >= today)
+            .filter(a => new Date(a.date) <= today)
             .sort((a, b) => new Date(a.date) - new Date(b.date));
 
         if (upcoming.length === 0) { showEmpty(); return; }
