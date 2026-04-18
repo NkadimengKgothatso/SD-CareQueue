@@ -4,35 +4,29 @@ const { handleRedirect } = require("./authLogic");
 
 global.showPlaceholder = jest.fn();
 
-const assignMock = jest.fn();
-
-Object.defineProperty(window, "location", {
-  value: { assign: assignMock },
-  writable: true,
-  configurable: true,
-});
-
 describe("Login Role Redirect Tests", () => {
 
   beforeEach(() => {
-    assignMock.mockClear();
     jest.clearAllMocks();
   });
 
   test("Patient role redirects to patient dashboard", () => {
-    handleRedirect("patient", { displayName: "John" });
-    expect(assignMock).toHaveBeenCalledWith("../Patients_WebPages/PatientDashboard.html");
+    const go = jest.fn();
+    handleRedirect("patient", { displayName: "John" }, go);
+    expect(go).toHaveBeenCalledWith("../Patients_WebPages/PatientDashboard.html");
   });
 
   test("Staff role redirects to staff queue page", () => {
-    handleRedirect("staff", { displayName: "Jane" });
-    expect(assignMock).toHaveBeenCalledWith("../Staff_Webpages/Queues.html");
+    const go = jest.fn();
+    handleRedirect("staff", { displayName: "Jane" }, go);
+    expect(go).toHaveBeenCalledWith("../Staff_Webpages/Queues.html");
   });
 
   test("Admin role shows placeholder instead of redirect", () => {
-    handleRedirect("admin", { displayName: "AdminUser" });
+    const go = jest.fn();
+    handleRedirect("admin", { displayName: "AdminUser" }, go);
     expect(global.showPlaceholder).toHaveBeenCalledWith("admin", { displayName: "AdminUser" });
-    expect(assignMock).not.toHaveBeenCalled();
+    expect(go).not.toHaveBeenCalled();
   });
 
 });
