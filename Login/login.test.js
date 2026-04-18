@@ -4,15 +4,17 @@ const { handleRedirect } = require("./authLogic");
 
 global.showPlaceholder = jest.fn();
 
-let assignMock;
+const assignMock = jest.fn();
 
-beforeEach(() => {
-  assignMock = jest.fn();
-  jest.spyOn(window.location, "assign").mockImplementation(assignMock);
-  jest.clearAllMocks();
-});
+delete window.location;
+window.location = { assign: assignMock };
 
 describe("Login Role Redirect Tests", () => {
+
+  beforeEach(() => {
+    assignMock.mockClear();
+    jest.clearAllMocks();
+  });
 
   test("Patient role redirects to patient dashboard", () => {
     handleRedirect("patient", { displayName: "John" });
