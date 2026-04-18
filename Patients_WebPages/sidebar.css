@@ -178,28 +178,45 @@ body {
      color:#1f9d7a;
 }
 
-/* ===== CARD LAYOUT ===== */
+/* ===== APPOINTMENT CARD ===== */
 .appointment-card {
     display: flex;
     gap: 12px;
-    padding: 4px;
+    padding: 16px;
     border-radius: 12px;
     background: #fff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     width: 100%;
     position: relative;
+    border: 1px solid #e5e7eb;
+    box-sizing: border-box;
 }
 
-/* left green line */
-.card-accent {
-    width: 4px;
-    border-radius: 4px;
-    align-self: stretch;
+/* ===== STATUS BADGE ===== */
+.status-badge {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: capitalize;
 }
 
-.accent-upcoming {
-    background: #1f9d7a;
+.status-badge.scheduled {
+    background: #dcfce7;
+    color: #166534;
 }
+
+.status-badge.cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-badge.completed {
+    background: #e0f2fe;
+    color: #075985;
+}
+
+
 
 /* ===== BODY ===== */
 .card-body {
@@ -311,19 +328,7 @@ body {
     margin-bottom: 10px;
 }
 
-/* ===== APPOINTMENT EMPTY CARD ===== */
-.appointment-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    padding: 20px;
-    border-radius: 14px;
-    text-align: center;
-    transition: all 0.25s ease;
-}
 
-.appointment-card:hover {
-    box-shadow: 0 6px 18px rgba(0,0,0,0.05);
-}
 
 /* ===== CLINIC TITLE ===== */
 .card-clinic {
