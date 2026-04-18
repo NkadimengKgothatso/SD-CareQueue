@@ -103,15 +103,27 @@ confirmBtn.addEventListener("click", async () => {
 // in a map using its ID as the key for easy access later
 async function loadClinics() {
     try {
-        const response = await fetch("./clinics.json");
-        const clinics = await response.json();
-        clinics.forEach(clinic => {
+        const snapshot = await getDocs(collection(db, "clinicsObjects"));
+
+        clinicsMap.clear();
+
+        snapshot.forEach(docSnap => {
+            const clinic = docSnap.data();
+
+            if (!clinic.id) {
+                console.warn("Skipping clinic with missing id:", clinic);
+                return;
+            }
+
             clinicsMap.set(clinic.id.toString(), clinic);
         });
+
     } catch (error) {
         console.error("Failed to load clinics:", error);
     }
 }
+
+
 
 // empy state case
 function setEmptyState(container, message) {
