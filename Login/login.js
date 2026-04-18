@@ -164,29 +164,12 @@ window.signInWithGoogle = async function () {
 };
 
 // ================= SESSION RESTORE =================
-// Handles users who are already signed in when they visit the login page
+// Sign out any existing session so users must always log in fresh
 onAuthStateChanged(auth, async (user) => {
   if (isRedirecting) return;
-  if (!user) return;
-
-  const email = user.email.toLowerCase();
-
-  // Check admin first
-  const isAdmin = await isAuthorizedAdmin(email);
-  if (isAdmin) {
-    handleRedirect("admin");
-    return;
+  if (user) {
+    await signOut(auth);
   }
-
-  // Check staff
-  const isStaff = await isApprovedStaff(email);
-  if (isStaff) {
-    handleRedirect("staff");
-    return;
-  }
-
-  // Default to patient
-  handleRedirect("patient");
 });
 
 // ================= HELPERS =================

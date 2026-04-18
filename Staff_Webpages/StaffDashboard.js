@@ -15,6 +15,8 @@ import {
     onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+import { signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
 
 /* ================= FIREBASE ================= */
 const firebaseConfig = {
@@ -191,4 +193,10 @@ async function loadStats(clinicID) {
     } catch (error) {
         console.error("Error loading stats:", error);
     }
+
+// ================= SIGN OUT =================
+/*window.signOut = async function () {
+    await signOut(auth);
+    window.location.href = "/index.html";
+};*/
 }
