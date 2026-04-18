@@ -509,13 +509,9 @@ confirmBtn.addEventListener("click", async () => {
     now.setHours(0, 0, 0, 0);
 
     const tomorrowCheck = new Date(now);
-    tomorrowCheck.setDate(now.getDate() + 1);
+    tomorrowCheck.setDate(now.getDate());
 
-    if (selectedDate < tomorrowCheck) {
-        alert("Please select a date from tomorrow onwards.");
-        return;
-    }
-
+    
     if (!selectedClinicId || !date || !time || reason === "Select reason") {
         alert("Please fill in all fields");
         return;
