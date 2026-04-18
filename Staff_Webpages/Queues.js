@@ -5,8 +5,7 @@ import {
     collection,
     query,
     where,
-    getDocs,
-    addDoc,
+    onSnapshot,
     doc,
     updateDoc,
     serverTimestamp,
@@ -44,7 +43,8 @@ const nameSurnameEl = document.querySelector(".name-Surname");
 const queueList     = document.getElementById("upcoming");
 
 // ─── State ──────────────────────────────────────────────────────────────────
-let queueData = [];
+let queueData        = [];
+let unsubscribeQueue = null; // holds the onSnapshot unsubscribe fn
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 function getTodayString() {
@@ -52,11 +52,6 @@ function getTodayString() {
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const dd = String(d.getDate()).padStart(2, "0");
     return `${d.getFullYear()}-${mm}-${dd}`;
-}
-
-function getNextQueuePosition() {
-    if (!queueData.length) return 1;
-    return Math.max(...queueData.map(a => a.queuePosition || 0)) + 1;
 }
 
 // ─── Render: Empty State ─────────────────────────────────────────────────────
@@ -70,20 +65,25 @@ function renderEmptyState() {
 
 // ─── Render: Single Queue Card ───────────────────────────────────────────────
 function buildCard(appointment, positionLabel) {
-    const status   = (appointment.status || "waiting").toLowerCase().trim();
-    const label    = STATUS_LABELS[status] || status;
-    const pipeIdx  = STATUS_PIPELINE.indexOf(status);
+    const status    = (appointment.status || "waiting").toLowerCase().trim();
+    const label     = STATUS_LABELS[status] || status;
+    const pipeIdx   = STATUS_PIPELINE.indexOf(status);
     const nextStatus = (pipeIdx >= 0 && pipeIdx < STATUS_PIPELINE.length - 1)
         ? STATUS_PIPELINE[pipeIdx + 1]
         : null;
-    const nextLabel  = nextStatus ? STATUS_LABELS[nextStatus] : null;
-    const isDone     = !ACTIVE_STATUSES.has(status);
+    const nextLabel = nextStatus ? STATUS_LABELS[nextStatus] : null;
+    const isDone    = !ACTIVE_STATUSES.has(status);
 
     const li = document.createElement("li");
     li.classList.add("appointment-card", "queue-card");
     if (status === "in consultation") li.classList.add("active-consult");
     if (isDone) li.classList.add("done-card");
     li.dataset.appointmentId = appointment.id;
+
+    // Walk-in badge shown alongside patient name
+    const walkInBadge = appointment.isWalkIn
+        ? `<span class="badge badge-walkin" title="Walk-in patient">Walk-in</span>`
+        : "";
 
     li.innerHTML = `
         <div class="queue-position ${isDone ? "pos-done" : ""}">${positionLabel}</div>
@@ -93,6 +93,7 @@ function buildCard(appointment, positionLabel) {
                 <p class="card-patient-name">
                     <i class="fa-solid fa-user-circle"></i>
                     ${appointment.patientName || "Walk-in Patient"}
+                    ${walkInBadge}
                 </p>
                 <span class="badge badge-${status.replace(/ /g, "-")}">
                     ${label}
@@ -186,88 +187,125 @@ async function updateStatus(appointmentId, newStatus) {
             status:    newStatus,
             updatedAt: serverTimestamp()
         });
-
-        const appt = queueData.find(a => a.id === appointmentId);
-        if (appt) appt.status = newStatus;
-
-        renderQueue();
+        // No need to manually update queueData — onSnapshot will fire and re-render
     } catch (err) {
         console.error("Failed to update status:", err);
         alert("Could not update patient status. Please try again.");
     }
 }
 
-// ─── Load Today's Queue ──────────────────────────────────────────────────────
-async function loadTodaysQueue() {
+// ─── Resolve Patient Name ─────────────────────────────────────────────────────
+async function resolvePatientName(appt) {
+    // Walk-ins may already have a patientName set directly on the document
+    if (appt.patientName) return appt.patientName;
+
+    // Registered patients: look up Users collection by userID
+    if (appt.userID) {
+        try {
+            const userDoc = await getDoc(doc(db, "Users", appt.userID));
+            if (userDoc.exists()) return userDoc.data().displayName || null;
+        } catch (err) {
+            console.error("Failed to fetch patient name:", err);
+        }
+    }
+
+    return null; // will fall back to "Walk-in Patient" in the card
+}
+
+// ─── Start Real-Time Queue Listener ──────────────────────────────────────────
+function startQueueListener() {
+    // Tear down any existing listener first
+    if (unsubscribeQueue) {
+        unsubscribeQueue();
+        unsubscribeQueue = null;
+    }
+
     queueList.innerHTML = `
         <li class="loading-state">
             <i class="fa-solid fa-spinner fa-spin"></i> Loading today's queue…
         </li>`;
 
-    try {
-        const q = query(
-            collection(db, "Appointments"),
-            where("date", "==", getTodayString())
-        );
+    const today = getTodayString();
 
-        const snapshot = await getDocs(q);
-        queueData = [];
-        let autoPosition = 1;
+    // Single query on "date" field — covers both booked and walk-in appointments
+    // as long as walk-ins are written with today's date string (which they should be)
+    const q = query(
+        collection(db, "Appointments"),
+        where("date", "==", today)
+    );
 
-        snapshot.forEach(docSnap => {
-            const d = docSnap.data();
-            let status = (d.status || "waiting").toLowerCase().trim();
+    unsubscribeQueue = onSnapshot(
+        q,
+        async (snapshot) => {
+            // Build a fresh map keyed by doc id so we can merge in names
+            const incoming = [];
+            let autoPosition = 1;
 
-            if (status === "scheduled") status = "waiting";
+            snapshot.forEach(docSnap => {
+                const d = docSnap.data();
+                let status = (d.status || "waiting").toLowerCase().trim();
+                if (status === "scheduled") status = "waiting";
 
-            queueData.push({
-                id:            docSnap.id,
-                date:          d.date,
-                time:          d.time          || "",
-                status:        status,
-                reason:        d.reason        || "",
-                patientName:   d.patientName   || null,
-                isWalkIn:      d.isWalkIn      || false,
-                queuePosition: d.queuePosition || autoPosition++,
-                userID:        d.userID        || null
+                incoming.push({
+                    id:            docSnap.id,
+                    date:          d.date,
+                    time:          d.time          || "",
+                    status:        status,
+                    reason:        d.reason        || "",
+                    // Prefer name already on the document (common for walk-ins)
+                    // Walk-ins store the name under "name"; booked appointments use "patientName"
+                    patientName:   d.patientName   || d.name || null,
+                    isWalkIn:      d.isWalkIn      || false,
+                    queuePosition: d.queuePosition || autoPosition++,
+                    userID:        d.userID        || null
+                });
             });
-        });
 
-        // Fetch patient names from Users collection
-        for (let appt of queueData) {
-            if (appt.userID) {
-                try {
-                    const userDoc = await getDoc(doc(db, "Users", appt.userID));
-                    if (userDoc.exists()) {
-                        appt.patientName = userDoc.data().displayName;
+            // Resolve names that require a Users lookup (registered patients)
+            // Preserve previously-resolved names to avoid redundant reads
+            const existingNames = Object.fromEntries(
+                queueData.map(a => [a.id, a.patientName])
+            );
+
+            await Promise.all(
+                incoming.map(async (appt) => {
+                    if (!appt.patientName && existingNames[appt.id]) {
+                        // Reuse cached name from previous snapshot
+                        appt.patientName = existingNames[appt.id];
+                    } else if (!appt.patientName) {
+                        appt.patientName = await resolvePatientName(appt);
                     }
-                } catch (err) {
-                    console.error("Failed to fetch patient name:", err);
-                }
-            }
+                })
+            );
+
+            queueData = incoming;
+            renderQueue();
+        },
+        (err) => {
+            console.error("Queue listener error:", err);
+            queueList.innerHTML = `
+                <li class="empty-state error-state">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    Failed to load queue. Please refresh the page.
+                </li>`;
         }
-
-        renderQueue();
-
-    } catch (err) {
-        console.error("Failed to load queue:", err);
-        queueList.innerHTML = `
-            <li class="empty-state error-state">
-                <i class="fa-solid fa-circle-exclamation"></i>
-                Failed to load queue. Please refresh the page.
-            </li>`;
-    }
+    );
 }
 
 // ─── Auth & Bootstrap ────────────────────────────────────────────────────────
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, (user) => {
     if (!user) {
         if (nameSurnameEl) nameSurnameEl.textContent = "Staff";
+        // Stop any active listener when user logs out
+        if (unsubscribeQueue) {
+            unsubscribeQueue();
+            unsubscribeQueue = null;
+        }
         renderEmptyState();
         return;
     }
 
     if (nameSurnameEl) nameSurnameEl.textContent = user.displayName || "Staff";
 
-    await loadTodaysQueue();
+    startQueueListener();
 });

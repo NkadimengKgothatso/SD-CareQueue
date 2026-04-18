@@ -1,18 +1,18 @@
 /* ============================================================
    Queue Management – Staff View Styles
-   Complements your existing bookAppointments.css
    ============================================================ */
 
 /* ── CSS Variables ──────────────────────────────────────── */
 :root {
     --clr-primary:       #185FA5;
-    --clr-primary-light: #e8f5f0;
+    --clr-primary-dark:  #114880;
+    --clr-primary-light: #e8f0fa;
     --clr-danger:        #dc3545;
     --clr-danger-light:  #fdecea;
     --clr-warning:       #e07b00;
     --clr-warning-light: #fff3e0;
     --clr-success:       #185FA5;
-    --clr-success-light: #eaf4ef;
+    --clr-success-light: #e8f0fa;
     --clr-muted:         #6c757d;
     --clr-border:        #dee2e6;
     --clr-surface:       #ffffff;
@@ -21,7 +21,7 @@
     --radius-card: 12px;
     --radius-btn:  8px;
     --shadow-card: 0 2px 8px rgba(0,0,0,0.08);
-    --shadow-hover:0 6px 18px rgba(0,0,0,0.13);
+    --shadow-hover: 0 6px 18px rgba(0,0,0,0.13);
 
     --transition: 0.2s ease;
 }
@@ -60,7 +60,7 @@
 
 .stat-sub {
     font-size: 0.78rem;
-    color: #1a9e6e;
+    color: #185FA5;
     font-weight: 600;
     margin-top: 2px;
 }
@@ -80,70 +80,89 @@
     flex-direction: column;
     gap: 14px;
 }
-/* Sidebar */
-aside {
-    width: 19%;
-    background-color: #185FA5;
-    padding: 20px;
-    border-radius: var(--radius-md);
-    min-height: 100vh;
+
+/* ===== SIDEBAR ===== */
+aside,
+.sidebar {
+    width: 240px;
+    height: 100%;
+    background: white;
+    padding: 20px 0;
+    border-right: 1px solid #dee2e6;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    justify-content: space-between;
 }
 
+/* NAV LIST */
+.sidebar ul,
 aside ul {
     list-style: none;
     padding: 0;
-    margin-top: 20px;
+    margin: 0;
 }
 
+.sidebar li,
 aside ul li {
-    margin-bottom: 10px;
+    margin: 4px 8px;
 }
 
+/* LINKS */
+.sidebar a,
 aside ul li a {
     display: flex;
     align-items: center;
-    gap: 10px;
-    text-decoration: none;
-    color: var(--color-bg-secondary);
-    padding: 10px 12px;
-    border-radius: var(--radius-md);
-    transition: 0.3s;
-    font-weight: 500;
-}
-
-aside ul li a:hover {
-    background-color: var(--color-brand);
-    color: white;
-}
-
-.user-Section {
-    margin-top: auto;
-    display: flex;
-    align-items: center;
     gap: 12px;
-    padding: 10px;
-    background-color: #f3f4f6;
-    border-radius: var(--radius-lg);
+    padding: 12px 20px;
+    text-decoration: none;
+    color: #333;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
 }
 
+/* HOVER */
+.sidebar a:hover,
+aside ul li a:hover {
+    background: var(--clr-primary-light);
+    color: var(--clr-primary);
+}
+
+/* ACTIVE PAGE */
+.sidebar a.active,
+aside nav ul li a.active {
+    background: var(--clr-primary-light);
+    color: var(--clr-primary);
+    font-weight: 700;
+}
+
+/* USER SECTION */
+.user-section,
+.user-Section {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: auto;
+}
+
+.user-section i,
 .user-Section i {
-    color: var(--color-brand);
+    color: var(--clr-primary);
     font-size: 20px;
 }
 
 .name-Surname {
     font-weight: 600;
     margin-bottom: 2px;
+    color: #1a1a2e;
 }
 
 .user-Identity {
-    font-size: 0.85rem;
-    color: var(--color-text-secondary);
+    font-size: 0.82rem;
+    color: var(--clr-muted);
 }
-
 
 /* ── Queue Card ─────────────────────────────────────────── */
 .queue-card {
@@ -162,14 +181,12 @@ aside ul li a:hover {
     transform: translateY(-2px);
 }
 
-/* Active patient currently in consultation gets a highlighted border */
 .queue-card.active-consult {
     border-color: var(--clr-primary);
     border-left: 4px solid var(--clr-primary);
     background: linear-gradient(135deg, var(--clr-primary-light) 0%, var(--clr-surface) 60%);
 }
 
-/* Completed / cancelled cards are visually muted */
 .queue-card.done-card {
     opacity: 0.65;
     border-style: dashed;
@@ -291,8 +308,8 @@ aside ul li a:hover {
 }
 
 .advance-btn:hover {
-    background: #155e43;
-    box-shadow: 0 2px 8px rgba(26,127,90,0.35);
+    background: var(--clr-primary-dark);
+    box-shadow: 0 2px 8px rgba(24, 95, 165, 0.35);
 }
 
 /* Cancel */
@@ -309,7 +326,7 @@ aside ul li a:hover {
 
 .completed-tag {
     font-size: 0.85rem;
-    color: var(--clr-success);
+    color: var(--clr-primary);
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -328,11 +345,12 @@ aside ul li a:hover {
     white-space: nowrap;
 }
 
-.badge-waiting        { background: var(--clr-warning-light); color: var(--clr-warning); }
-.badge-scheduled      { background: #e8ecff;                  color: #3a4db7; }
-.badge-in-consultation{ background: var(--clr-primary-light); color: var(--clr-primary); }
-.badge-completed      { background: var(--clr-success-light); color: var(--clr-success); }
-.badge-cancelled      { background: #f0f0f0;                  color: var(--clr-muted);   }
+.badge-waiting         { background: var(--clr-warning-light); color: var(--clr-warning); }
+.badge-scheduled       { background: #e8ecff;                  color: #3a4db7; }
+.badge-in-consultation { background: var(--clr-primary-light); color: var(--clr-primary); }
+.badge-completed       { background: var(--clr-success-light); color: var(--clr-success); }
+.badge-cancelled       { background: #f0f0f0;                  color: var(--clr-muted);   }
+.badge-walkin          { background: var(--clr-warning-light); color: var(--clr-warning); }
 
 /* ── Section Divider ────────────────────────────────────── */
 .section-divider {
@@ -477,7 +495,7 @@ aside ul li a:hover {
 
 .modal-field input:focus {
     border-color: var(--clr-primary);
-    box-shadow: 0 0 0 3px rgba(26,127,90,0.15);
+    box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.15);
 }
 
 .modal-footer {
@@ -493,7 +511,7 @@ aside ul li a:hover {
     font-weight: 600;
 }
 
-/* ── Shared Button Styles (primary / secondary) ─────────── */
+/* ── Shared Button Styles ───────────────────────────────── */
 .primary-btn {
     display: inline-flex;
     align-items: center;
@@ -510,8 +528,8 @@ aside ul li a:hover {
 }
 
 .primary-btn:hover {
-    background: #155e43;
-    box-shadow: 0 3px 10px rgba(26,127,90,0.35);
+    background: var(--clr-primary-dark);
+    box-shadow: 0 3px 10px rgba(24, 95, 165, 0.35);
 }
 
 .secondary-btn {
@@ -533,13 +551,13 @@ aside ul li a:hover {
     background: var(--clr-bg);
 }
 
-/* ── Confirm Button (repurposed) ────────────────────────── */
+/* ── Confirm Button ─────────────────────────────────────── */
 .confirm-Button {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 12px 26px;
-    background: var(--clr-success);
+    background: var(--clr-primary);
     color: #fff;
     border: none;
     border-radius: var(--radius-btn);
@@ -551,8 +569,8 @@ aside ul li a:hover {
 }
 
 .confirm-Button:hover {
-    background: #146c43;
-    box-shadow: 0 4px 14px rgba(25,135,84,0.35);
+    background: var(--clr-primary-dark);
+    box-shadow: 0 4px 14px rgba(24, 95, 165, 0.35);
 }
 
 /* ── Responsive ─────────────────────────────────────────── */
