@@ -20,6 +20,7 @@
         <span class="logo-name" style="vertical-align: middle;">Care Queue</span>
         </nav>
         
+        
     </header>
 
     
@@ -36,12 +37,7 @@
                     Dashboard
                 </a>
             </li>
-            <li>
-                <a href="#" id="signout-btn">
-                    <i class="material-icons">logout</i>
-                    Sign Out
-                 </a>
-            </li>
+        
             <li>
                 <a href="Appointments.html">
                     <i class="material-icons">event</i>
@@ -73,6 +69,7 @@
                     Notifications
                 </a>
             </li>
+            
         </ul>
 
         <section class="user-Section">
@@ -80,6 +77,9 @@
             <section>
                 <p class="name-Surname"></p>
                 <p class="user-Identity" style="padding: 3px">Staff</p>
+                 <button class="sign-out-btn" onclick="signOut()">
+                     <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                </button>
             </section>
         </section>
     </aside>
@@ -89,6 +89,7 @@
             <section class="dashboard-header" id="welcome">
                 <h2>Welcome, <strong class="name-Surname"></strong></h2>
                 <p id="clinicAndTime">Zola Community Clinic · Wednesday, 2 April 2026</p>
+                
             </section>
 
             <!-- Stats -->
