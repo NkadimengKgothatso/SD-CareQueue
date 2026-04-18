@@ -7,10 +7,12 @@ import {
     where,
     onSnapshot,
     doc,
-    updateDoc,
-    serverTimestamp,
     getDoc,
-    getDocs
+    getDocs,
+    setDoc,
+    updateDoc,
+    deleteDoc,
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ─── Firebase Config ────────────────────────────────────────────────────────
@@ -195,14 +197,24 @@ function renderQueue() {
     }
 }
 
-// ─── Update Status ───────────────────────────────────────────────────────────
+// ─── Update Status in BOTH Appointments and Queues ───────────────────────────
 async function updateStatus(appointmentId, newStatus) {
     try {
+        // Update Appointments
         await updateDoc(doc(db, "Appointments", appointmentId), {
             status:    newStatus,
             updatedAt: serverTimestamp()
         });
-        // onSnapshot will fire automatically and re-render
+
+        // Update matching Queues entry (keyed by appointmentId)
+        const queueRef = doc(db, "Queues", appointmentId);
+        const queueSnap = await getDoc(queueRef);
+        if (queueSnap.exists()) {
+            await updateDoc(queueRef, {
+                status:    newStatus,
+                updatedAt: serverTimestamp()
+            });
+        }
     } catch (err) {
         console.error("Failed to update status:", err);
         alert("Could not update patient status. Please try again.");
@@ -212,7 +224,6 @@ async function updateStatus(appointmentId, newStatus) {
 // ─── Resolve Patient Name ─────────────────────────────────────────────────────
 async function resolvePatientName(appt) {
     if (appt.patientName) return appt.patientName;
-
     if (appt.userID) {
         try {
             const userDoc = await getDoc(doc(db, "Users", appt.userID));
@@ -221,8 +232,61 @@ async function resolvePatientName(appt) {
             console.error("Failed to fetch patient name:", err);
         }
     }
-
     return null;
+}
+
+// ─── Delete old Queues entries (not from today) ───────────────────────────────
+async function deleteOldQueueEntries() {
+    const today = getTodayString();
+    try {
+        const allQueues = await getDocs(collection(db, "Queues"));
+        const deletions = [];
+        allQueues.forEach(docSnap => {
+            const d = docSnap.data();
+            // Delete if it belongs to this clinic and is not from today
+            if (
+                d.clinicID === Number(staffClinicID) &&
+                d.date !== today
+            ) {
+                deletions.push(deleteDoc(doc(db, "Queues", docSnap.id)));
+            }
+        });
+        await Promise.all(deletions);
+        console.log(`🗑️ Deleted ${deletions.length} old queue entries`);
+    } catch (err) {
+        console.error("Failed to delete old queue entries:", err);
+    }
+}
+
+// ─── Copy Today's Appointments into Queues ────────────────────────────────────
+async function syncAppointmentsToQueues(appointments) {
+    const today = getTodayString();
+
+    // Sort by appointment time so earliest = position 1
+    const sorted = [...appointments].sort((a, b) =>
+        (a.time || "").localeCompare(b.time || "")
+    );
+
+    const writes = sorted.map((appt, idx) =>
+        setDoc(doc(db, "Queues", appt.id), {
+            appointmentId: appt.id,
+            clinicID:      Number(staffClinicID),
+            date:          today,
+            userID:        appt.userID   || null,
+            status:        appt.status   || "waiting",
+            time:          appt.time     || "",
+            position:      idx + 1,
+            estimateWait:  (idx) * 15,   // rough estimate: 15 min per patient ahead
+            updatedAt:     serverTimestamp()
+        })
+    );
+
+    try {
+        await Promise.all(writes);
+        console.log(`✅ Synced ${writes.length} appointments to Queues`);
+    } catch (err) {
+        console.error("Failed to sync appointments to Queues:", err);
+    }
 }
 
 // ─── Start Real-Time Queue Listener ──────────────────────────────────────────
@@ -239,11 +303,8 @@ function startQueueListener() {
 
     const today = getTodayString();
 
-    console.log("🔍 Querying appointments for clinicID:", staffClinicID);
-    console.log("🔍 Type:", typeof staffClinicID);
-    console.log("🔍 Today:", today);
+    console.log("🔍 Querying Appointments for clinicID:", staffClinicID, "| today:", today);
 
-    // Cast clinicID to Number to match how it is stored in Appointments
     const q = query(
         collection(db, "Appointments"),
         where("date",     "==", today),
@@ -253,6 +314,8 @@ function startQueueListener() {
     unsubscribeQueue = onSnapshot(
         q,
         async (snapshot) => {
+            console.log("📋 Appointments snapshot size:", snapshot.size);
+
             const incoming = [];
             let autoPosition = 1;
 
@@ -267,7 +330,6 @@ function startQueueListener() {
                     time:          d.time          || "",
                     status:        status,
                     reason:        d.reason        || "",
-                    // Walk-ins use "name"; booked appointments use "patientName"
                     patientName:   d.patientName   || d.name || null,
                     isWalkIn:      d.isWalkIn      || false,
                     queuePosition: d.queuePosition || autoPosition++,
@@ -275,14 +337,14 @@ function startQueueListener() {
                 });
             });
 
-            // Cache previously resolved names to avoid redundant Firestore reads
+            // Resolve patient names
             const existingNames = Object.fromEntries(
                 queueData.map(a => [a.id, a.patientName])
             );
 
             await Promise.all(
                 incoming.map(async (appt) => {
-                    if (!appt.patientName && existingNames[appt.id]) {
+                    if (existingNames[appt.id]) {
                         appt.patientName = existingNames[appt.id];
                     } else if (!appt.patientName) {
                         appt.patientName = await resolvePatientName(appt);
@@ -291,6 +353,11 @@ function startQueueListener() {
             );
 
             queueData = incoming;
+
+            // Delete old queue entries then sync today's appointments into Queues
+            await deleteOldQueueEntries();
+            await syncAppointmentsToQueues(incoming);
+
             renderQueue();
         },
         (err) => {
@@ -325,11 +392,15 @@ onAuthStateChanged(auth, async (user) => {
             collection(db, "ApprovedStaff"),
             where("email", "==", user.email)
         );
+        console.log("🔎 Searching ApprovedStaff for email:", user.email);
         const snapshot = await getDocs(staffQuery);
+        console.log("📄 Snapshot empty?", snapshot.empty);
 
         if (!snapshot.empty) {
-            staffClinicID = snapshot.docs[0].data().clinicId || null; // lowercase 'd'
-            console.log("🏥 clinicID found:", staffClinicID);
+            const data = snapshot.docs[0].data();
+            console.log("📄 Full document data:", JSON.stringify(data));
+            staffClinicID = data.clinicId || null;
+            console.log("🏥 clinicId found:", staffClinicID);
         }
     } catch (err) {
         console.error("Failed to fetch staff clinic:", err);
