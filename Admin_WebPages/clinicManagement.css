@@ -128,6 +128,7 @@
     padding-bottom: 12px;
 }
 
+
 .clinicHeader i {
     font-size: 20px;
     color: var(--color-brand);
@@ -170,13 +171,23 @@
 .clinicContainer {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 20px;
+    justify-content: space-evenly;
 }
 
-.clinicInfo {
+.clinicCardHeader{
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-evenly;
+    gap: 20px;
+}
+
+.clinicServices {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 8px;
+    align-items: center;
 }
 
 .services {
@@ -226,8 +237,16 @@
     color: white;
 }
 
-/* ── Add Clinic Modal ──────────────────────────────────────── */
-/* Uses class .modal — separate from admin.css .modal-overlay */
+
+
+
+
+
+
+
+
+/* 🔥 overlay */
+.ManageModal,
 .modal {
     display: none;
     position: fixed;
@@ -314,4 +333,92 @@
 
 .clinicForm button[type="submit"]:hover {
     background: var(--color-brand-dark);
+}
+
+.status {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+/* Active */
+.status.active {
+    background: #DCFCE7;
+    color: #166534;
+}
+
+/* Closed */
+.status.closed {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+/* Busy */
+.status.busy {
+    background: #FEF9C3;
+    color: #92400E;
+}
+
+.OpenTimes {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    gap: 8px;
+    font-size: 13.5px;
+    color: var(--color-text-secondary);
+}
+ 
+.OpenTimes i{
+    font-size: 16px;
+    color: var(--color-brand);  
+}
+#status {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 9px 16px;
+    border-radius: 20px;
+    margin-left: auto;
+}
+
+.status {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+/* Active */
+.status.active {
+    background: #DCFCE7;
+    color: #166534;
+}
+
+/* Closed */
+.status.closed {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+/* Busy */
+.status.busy {
+    background: #FEF9C3;
+    color: #92400E;
+}
+
+.OpenTimes {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    gap: 8px;
+    font-size: 13.5px;
+    color: var(--color-text-secondary);
+}
+
+#status {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 9px 16px;
+    border-radius: 20px;
+    margin-left: auto;
 }
