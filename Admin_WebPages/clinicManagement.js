@@ -13,7 +13,7 @@ import {
     doc,
     getDoc,
     updateDoc,
-    deleteDoc,
+    deleteDoc  
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -29,10 +29,10 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// If not signed in, redirect back to login
-onAuthStateChanged(auth, (user) => {
-    if (!user) window.location.href = "../Login/index.html";
-});
+// // If not signed in, redirect back to login
+// onAuthStateChanged(auth, (user) => {
+//     if (!user) window.location.href = "../Login/index.html";
+// });
 
 // Sign out
 window.signOut = async function() {
@@ -42,52 +42,85 @@ window.signOut = async function() {
 
 
 
+const ADMINS_COLLECTION = "admins"; // lowercase — matches Firestore collection name
+let editingClinicId = null;
+const statusOptions = ["Active", "Closed", "Busy"]; // 🔥 central source of truth for status values
+
+// ================= ADMIN CHECK =================
+async function isUserAdmin(user) {
+  if (!user) return false;
+  try {
+    const snapshot = await getDocs(collection(db, ADMINS_COLLECTION));
+    const match = snapshot.docs.find(doc => {
+      const stored = (doc.data().email || "").toLowerCase().trim();
+      return stored === user.email.toLowerCase().trim();
+    });
+    return !!match;
+  } catch (error) {
+    console.error("Error checking admin status:", error);
+    return false;
+  }
+}
+
+// ================= AUTH GUARD =================
+async function checkAdminAuth(user) {
+  if (!user) {
+    window.location.href = "/index.html";
+    return false;
+  }
+
+  const isAdmin = await isUserAdmin(user);
+  if (!isAdmin) {
+    await signOut(auth);
+    window.location.href = "/index.html";
+    return false;
+  }
+
+  // Update admin name in UI if element exists
+  const nameSurname = document.getElementById("name-Surname");
+//   const adminEmailSpan = document.getElementById("adminEmail");
+
+  if (nameSurname) {
+    nameSurname.textContent = user.displayName?.split(" ")[0] || user.email?.split("@")[0] || "Admin";
+  }
+  return true;
+}
+
+
+// ================= INIT =================
+onAuthStateChanged(auth, async (user) => {
+  await checkAdminAuth(user);
+  // Staff management functionality will be added in the next sprint
+});
+
 // =========================
 // MODAL LOGIC
 // =========================
 const addBtn = document.querySelector(".addBtn");
 const modal = document.getElementById("clinicModal");
-const closeBtn = document.querySelector(".close-btn");
-const form = document.querySelector(".clinicForm");
+const closeBtns = document.querySelectorAll(".close-btn");
+const addForm = document.querySelector("#clinicModal form");
+const manageForm = document.querySelector("#ManageClinicModal form");
+const manageModal = document.getElementById("ManageClinicModal");
+
+closeBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+        modal.style.display = "none";
+        manageModal.style.display = "none";
+    });
+});
 
 // open modal
 addBtn.addEventListener("click", () => {
     modal.style.display = "flex";
 });
 
-// close modal (X)
-closeBtn.addEventListener("click", () => {
-    modal.style.display = "none";
-});
 
 // close when clicking outside
 window.addEventListener("click", (e) => {
     if (e.target === modal) {
         modal.style.display = "none";
     }
-});
-
-
-// =========================
-// FORM SUBMIT (CORRECT WAY)
-// =========================
-form.addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    const clinicName = document.getElementById("clinicName").value;
-    const clinicAddress = document.getElementById("Location").value;
-
-    console.log("Clinic Name:", clinicName);
-    console.log("Clinic Address:", clinicAddress);
-
-    // OPTIONAL: Add to UI dynamically
-    addClinicToUI(clinicName, clinicAddress);
-
-    // reset form
-    form.reset();
-
-    // close modal
-    modal.style.display = "none";
 });
 
 let clinics = []; // 🔥 global dataset
@@ -109,7 +142,8 @@ async function loadClinics() {
                 name: data.name,
                 address: data.address,
                 status: data.status,
-                service: data.service
+                service: data.service,
+                operatingHours: data.opening_hours
             };
 
             clinics.push(clinicObj); // 🔥 IMPORTANT
@@ -124,7 +158,7 @@ async function loadClinics() {
 
 loadClinics();
 
-function addClinicToUI(id, name, location, status = "Active", service = "General") {
+function addClinicToUI(id, name, location, status="Active", service = "General", operatingHours) {
     const container = document.querySelector(".clinics");
     const clinic = document.createElement("section");
     clinic.classList.add("clinic");
@@ -139,12 +173,20 @@ function addClinicToUI(id, name, location, status = "Active", service = "General
             <p id="status">${status}</p>
         </section>                      
         <section class="clinicContainer">
+
+            <section class="OpenTimes">
+                <i class="fa-regular fa-clock"></i>
+                <p>${operatingHours}</p>
+            </section>
             <section class="clinicInfo">
+                <section class="services">${service}</section>
+                <section class="services">${service}</section>
+                <section class="services">${service}</section>
                 <section class="services">${service}</section>
             </section>
 
             <section class="clinic-Btns">
-                <button>Manage</button>
+                <button class="manage-btn">Manage</button>
                 <button>Hours</button>
                 <button class="delete-btn" id="deleteBtn">Delete</button>
             </section>
@@ -152,6 +194,17 @@ function addClinicToUI(id, name, location, status = "Active", service = "General
     `;
 
     container.appendChild(clinic);
+
+    const statusColors = {
+        Active: { background: "#DCFCE7", color: "#166534" },   // green
+        Closed: { background: "#FEE2E2", color: "#991B1B" },   // red
+        Busy:   { background: "#E5E7EB", color: "#374151" }    // grey
+    };
+
+    const statusEl = clinic.querySelector("#status");
+    const colors = statusColors[status] || statusColors["Active"];
+    statusEl.style.background = colors.background;
+    statusEl.style.color = colors.color;
 
     const deleteBtn = clinic.querySelector(".delete-btn");
 
@@ -169,8 +222,53 @@ function addClinicToUI(id, name, location, status = "Active", service = "General
             console.error("Error deleting clinic:", error);
         }
     });
+
+    // 🔥 MANAGE (EDIT)
+    clinic.querySelector(".manage-btn").addEventListener("click", () => {
+        console.log("MANAGE CLICKED"); // 👈 should print
+        openEditModal(id, name, location, status);
+    });
 }
 
+addForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const name = document.getElementById("clinicName").value.trim();
+  const address = document.getElementById("Location").value.trim();
+  const status = document.getElementById("clinicStatus").value;
+
+  await addDoc(collection(db, "clinicsObjects"), {
+    name,
+    address,
+    status,
+    service: "General",
+    createdAt: serverTimestamp()
+  });
+
+  loadClinics();
+  addForm.reset();
+  modal.style.display = "none";
+});
+
+manageForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+    // manageModal.style.display = "flex";
+
+  const name = document.getElementById("ManageClinicName").value.trim();
+  const address = document.getElementById("ManageLocation").value.trim();
+  const status = document.getElementById("ManageClinicStatus").value;
+
+  await updateDoc(doc(db, "clinicsObjects", editingClinicId), {
+    name,
+    address,
+    status
+  });
+
+  loadClinics();
+  manageForm.reset();
+  manageModal.style.display = "none";
+});
 
 const searchInput = document.getElementById("clinicSearch");
 
@@ -195,7 +293,26 @@ function renderClinics(list) {
             c.name,
             c.address,
             c.status,
-            c.service
+            c.service,
+            c.operatingHours
         );
     });
+}
+
+function openEditModal(id, name, address, status) {
+    editingClinicId = id;
+
+    console.log("Modal element:", manageModal);
+    console.log("Current display:", manageModal.style.display);
+    editingClinicId = id;
+    manageModal.style.display = "flex";
+    console.log("After setting display:", manageModal.style.display);
+
+    // fill inputs (⚠️ careful: duplicate IDs)
+    document.querySelector("#ManageClinicModal #ManageClinicName").value = name;
+    document.querySelector("#ManageClinicModal #ManageLocation").value = address;
+    document.querySelector("#ManageClinicModal #ManageClinicStatus").value = status;
+
+    // change button text
+    document.querySelector("#ManageClinicModal button").textContent = "Update Clinic";
 }

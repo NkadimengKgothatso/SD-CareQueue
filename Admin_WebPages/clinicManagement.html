@@ -57,7 +57,8 @@
                 <p class="page-subtitle">Add, edit, or remove clinics from the system</p>
             </div>
 
-            <!-- Search bar -->
+        <section class="content">
+            <p class="title"> Manage Clinics</p>
             <section class="search-Bar">
                 <i class="fa-solid fa-magnifying-glass-location" style="color: var(--color-brand);"></i>
                 <input id="clinicSearch" type="search" placeholder="Search clinic by name or location">
@@ -94,6 +95,44 @@
                     <option>North West</option>
                     <option>Northern Cape</option>
                 </select>
+                
+
+                <select id="clinicStatus" required>
+                    <option value="Active">Active</option>
+                    <option value="Closed">Closed</option>
+                    <option value="Busy">Busy</option>
+                </select>
+                <button type="submit">Add Clinic</button>
+            </form>
+
+        </section>
+    </section>
+
+
+    <section class="ManageModal" id="ManageClinicModal">
+        <section class="modal-content">
+
+            <span class="close-btn">&times;</span>
+
+            <h3>Manage clinic</h3>
+
+            <form class="clinicForm">
+                <input type="text" placeholder="Clinic Name" class="form-control" id="ManageClinicName" required>
+                <input type="text" placeholder="Location" class="form-control" id="ManageLocation" required>
+
+                <select required>
+                    <option value="" disabled selected>Select Province</option>
+                    <option>Gauteng</option>
+                    <option>Western Cape</option>
+                    <option>Eastern Cape</option>
+                    <option>KwaZulu-Natal</option>
+                    <option>Free State</option>
+                    <option>Limpopo</option>
+                    <option>Mpumalanga</option>
+                    <option>North West</option>
+                    <option>Northern Cape</option>
+                </select>
+
                 <button type="submit">Add Clinic</button>
             </form>
         </section>
