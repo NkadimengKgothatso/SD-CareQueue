@@ -1,4 +1,5 @@
 {
+  
   "name": "sd-carequeue",
   "version": "1.0.0",
   "description": "",
@@ -8,7 +9,14 @@
     "coverage": "jest --coverage"
   },
   "jest": {
-    "testEnvironment": "jsdom"
+    "testEnvironment": "jsdom",
+    "collectCoverageFrom": [
+    "Login/authLogic.js",
+    "Admin_WebPages/staffLogic.js",
+    "Patients_WebPages/*Logic.js",
+    "!**/*.test.js",
+    "!**/node_modules/**"
+  ]
   },
   "repository": {
     "type": "git",
@@ -26,3 +34,5 @@
     "jest-environment-jsdom": "^30.3.0"
   }
 }
+
+
