@@ -65,9 +65,9 @@ function buildStaffTableHTML(staffList) {
   return staffList
     .map(({ id, displayName, email, assignedClinic }) => `
       <tr>
-        <td>${displayName || "—"}</td>
-        <td>${email       || "—"}</td>
-        <td>${assignedClinic || "—"}</td>
+        <td>${displayName || "-"}</td>
+        <td>${email       || "-"}</td>
+        <td>${assignedClinic || "-"}</td>
         <td>
           <button
             class="btn btn-small"

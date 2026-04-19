@@ -129,25 +129,25 @@ describe("buildStaffTableHTML()", () => {
     expect(html).toContain("Soweto Clinic");
   });
 
-  test("uses em-dash for missing displayName", () => {
+  test("uses a dash for missing displayName", () => {
     const html = buildStaffTableHTML([
       { id: "1", displayName: "", email: "thabo@clinic.co.za", assignedClinic: "Soweto" }
     ]);
-    expect(html).toContain("—");
+    expect(html).toContain("-");
   });
 
-  test("uses em-dash for missing email", () => {
+  test("uses a dash for missing email", () => {
     const html = buildStaffTableHTML([
       { id: "1", displayName: "Thabo", email: "", assignedClinic: "Soweto" }
     ]);
-    expect(html).toContain("—");
+    expect(html).toContain("-");
   });
 
-  test("uses em-dash for missing assignedClinic", () => {
+  test("uses a dash for missing assignedClinic", () => {
     const html = buildStaffTableHTML([
       { id: "1", displayName: "Thabo", email: "thabo@clinic.co.za", assignedClinic: "" }
     ]);
-    expect(html).toContain("—");
+    expect(html).toContain("-");
   });
 
 
