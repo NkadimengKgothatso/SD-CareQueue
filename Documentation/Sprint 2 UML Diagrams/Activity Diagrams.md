@@ -4,7 +4,7 @@
 ![Patient Dashboard](images/KG.png)
 
 ### 2. Staff Dashboard
-![Staff Dashboard](images/wilson.png)
+![Staff Dashboard](images/wilson.jpeg)
 
 ### 3. Walk-in Registration
 ![Walk-in Registration](images/Junior.png)
