@@ -89,12 +89,7 @@ async function loadAppointments(clinicID) {
     try {
         const container = document.querySelector(".appointments");
 
-        // Prevent wiping UI repeatedly
-        if (!container.dataset.loaded) {
-            container.innerHTML = "<h3>UPCOMING APPOINTMENTS</h3>";
-            container.dataset.loaded = "true";
-        }
-
+       
         const q = query(
             collection(db, "Appointments"),
             where("clinicID", "==", clinicID)
@@ -115,42 +110,49 @@ async function loadAppointments(clinicID) {
         // Sort locally (no index needed)
         docs.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
 
-        for (const data of docs) {
-            let displayName = "Unknown";
+       for (const data of docs) {
 
-            if (data.userID) {
-                try {
-                    const userRef = doc(db, "Users", data.userID);
-                    const userSnap = await getDoc(userRef);
+    const status = String(data.status || "").toLowerCase().trim();
 
-                    if (userSnap.exists()) {
-                        displayName = userSnap.data().displayName;
-                    }
-                } catch (err) {
-                    console.error("Error fetching user:", err);
-                }
+    // SKIP CANCELLED APPOINTMENTS
+    if (status === "cancelled") {
+        continue;
+    }
+
+    let displayName = "Unknown";
+
+    if (data.userID) {
+        try {
+            const userRef = doc(db, "Users", data.userID);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+                displayName = userSnap.data().displayName;
             }
-
-            const article = document.createElement("article");
-            article.className = "appointment";
-
-            article.innerHTML = `
-                <time class="time">${data.time || "N/A"}</time>
-                <section class="details">
-                    <strong>${displayName}</strong>
-                    <p>${data.reason || "No reason"}</p>
-                </section>
-                <mark class="badge">${data.status || "Booked"}</mark>
-            `;
-
-            container.appendChild(article);
+        } catch (err) {
+            console.error("Error fetching user:", err);
         }
+    }
+
+    const article = document.createElement("article");
+    article.className = "appointment";
+
+    article.innerHTML = `
+        <time class="time">${data.time || "N/A"}</time>
+        <section class="details">
+            <strong>${displayName}</strong>
+            <p>${data.reason || "No reason"}</p>
+        </section>
+        <mark class="badge">${data.status || "Booked"}</mark>
+    `;
+
+    container.appendChild(article);
+}
 
     } catch (error) {
         console.error("Error loading appointments:", error);
     }
 }
-
 
 // ================= SIGN OUT =================
 window.signOut = async function () {
@@ -189,7 +191,7 @@ async function loadStats(clinicID) {
 
             const status = String(data.status || "").toLowerCase().trim();
 
-            if (status === "booked" || status === "waiting") {
+            if (status === "booked" || status === "waiting" || status === "scheduled") {
                 inQueue++;
                 totalToday++;
             }
