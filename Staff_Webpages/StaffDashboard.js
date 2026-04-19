@@ -58,7 +58,7 @@ onAuthStateChanged(auth, async (user) => {
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
 
-            clinicID = data.clinicID;
+            clinicID = data.clinicId;
 
             document.querySelectorAll(".name-Surname").forEach(el => {
                 el.textContent = data.displayName;
