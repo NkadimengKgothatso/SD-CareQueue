@@ -152,6 +152,13 @@ async function loadAppointments(clinicID) {
 }
 
 
+// ================= SIGN OUT =================
+window.signOut = async function () {
+    await signOut(auth);
+    window.location.href = "/index.html";
+};
+
+
 /* ================= LOAD STATS ================= */
 async function loadStats(clinicID) {
     try {
