@@ -84,7 +84,7 @@ span.logo-name {
 /* Layout */
 .container {
     display: flex;
-   
+    gap: 15px;
 }
 
 /* Sidebar */
@@ -154,7 +154,7 @@ aside ul li a:hover {
 /* Main Content */
 main {
     flex: 1;
-   
+    margin-right: 20px;
 }
 
 /* Search row for input + near me button */
