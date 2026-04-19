@@ -2,7 +2,7 @@ const {
     timeToMinutes,
     minutesToTime,
     roundToNextSlot
-} = require("./walkinLogic");
+} = require("./WalkinLogic");
 
 test("converts time to minutes", () => {
     expect(timeToMinutes("08:00")).toBe(480);
