@@ -137,14 +137,14 @@ async function loadClinics() {
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
 
-            const clinicObj = {
-                id: docSnap.id,
-                name: data.name,
-                address: data.address,
-                status: data.status,
-                service: data.service,
-                operatingHours: data.opening_hours
-            };
+        const clinicObj = {
+            id: docSnap.id,
+            name: data.name,
+            address: data.address,
+            status: data.status,
+            service: data.service,        // now an array
+            operatingHours: data.opening_hours
+        };
 
             clinics.push(clinicObj); // 🔥 IMPORTANT
         });
@@ -158,7 +158,7 @@ async function loadClinics() {
 
 loadClinics();
 
-function addClinicToUI(id, name, location, status="Active", service = "General", operatingHours) {
+function addClinicToUI(id, name, location, status="Active", service, operatingHours) {
     const container = document.querySelector(".clinics");
     const clinic = document.createElement("section");
     clinic.classList.add("clinic");
@@ -178,11 +178,11 @@ function addClinicToUI(id, name, location, status="Active", service = "General",
                 <i class="fa-regular fa-clock"></i>
                 <p>${operatingHours}</p>
             </section>
-            <section class="clinicInfo">
-                <section class="services">${service}</section>
-                <section class="services">${service}</section>
-                <section class="services">${service}</section>
-                <section class="services">${service}</section>
+            <section class="clinicServices">
+                ${Array.isArray(service) 
+                    ? service.map(s => `<section class="services">${s}</section>`).join("") 
+                    : `<section class="services">${service || "General"}</section>`
+                }
             </section>
 
             <section class="clinic-Btns">
@@ -231,17 +231,23 @@ function addClinicToUI(id, name, location, status="Active", service = "General",
 }
 
 addForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const name = document.getElementById("clinicName").value.trim();
-  const address = document.getElementById("Location").value.trim();
-  const status = document.getElementById("clinicStatus").value;
+    const name = document.getElementById("clinicName").value.trim();
+    const address = document.getElementById("Location").value.trim();
+    const status = document.getElementById("clinicStatus").value;
+    const hours = document.getElementById("clinicHours").value.trim();
+    const services = document.getElementById("clinicServices").value
+        .split(",")
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
 
   await addDoc(collection(db, "clinicsObjects"), {
     name,
     address,
     status,
-    service: "General",
+    opening_hours: hours || "Mon-Fri: 8am - 5pm",
+    service: services.length > 0 ? services : ["General"],
     createdAt: serverTimestamp()
   });
 
@@ -251,18 +257,25 @@ addForm.addEventListener("submit", async (e) => {
 });
 
 manageForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-    // manageModal.style.display = "flex";
+        // manageModal.style.display = "flex";
 
-  const name = document.getElementById("ManageClinicName").value.trim();
-  const address = document.getElementById("ManageLocation").value.trim();
-  const status = document.getElementById("ManageClinicStatus").value;
+    const name = document.getElementById("ManageClinicName").value.trim();
+    const address = document.getElementById("ManageLocation").value.trim();
+    const status = document.getElementById("ManageClinicStatus").value;
+    const hours = document.getElementById("ManageClinicHours").value.trim();
+    const services = document.getElementById("ManageClinicServices").value
+        .split(",")
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
 
   await updateDoc(doc(db, "clinicsObjects", editingClinicId), {
     name,
     address,
-    status
+    status,
+    opening_hours: hours,
+    service: services.length > 0 ? services : ["General"]
   });
 
   loadClinics();
@@ -312,6 +325,9 @@ function openEditModal(id, name, address, status) {
     document.querySelector("#ManageClinicModal #ManageClinicName").value = name;
     document.querySelector("#ManageClinicModal #ManageLocation").value = address;
     document.querySelector("#ManageClinicModal #ManageClinicStatus").value = status;
+    document.querySelector("#ManageClinicModal #ManageClinicHours").value = hours || "";
+    document.querySelector("#ManageClinicModal #ManageClinicServices").value = 
+        Array.isArray(services) ? services.join(", ") : (services || "");
 
     // change button text
     document.querySelector("#ManageClinicModal button").textContent = "Update Clinic";

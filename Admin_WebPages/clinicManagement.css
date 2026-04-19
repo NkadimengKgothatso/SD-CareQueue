@@ -128,7 +128,8 @@
     padding-bottom: 12px;
 }
 
-.clinicHeaderHeader i {
+
+.clinicHeader i {
     font-size: 20px;
     color: var(--color-brand);
     background-color: var(--color-brand-soft);
@@ -181,10 +182,12 @@
     gap: 20px;
 }
 
-.clinicInfo {
+.clinicServices {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 8px;
+    align-items: center;
 }
 
 .services {
@@ -243,6 +246,7 @@
 
 
 /* 🔥 overlay */
+.ManageModal,
 .modal {
     display: none;
     position: fixed;
@@ -364,7 +368,11 @@
     font-size: 13.5px;
     color: var(--color-text-secondary);
 }
-
+ 
+.OpenTimes i{
+    font-size: 16px;
+    color: var(--color-brand);  
+}
 #status {
     font-size: 12px;
     font-weight: 500;
