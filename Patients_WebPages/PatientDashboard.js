@@ -82,7 +82,7 @@ async function loadAppointments(userId) {
             .filter(a => {
                 const apptDate = new Date(a.date);
                 apptDate.setHours(0, 0, 0, 0);
-                const notCancelled = (a.status || "").toLowerCase().trim() !== "cancelled";
+                const notCancelled = !["cancelled", "completed"].includes((a.status || "").toLowerCase().trim());
                 return apptDate >= today && notCancelled;
             })
             .sort((a, b) => {
