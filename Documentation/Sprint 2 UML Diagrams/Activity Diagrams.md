@@ -9,8 +9,8 @@
 ### 3. Walk-in Registration
 ![Walk-in Registration](images/Junior.png)
 
-### 4. Log in 
-![Log in](images/Kea.png)
+### 4. Login
+![Login](images/Kea.png)
 
 ### 5. Queue Management
 ![Queue Management](images/Rea.png)
