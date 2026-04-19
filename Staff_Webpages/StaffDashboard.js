@@ -84,7 +84,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-
+let cancelledAppointments=0; 
 /* ================= LOAD APPOINTMENTS ================= */
 async function loadAppointments(clinicID) {
     try {
@@ -97,6 +97,7 @@ async function loadAppointments(clinicID) {
         );
 
         const snapshot = await getDocs(q);
+        console.log("Total docs:", snapshot.size);
 
         if (snapshot.empty) {
             container.innerHTML += `<p class="empty">No upcoming appointments</p>`;
@@ -113,42 +114,49 @@ async function loadAppointments(clinicID) {
 
        for (const data of docs) {
 
-    const status = String(data.status || "").toLowerCase().trim();
+        const status = String(data.status || "").toLowerCase().trim();
 
-    // SKIP CANCELLED APPOINTMENTS
-    if (status === "cancelled") {
-        continue;
-    }
-
-    let displayName = "Unknown";
-
-    if (data.userID) {
-        try {
-            const userRef = doc(db, "Users", data.userID);
-            const userSnap = await getDoc(userRef);
-
-            if (userSnap.exists()) {
-                displayName = userSnap.data().displayName;
-            }
-        } catch (err) {
-            console.error("Error fetching user:", err);
+        // SKIP CANCELLED APPOINTMENTS
+        if (status === "cancelled") {
+            cancelledAppointments++;
+            continue;
+            
         }
+
+        let displayName = "Unknown";
+
+        if (data.userID) {
+            try {
+                const userRef = doc(db, "Users", data.userID);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    displayName = userSnap.data().displayName;
+                }
+            } catch (err) {
+                console.error("Error fetching user:", err);
+            }
+        }
+
+        const article = document.createElement("article");
+        article.className = "appointment";
+
+        article.innerHTML = `
+            <time class="time">${data.time || "N/A"}</time>
+            <section class="details">
+                <strong>${displayName}</strong>
+                <p>${data.reason || "No reason"}</p>
+            </section>
+            <mark class="badge">${data.status || "Booked"}</mark>
+        `;
+
+        container.appendChild(article);
     }
 
-    const article = document.createElement("article");
-    article.className = "appointment";
-
-    article.innerHTML = `
-        <time class="time">${data.time || "N/A"}</time>
-        <section class="details">
-            <strong>${displayName}</strong>
-            <p>${data.reason || "No reason"}</p>
-        </section>
-        <mark class="badge">${data.status || "Booked"}</mark>
-    `;
-
-    container.appendChild(article);
-}
+    if (snapshot.size === cancelledAppointments) {
+            container.innerHTML += `<p class="empty">No upcoming appointments</p>`;
+            return;
+        }
 
     } catch (error) {
         console.error("Error loading appointments:", error);
