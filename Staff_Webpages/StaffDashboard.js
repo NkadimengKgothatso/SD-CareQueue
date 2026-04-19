@@ -4,7 +4,6 @@ import {
     collection, 
     getDocs,
     doc,
-    orderBy,
     getDoc, 
     query, 
     where 
@@ -14,8 +13,6 @@ import {
     getAuth, 
     onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-import { signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 
 /* ================= FIREBASE ================= */
@@ -33,12 +30,14 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 
+/* ================= PREVENT DOUBLE LOAD ================= */
+let hasLoaded = false;
+
+
 /* ================= AUTH LISTENER ================= */
 onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-        console.log("No user logged in");
-        return;
-    }
+    if (!user || hasLoaded) return;
+    hasLoaded = true;
 
     try {
         const q = query(
@@ -58,7 +57,7 @@ onAuthStateChanged(auth, async (user) => {
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
 
-            clinicID = data.clinicID;
+            clinicID = data.clinicId;
 
             document.querySelectorAll(".name-Surname").forEach(el => {
                 el.textContent = data.displayName;
@@ -90,63 +89,81 @@ async function loadAppointments(clinicID) {
     try {
         const container = document.querySelector(".appointments");
 
-        container.innerHTML = "<h3>UPCOMING APPOINTMENTS</h3>";
-
+       
         const q = query(
             collection(db, "Appointments"),
-            where("clinicID", "==", clinicID),
-            orderBy("time")
+            where("clinicID", "==", clinicID)
         );
 
         const snapshot = await getDocs(q);
 
-        //EMPTY STATE FIX
         if (snapshot.empty) {
             container.innerHTML += `<p class="empty">No upcoming appointments</p>`;
             return;
         }
 
-        for (const docSnap of snapshot.docs) {
-            const data = docSnap.data();
+        const docs = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
 
-            let displayName = "Unknown";
+        // Sort locally (no index needed)
+        docs.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
 
-            if (data.userID) {
-                try {
-                    const userRef = doc(db, "Users", data.userID);
-                    const userSnap = await getDoc(userRef);
+       for (const data of docs) {
 
-                    if (userSnap.exists()) {
-                        displayName = userSnap.data().displayName || "Unknown";
-                    }
-                } catch (err) {
-                    console.error("Error fetching user:", err);
-                }
+    const status = String(data.status || "").toLowerCase().trim();
+
+    // SKIP CANCELLED APPOINTMENTS
+    if (status === "cancelled") {
+        continue;
+    }
+
+    let displayName = "Unknown";
+
+    if (data.userID) {
+        try {
+            const userRef = doc(db, "Users", data.userID);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+                displayName = userSnap.data().displayName;
             }
-
-            const article = document.createElement("article");
-            article.className = "appointment";
-
-            article.innerHTML = `
-                <time class="time">${data.time || "N/A"}</time>
-                <section class="details">
-                    <strong>${displayName}</strong>
-                    <p>${data.reason || "No reason"}</p>
-                </section>
-                <mark class="badge">${data.status || "Booked"}</mark>
-            `;
-
-            container.appendChild(article);
+        } catch (err) {
+            console.error("Error fetching user:", err);
         }
+    }
+
+    const article = document.createElement("article");
+    article.className = "appointment";
+
+    article.innerHTML = `
+        <time class="time">${data.time || "N/A"}</time>
+        <section class="details">
+            <strong>${displayName}</strong>
+            <p>${data.reason || "No reason"}</p>
+        </section>
+        <mark class="badge">${data.status || "Booked"}</mark>
+    `;
+
+    container.appendChild(article);
+}
 
     } catch (error) {
         console.error("Error loading appointments:", error);
     }
 }
-// CALCULATE THE STATS 
+
+// ================= SIGN OUT =================
+window.signOut = async function () {
+    await signOut(auth);
+    window.location.href = "/index.html";
+};
+
+
+/* ================= LOAD STATS ================= */
 async function loadStats(clinicID) {
     try {
-
         const q = query(
             collection(db, "Appointments"),
             where("clinicID", "==", clinicID)
@@ -158,47 +175,42 @@ async function loadStats(clinicID) {
         let inQueue = 0;
         let completed = 0;
 
-        const today = new Date().toISOString().split("T")[0]; 
-        // ✔ matches "2026-04-18"
+        const todayStr = new Date().toLocaleDateString("en-CA");
 
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
 
-            // TODAY FILTER
-            if (data.date === today) {
-                totalToday++;
+            // FIXED DATE HANDLING
+            let docDateStr = null;
+
+            if (data.date?.toDate) {
+                docDateStr = data.date.toDate().toLocaleDateString("en-CA");
+            } else if (data.date) {
+                docDateStr = new Date(data.date).toLocaleDateString("en-CA");
             }
 
-            //normalize status
-            const status = (data.status || "").toLowerCase();
+            const status = String(data.status || "").toLowerCase().trim();
 
-            if (status === "booked" || status === "waiting") {
+            if (status === "booked" || status === "waiting" || status === "scheduled") {
                 inQueue++;
+                totalToday++;
             }
 
             if (status === "completed") {
                 completed++;
+                totalToday++;
             }
         });
 
-        // UI updates
+        // UPDATE UI
         document.getElementById("totalToday").textContent = totalToday;
         document.getElementById("inQueue").textContent = inQueue;
         document.getElementById("completed").textContent = completed;
 
-        // simple fallback (no real wait tracking yet)
-        const avg = inQueue > 0 ? Math.round(15) : 0;
-        document.getElementById("avgWait").textContent = avg + "m";
+        document.getElementById("avgWait").textContent =
+            inQueue > 0 ? "15m" : "0m";
 
     } catch (error) {
         console.error("Error loading stats:", error);
     }
-
-
 }
-
-// ================= SIGN OUT =================
-window.signOut = async function () {
-    await signOut(auth);
-    window.location.href = "/index.html";
-};

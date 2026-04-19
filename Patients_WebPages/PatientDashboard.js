@@ -82,7 +82,7 @@ async function loadAppointments(userId) {
             .filter(a => {
                 const apptDate = new Date(a.date);
                 apptDate.setHours(0, 0, 0, 0);
-                const notCancelled = (a.status || "").toLowerCase().trim() !== "cancelled";
+                const notCancelled = !["cancelled", "completed"].includes((a.status || "").toLowerCase().trim());
                 return apptDate >= today && notCancelled;
             })
             .sort((a, b) => {
@@ -177,7 +177,7 @@ function loadQueueStatus(userId) {
             collection(db, "Queues"),
             where("clinicID", "==", clinicID)
         );
-        const clinicSnapshot = await getDocs(clinicQ);
+       const clinicSnapshot = await getDocs(clinicQ);
         const total = clinicSnapshot.docs.filter(d => {
             const s = (d.data().status || "").toLowerCase().trim();
             return ["waiting", "scheduled", "active"].includes(s);
