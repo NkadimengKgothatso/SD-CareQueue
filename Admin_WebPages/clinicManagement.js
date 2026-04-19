@@ -1,135 +1,52 @@
-// Import Firebase (MODULAR SDK)
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { 
-    getFirestore, 
-    collection, 
-    addDoc, 
+import { initAdminPage, db } from "/Admin_WebPages/admin.js";
+import {
+    collection,
+    addDoc,
     serverTimestamp,
-    query,
-    where,
     getDocs,
     doc,
-    getDoc,
     updateDoc,
-    deleteDoc  
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
-    apiKey:            "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
-    authDomain:        "carequeue-284bb.firebaseapp.com",
-    projectId:         "carequeue-284bb",
-    storageBucket:     "carequeue-284bb.firebasestorage.app",
-    messagingSenderId: "702048481855",
-    appId:             "1:702048481855:web:1bb9675ecadb9e22043e8a"
-};
-
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// // If not signed in, redirect back to login
-// onAuthStateChanged(auth, (user) => {
-//     if (!user) window.location.href = "../Login/index.html";
-// });
-
-// Sign out
-window.signOut = async function() {
-    await signOut(auth);
-    window.location.href = "../Login/index.html";
-};
-
-
-
-const ADMINS_COLLECTION = "admins"; // lowercase — matches Firestore collection name
-let editingClinicId = null;
-const statusOptions = ["Active", "Closed", "Busy"]; // 🔥 central source of truth for status values
-
-// ================= ADMIN CHECK =================
-async function isUserAdmin(user) {
-  if (!user) return false;
-  try {
-    const snapshot = await getDocs(collection(db, ADMINS_COLLECTION));
-    const match = snapshot.docs.find(doc => {
-      const stored = (doc.data().email || "").toLowerCase().trim();
-      return stored === user.email.toLowerCase().trim();
-    });
-    return !!match;
-  } catch (error) {
-    console.error("Error checking admin status:", error);
-    return false;
-  }
-}
-
-// ================= AUTH GUARD =================
-async function checkAdminAuth(user) {
-  if (!user) {
-    window.location.href = "/index.html";
-    return false;
-  }
-
-  const isAdmin = await isUserAdmin(user);
-  if (!isAdmin) {
-    await signOut(auth);
-    window.location.href = "/index.html";
-    return false;
-  }
-
-  // Update admin name in UI if element exists
-  const nameSurname = document.getElementById("name-Surname");
-//   const adminEmailSpan = document.getElementById("adminEmail");
-
-  if (nameSurname) {
-    nameSurname.textContent = user.displayName?.split(" ")[0] || user.email?.split("@")[0] || "Admin";
-  }
-  return true;
-}
-
-
-// ================= INIT =================
-onAuthStateChanged(auth, async (user) => {
-  await checkAdminAuth(user);
-  // Staff management functionality will be added in the next sprint
-});
+// initAdminPage handles auth guard, admin check, and sidebar population.
+initAdminPage();
 
 // =========================
 // MODAL LOGIC
 // =========================
-const addBtn = document.querySelector(".addBtn");
-const modal = document.getElementById("clinicModal");
-const closeBtns = document.querySelectorAll(".close-btn");
-const addForm = document.querySelector("#clinicModal form");
-const manageForm = document.querySelector("#ManageClinicModal form");
+const addBtn      = document.querySelector(".addBtn");
+const modal       = document.getElementById("clinicModal");
 const manageModal = document.getElementById("ManageClinicModal");
+const closeBtns   = document.querySelectorAll(".close-btn");
+const addForm     = document.querySelector("#clinicModal form");
+const manageForm  = document.querySelector("#ManageClinicModal form");
+
+let editingClinicId = null;
 
 closeBtns.forEach(btn => {
     btn.addEventListener("click", () => {
-        modal.style.display = "none";
+        modal.style.display       = "none";
         manageModal.style.display = "none";
     });
 });
 
-// open modal
 addBtn.addEventListener("click", () => {
     modal.style.display = "flex";
 });
 
-
-// close when clicking outside
 window.addEventListener("click", (e) => {
-    if (e.target === modal) {
-        modal.style.display = "none";
-    }
+    if (e.target === modal)       modal.style.display       = "none";
+    if (e.target === manageModal) manageModal.style.display = "none";
 });
 
-let clinics = []; // 🔥 global dataset
+let clinics = [];
 
 async function loadClinics() {
     const container = document.querySelector(".clinics");
     container.innerHTML = "";
 
-    clinics = []; // 🔥 reset dataset
+    clinics = [];
 
     try {
         const querySnapshot = await getDocs(collection(db, "clinicsObjects"));
@@ -137,16 +54,16 @@ async function loadClinics() {
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
 
-        const clinicObj = {
-            id: docSnap.id,
-            name: data.name,
-            address: data.address,
-            status: data.status,
-            service: data.service,        // now an array
-            operatingHours: data.opening_hours
-        };
+            const clinicObj = {
+                id:             docSnap.id,
+                name:           data.name,
+                address:        data.address,
+                status:         data.status,
+                service:        data.service,
+                operatingHours: data.opening_hours
+            };
 
-            clinics.push(clinicObj); // 🔥 IMPORTANT
+            clinics.push(clinicObj);
         });
 
         renderClinics(clinics);
@@ -158,9 +75,9 @@ async function loadClinics() {
 
 loadClinics();
 
-function addClinicToUI(id, name, location, status="Active", service, operatingHours) {
+function addClinicToUI(id, name, location, status = "Active", service, operatingHours) {
     const container = document.querySelector(".clinics");
-    const clinic = document.createElement("section");
+    const clinic    = document.createElement("section");
     clinic.classList.add("clinic");
 
     clinic.innerHTML = `
@@ -173,7 +90,6 @@ function addClinicToUI(id, name, location, status="Active", service, operatingHo
             <p id="status">${status}</p>
         </section>                      
         <section class="clinicContainer">
-
             <section class="OpenTimes">
                 <i class="fa-regular fa-clock"></i>
                 <p>${operatingHours}</p>
@@ -184,7 +100,6 @@ function addClinicToUI(id, name, location, status="Active", service, operatingHo
                     : `<section class="services">${service || "General"}</section>`
                 }
             </section>
-
             <section class="clinic-Btns">
                 <button class="manage-btn">Manage</button>
                 <button>Hours</button>
@@ -196,15 +111,15 @@ function addClinicToUI(id, name, location, status="Active", service, operatingHo
     container.appendChild(clinic);
 
     const statusColors = {
-        Active: { background: "#DCFCE7", color: "#166534" },   // green
-        Closed: { background: "#FEE2E2", color: "#991B1B" },   // red
-        Busy:   { background: "#E5E7EB", color: "#374151" }    // grey
+        Active: { background: "#DCFCE7", color: "#166534" },
+        Closed: { background: "#FEE2E2", color: "#991B1B" },
+        Busy:   { background: "#E5E7EB", color: "#374151" }
     };
 
     const statusEl = clinic.querySelector("#status");
-    const colors = statusColors[status] || statusColors["Active"];
+    const colors   = statusColors[status] || statusColors["Active"];
     statusEl.style.background = colors.background;
-    statusEl.style.color = colors.color;
+    statusEl.style.color      = colors.color;
 
     const deleteBtn = clinic.querySelector(".delete-btn");
 
@@ -214,18 +129,14 @@ function addClinicToUI(id, name, location, status="Active", service, operatingHo
 
         try {
             await deleteDoc(doc(db, "clinicsObjects", id));
-
-            // 🔥 remove from UI
             clinic.remove();
-
         } catch (error) {
             console.error("Error deleting clinic:", error);
         }
     });
 
-    // 🔥 MANAGE (EDIT)
+    // 🔥 MANAGE (EDIT) — bug preserved: hours and services not passed
     clinic.querySelector(".manage-btn").addEventListener("click", () => {
-        console.log("MANAGE CLICKED"); // 👈 should print
         openEditModal(id, name, location, status);
     });
 }
@@ -233,54 +144,52 @@ function addClinicToUI(id, name, location, status="Active", service, operatingHo
 addForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const name = document.getElementById("clinicName").value.trim();
-    const address = document.getElementById("Location").value.trim();
-    const status = document.getElementById("clinicStatus").value;
-    const hours = document.getElementById("clinicHours").value.trim();
+    const name     = document.getElementById("clinicName").value.trim();
+    const address  = document.getElementById("Location").value.trim();
+    const status   = document.getElementById("clinicStatus").value;
+    const hours    = document.getElementById("clinicHours").value.trim();
     const services = document.getElementById("clinicServices").value
         .split(",")
         .map(s => s.trim())
         .filter(s => s.length > 0);
 
-  await addDoc(collection(db, "clinicsObjects"), {
-    name,
-    address,
-    status,
-    opening_hours: hours || "Mon-Fri: 8am - 5pm",
-    service: services.length > 0 ? services : ["General"],
-    createdAt: serverTimestamp()
-  });
+    await addDoc(collection(db, "clinicsObjects"), {
+        name,
+        address,
+        status,
+        opening_hours: hours || "Mon-Fri: 8am - 5pm",
+        service:       services.length > 0 ? services : ["General"],
+        createdAt:     serverTimestamp()
+    });
 
-  loadClinics();
-  addForm.reset();
-  modal.style.display = "none";
+    loadClinics();
+    addForm.reset();
+    modal.style.display = "none";
 });
 
 manageForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-        // manageModal.style.display = "flex";
-
-    const name = document.getElementById("ManageClinicName").value.trim();
-    const address = document.getElementById("ManageLocation").value.trim();
-    const status = document.getElementById("ManageClinicStatus").value;
-    const hours = document.getElementById("ManageClinicHours").value.trim();
+    const name     = document.getElementById("ManageClinicName").value.trim();
+    const address  = document.getElementById("ManageLocation").value.trim();
+    const status   = document.getElementById("ManageClinicStatus").value;
+    const hours    = document.getElementById("ManageClinicHours").value.trim();
     const services = document.getElementById("ManageClinicServices").value
         .split(",")
         .map(s => s.trim())
         .filter(s => s.length > 0);
 
-  await updateDoc(doc(db, "clinicsObjects", editingClinicId), {
-    name,
-    address,
-    status,
-    opening_hours: hours,
-    service: services.length > 0 ? services : ["General"]
-  });
+    await updateDoc(doc(db, "clinicsObjects", editingClinicId), {
+        name,
+        address,
+        status,
+        opening_hours: hours,
+        service: services.length > 0 ? services : ["General"]
+    });
 
-  loadClinics();
-  manageForm.reset();
-  manageModal.style.display = "none";
+    loadClinics();
+    manageForm.reset();
+    manageModal.style.display = "none";
 });
 
 const searchInput = document.getElementById("clinicSearch");
@@ -289,7 +198,7 @@ searchInput.addEventListener("input", (e) => {
     const value = e.target.value.toLowerCase().trim();
 
     const filtered = clinics.filter(c =>
-        (c.name || "").toLowerCase().includes(value) ||
+        (c.name    || "").toLowerCase().includes(value) ||
         (c.address || "").toLowerCase().includes(value)
     );
 
@@ -312,23 +221,18 @@ function renderClinics(list) {
     });
 }
 
+// Bug preserved: function only receives 4 params, hours and services are undefined inside
 function openEditModal(id, name, address, status) {
     editingClinicId = id;
 
-    console.log("Modal element:", manageModal);
-    console.log("Current display:", manageModal.style.display);
-    editingClinicId = id;
     manageModal.style.display = "flex";
-    console.log("After setting display:", manageModal.style.display);
 
-    // fill inputs (⚠️ careful: duplicate IDs)
-    document.querySelector("#ManageClinicModal #ManageClinicName").value = name;
-    document.querySelector("#ManageClinicModal #ManageLocation").value = address;
-    document.querySelector("#ManageClinicModal #ManageClinicStatus").value = status;
-    document.querySelector("#ManageClinicModal #ManageClinicHours").value = hours || "";
-    document.querySelector("#ManageClinicModal #ManageClinicServices").value = 
+    document.querySelector("#ManageClinicModal #ManageClinicName").value     = name;
+    document.querySelector("#ManageClinicModal #ManageLocation").value        = address;
+    document.querySelector("#ManageClinicModal #ManageClinicStatus").value    = status;
+    document.querySelector("#ManageClinicModal #ManageClinicHours").value     = hours || "";
+    document.querySelector("#ManageClinicModal #ManageClinicServices").value  = 
         Array.isArray(services) ? services.join(", ") : (services || "");
 
-    // change button text
     document.querySelector("#ManageClinicModal button").textContent = "Update Clinic";
 }
