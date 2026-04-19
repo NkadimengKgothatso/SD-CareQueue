@@ -11,55 +11,53 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <div class="admin-container">
+    <section class="admin-container">
 
         <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">
-                    <div class="logo-icon"></div>
+            <section class="sidebar-header">
+                <section class="logo">
+                    <section class="logo-icon"></section>
                     <span class="logo-name">Care Queue</span>
-                </div>
-            </div>
+                </section>
+            </section>
             <nav class="sidebar-nav">
-                <div class="nav-item" onclick="window.location.href='/Admin_WebPages/Dashboard.html'">
-                    <div class="nav-dot"></div>
+                <section class="nav-item" onclick="window.location.href='/Admin_WebPages/Dashboard.html'">
+                    <section class="nav-dot"></section>
                     <span>Dashboard</span>
-                </div>
-                <div class="nav-item active" onclick="window.location.href='/Admin_WebPages/ClinicManagement.html'">
-                    <div class="nav-dot"></div>
+                </section>
+                <section class="nav-item active" onclick="window.location.href='/Admin_WebPages/ClinicManagement.html'">
+                    <section class="nav-dot"></section>
                     <span>Clinic Management</span>
-                </div>
-                <div class="nav-item" onclick="window.location.href='/Admin_WebPages/StaffManagement.html'">
-                    <div class="nav-dot"></div>
+                </section>
+                <section class="nav-item" onclick="window.location.href='/Admin_WebPages/StaffManagement.html'">
+                    <section class="nav-dot"></section>
                     <span>Staff Management</span>
-                </div>
-                <div class="nav-item" onclick="window.location.href='/Admin_WebPages/Analytics.html'">
-                    <div class="nav-dot"></div>
+                </section>
+                <section class="nav-item" onclick="window.location.href='/Admin_WebPages/Analytics.html'">
+                    <section class="nav-dot"></section>
                     <span>Analytics</span>
-                </div>
+                </section>
             </nav>
-            <div class="sidebar-footer">
-                <div class="user-info">
-                    <div class="user-avatar" id="adminAvatar">AD</div>
-                    <div class="user-details">
-                        <div class="user-name" id="adminName">Admin</div>
-                        <div class="user-email" id="adminEmail">admin@email.com</div>
-                    </div>
-                </div>
-            </div>
+            <section class="sidebar-footer">
+                <section class="user-info">
+                    <section class="user-avatar" id="adminAvatar">AD</section>
+                    <section class="user-details">
+                        <section class="user-name" id="adminName">Admin</section>
+                        <section class="user-email" id="adminEmail">admin@email.com</section>
+                    </section>
+                </section>
+            </section>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
-            <div class="page-header">
+            <section class="page-header">
                 <h1 class="page-title">Clinic Management</h1>
                 <p class="page-subtitle">Add, edit, or remove clinics from the system</p>
-            </div>
+            </section>
 
         <section class="content">
-            <p class="title"> Manage Clinics</p>
-
             <section class="search-Bar">
                 <i class="fa-solid fa-magnifying-glass-location" style="color: var(--color-brand);"></i>
                 <input id="clinicSearch" type="search" placeholder="Search clinic by name or location">
@@ -74,7 +72,7 @@
                 <section class="clinics"></section>
             </section>
         </main>
-    </div>
+    </section>
 
     <!-- Add Clinic Modal -->
     <section class="modal" id="clinicModal">
@@ -84,6 +82,10 @@
             <form class="clinicForm">
                 <input type="text" placeholder="Clinic Name" class="form-control" id="clinicName" required>
                 <input type="text" placeholder="Location" class="form-control" id="Location" required>
+
+                <input type="text" placeholder="Operating Hours (e.g. Mon-Fri: 8am-5pm)" class="form-control" id="clinicHours">
+                <input type="text" placeholder="Services (comma separated, e.g. General, HIV, TB)" class="form-control" id="clinicServices">
+
                 <select required>
                     <option value="" disabled selected>Select Province</option>
                     <option>Gauteng</option>
@@ -121,6 +123,9 @@
                 <input type="text" placeholder="Clinic Name" class="form-control" id="ManageClinicName" required>
                 <input type="text" placeholder="Location" class="form-control" id="ManageLocation" required>
 
+                <input type="text" placeholder="Operating Hours (e.g. Mon-Fri: 8am-5pm)" class="form-control" id="ManageClinicHours">
+                <input type="text" placeholder="Services (comma separated, e.g. General, HIV, TB)" class="form-control" id="ManageClinicServices">
+
                 <select required>
                     <option value="" disabled selected>Select Province</option>
                     <option>Gauteng</option>
@@ -132,6 +137,12 @@
                     <option>Mpumalanga</option>
                     <option>North West</option>
                     <option>Northern Cape</option>
+                </select>
+
+                <select id="ManageClinicStatus" required>
+                    <option value="Active">Active</option>
+                    <option value="Closed">Closed</option>
+                    <option value="Busy">Busy</option>
                 </select>
 
                 <button type="submit">Add Clinic</button>
