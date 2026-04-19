@@ -177,7 +177,7 @@ function loadQueueStatus(userId) {
             collection(db, "Queues"),
             where("clinicID", "==", clinicID)
         );
-        const clinicSnapshot = await getDocs(clinicQ);
+       const clinicSnapshot = await getDocs(clinicQ);
         const total = clinicSnapshot.docs.filter(d => {
             const s = (d.data().status || "").toLowerCase().trim();
             return ["waiting", "scheduled", "active"].includes(s);
