@@ -11,8 +11,6 @@ import {
 const STAFF_COLLECTION = "ApprovedStaff";
 let currentAdmin = null;
 
-// initAdminPage handles auth guard, admin check, and sidebar population.
-// It resolves with the verified admin user so we can continue page setup.
 initAdminPage().then(async (user) => {
     currentAdmin = user;
     await loadStaff();
@@ -26,36 +24,14 @@ async function loadStaff() {
 
     try {
         const snapshot = await getDocs(collection(db, STAFF_COLLECTION));
-
         countEl.textContent = snapshot.size;
 
-        let html = "";
+        const staffList = [];
         snapshot.forEach((docSnap) => {
-            const s = docSnap.data();
-            html += `
-                <tr>
-                    <td>${s.displayName || "—"}</td>
-                    <td>${s.email || "—"}</td>
-                    <td>${s.assignedClinic || "—"}</td>
-                    <td>
-                        <button
-                            class="btn btn-small"
-                            style="color:#dc2626; border-color:#fca5a5;"
-                            onclick="removeStaff('${docSnap.id}')">
-                            Remove
-                        </button>
-                    </td>
-                </tr>
-            `;
+            staffList.push({ id: docSnap.id, ...docSnap.data() });
         });
 
-        tbody.innerHTML = html || `
-            <tr>
-                <td colspan="4" style="text-align:center; padding:40px; color:var(--color-text-tertiary);">
-                    No staff members yet
-                </td>
-            </tr>
-        `;
+        tbody.innerHTML = window.staffLogic.buildStaffTableHTML(staffList);
     } catch (err) {
         console.error("❌ loadStaff error:", err);
         showToast("Failed to load staff", "error");
@@ -70,10 +46,12 @@ async function loadClinics() {
         const snapshot = await getDocs(collection(db, "clinicsObjects"));
         snapshot.forEach((docSnap) => {
             const clinic = docSnap.data();
-            if (!clinic.name) return;
+            const opt = window.staffLogic.buildClinicOption(docSnap.id, clinic.name);
+            if (!opt) return;
+
             const option       = document.createElement("option");
-            option.value       = docSnap.id;
-            option.textContent = clinic.name;
+            option.value       = opt.value;
+            option.textContent = opt.label;
             select.appendChild(option);
         });
     } catch (err) {
@@ -89,19 +67,20 @@ window.addStaff = async function () {
     const clinicId   = select.value;
     const clinicName = select.options[select.selectedIndex]?.text || "";
 
-    if (!name || !email || !clinicId) {
-        showToast("Please fill all fields", "error");
+    const error = window.staffLogic.validateStaffForm(name, email, clinicId);
+    if (error) {
+        showToast(error, "error");
         return;
     }
 
     try {
+        const payload = window.staffLogic.buildStaffPayload(
+            name, email, clinicName, clinicId, currentAdmin.email
+        );
+
         await addDoc(collection(db, STAFF_COLLECTION), {
-            displayName:    name,
-            email:          email.toLowerCase(),
-            assignedClinic: clinicName,
-            clinicId,
-            addedBy:        currentAdmin.email,
-            addedAt:        serverTimestamp(),
+            ...payload,
+            addedAt: serverTimestamp(),
         });
 
         document.getElementById("staffName").value   = "";
