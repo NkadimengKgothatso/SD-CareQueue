@@ -73,41 +73,85 @@ async function getStaffProfile(email) {
 }
 
 
-// TIME HELPERS
+function timeToMinutes(t) {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+}
+
 function minutesToTime(m) {
     const h = String(Math.floor(m / 60)).padStart(2, "0");
     const mm = String(m % 60).padStart(2, "0");
     return `${h}:${mm}`;
 }
 
+function isTaken(t, appointments, SLOT) {
+    return appointments.some(a => {
+        const start = timeToMinutes(a.time);
+        return t >= start && t < start + SLOT;
+    });
+}
 
-// SCHEDULING
+function roundToNextSlot(minutes, slot) {
+    return Math.ceil(minutes / slot) * slot;
+}
+
 function getNextAvailableTime(appointments) {
 
     const START = 8 * 60;
     const END = 17 * 60;
     const SLOT = 30;
 
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    console.log(" CURRENT TIME:", now.toString());
+    console.log(" CURRENT MINUTES:", currentMinutes);
+
+    // extract valid booked times
+    const usedArray = appointments.filter(a =>
+        a &&
+        a.time &&
+        (a.status || "").toLowerCase() !== "cancelled"
+    );
+
+    console.log(" RAW APPOINTMENTS USED FOR SCHEDULING:", usedArray);
+
     const used = new Set();
 
-    for (const a of appointments) {
-        if (!a || !a.time) continue;
+    for (const a of usedArray) {
+        const mins = timeToMinutes(a.time);
 
-        const status = (a.status || "").toLowerCase().trim();
-        if (status === "cancelled") continue;
-
-        used.add(a.time.trim());
+        // only consider valid clinic slots
+        if (mins >= START && mins < END) {
+            used.add(mins);
+        }
     }
 
-    const slots = [];
-    for (let t = START; t < END; t += SLOT) {
-        slots.push(minutesToTime(t));
+    console.log(" USED SET:", [...used].map(minutesToTime));
+
+    // start from next valid slot AFTER current time
+    let t = Math.max(
+        START,
+        Math.ceil(currentMinutes / SLOT) * SLOT
+    );
+
+    console.log("🚀 START SLOT:", minutesToTime(t));
+
+    while (t + SLOT <= END) {
+
+        console.log(" CHECKING SLOT:", minutesToTime(t), "=>", t);
+
+        if (!isTaken(t, usedArray, SLOT)) {
+            console.log(" SELECTED SLOT:", minutesToTime(t));
+            return minutesToTime(t);
+        }
+
+        console.log(" BLOCKED SLOT:", minutesToTime(t));
+
+        t += SLOT;
     }
 
-    for (const slot of slots) {
-        if (!used.has(slot)) return slot;
-    }
-
+    console.log(" NO SLOT FOUND");
     return "FULL";
 }
 
@@ -212,6 +256,8 @@ addBtn?.addEventListener("click", async () => {
     if (!name) return alert("Please enter patient name");
     if (!clinicId) return alert("Clinic not loaded yet");
 
+    console.log(" clinicId (before query):", clinicId, typeof clinicId);
+
     const confirmed = await showConfirmModal(
         `Add ${name} to ${assignedClinic} queue?`
     );
@@ -222,7 +268,30 @@ addBtn?.addEventListener("click", async () => {
 
         const today = getToday();
 
-        const snap = await getDocs(
+        console.log(" TODAY:", today);
+        console.log(" TYPE clinicId:", typeof clinicId);
+        console.log(" VALUE clinicId:", clinicId);
+
+        // 1. GET ALL APPOINTMENTS (FOR SCHEDULING)
+        const allSnap = await getDocs(
+            query(
+                collection(db, "Appointments"),
+                where("clinicID", "==", clinicId),
+                where("date", "==", today)
+            )
+        );
+
+        console.log(" allSnap size:", allSnap.size);
+
+        allSnap.forEach(doc => {
+            const data = doc.data();
+            console.log(" DOC:", data);
+            console.log(" clinicID type:", typeof data.clinicID);
+            console.log(" clinicID value:", data.clinicID);
+        });
+
+        // 2. GET ONLY WALK-INS (FOR TICKET NUMBER)
+        const walkinSnap = await getDocs(
             query(
                 collection(db, "Appointments"),
                 where("clinicID", "==", clinicId),
@@ -231,24 +300,38 @@ addBtn?.addEventListener("click", async () => {
             )
         );
 
-        const count = snap.size + 1;
+        console.log(" walkinSnap size:", walkinSnap.size);
+
+        // DEBUG: scheduling input
+        const existingAppointments = allSnap.docs.map(d => d.data());
+
+        console.log("existingAppointments:", existingAppointments);
+
+        existingAppointments.forEach(a => {
+            console.log(" appointment clinicID:", a.clinicID, typeof a.clinicID);
+        });
+
+        // 3. TICKET NUMBER ONLY FOR WALK-INS
+        const count = walkinSnap.size + 1;
         const ticketNumber = `W-${String(count).padStart(3, "0")}`;
 
-        const existingAppointments = snap.docs.map(d => d.data());
-
+        // 4. CORRECT SLOT CALCULATION (USES ALL APPOINTMENTS)
         const assignedTime = getNextAvailableTime(existingAppointments);
 
+        console.log("⏰ ASSIGNED TIME RESULT:", assignedTime);
+
         await addDoc(collection(db, "Appointments"), {
-        clinicID: clinicId,
-        patientName: name,
-        reason,
-        status: "waiting",
-        isWalkIn: true, 
-        date: getToday(),
-        ticketNumber: `W-${String(count).padStart(3, "0")}`,
-        time: assignedTime,
-        createdAT: serverTimestamp()
-});
+            clinicID: clinicId,
+            patientName: name,
+            reason,
+            status: "waiting",
+            isWalkIn: true,
+            date: today,
+            ticketNumber,
+            time: assignedTime,
+            createdAT: serverTimestamp()
+        });
+
         nameInput.value = "";
         reasonInput.value = "";
 
@@ -272,7 +355,7 @@ onAuthStateChanged(auth, async (user) => {
 
     if (!staff) return;
 
-    clinicId = staff.clinicId;
+   clinicId = Number(staff.clinicId);
     assignedClinic = staff.assignedClinic;
 
     if (nameSurnameEl) {
