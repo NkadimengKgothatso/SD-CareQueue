@@ -31,24 +31,28 @@
 <td align="center"></td>
 </tr>
 
-
-
 <tr>
 <td>2</td>
-<td></td>
-  
+<td>As a clinic staff member, I want to register walk-in patients and add them to the appointments system, so that they can be tracked and later managed in the queue.</td>
 <td>
 <ul>
+<li><b>Given</b> a patient arrives at the clinic without an appointment, <b>When</b> the staff member registers the patient and adds them to the appointments, <b>Then</b> the patient name should appear in the walk in table</li>
 
+<li><b>Given</b> a walk-in patient is registered, <b>When</b> the registration is complete, <b>Then</b> the patient’s details should be stored in the Appointments collection in Firebase</li>
+
+<li><b>Given</b> a walk-in patient is registered, <b>When</b> the record is created, <b>Then</b> the patient's status should be set to "Waiting"</li>
 </ul>
 </td>
-
 <td>
 <ul>
- 
+<li>Create staff interface to register or search for a patient</li>
+<li>Use Firebase addDoc to add walk-in patients to Appointments collection</li>
+<li>Display the time the walk-in patient will be seen</li>
+<li>Set default patient status to "Waiting"</li>
+<li>Display walk-in patients on walk-in page</li>
 </ul>
 </td>
-<td align="center"></td>
+<td align="center">8</td>
 </tr>
 
 <tr>
@@ -70,13 +74,9 @@
 <td align="center"></td>
 </tr>
 
-
 <tr>
 <td>4</td>
-
-<td>
-
-</td>
+<td></td>
 
 <td>
 <ul>
@@ -89,34 +89,33 @@
 
 </ul>
 </td>
-
-
 
 <td align="center"></td>
 </tr>
 
-
-
-
 <tr>
 <td>5</td>
 <td></td>
+
 <td>
 <ul>
 
 </ul>
 </td>
+
 <td>
 <ul>
 
 </ul>
 </td>
+
 <td align="center"></td>
 </tr>
 
 <tr>
 <td>6</td>
 <td></td>
+
 <td>
 <ul>
 
