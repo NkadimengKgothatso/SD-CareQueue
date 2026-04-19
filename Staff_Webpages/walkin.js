@@ -123,7 +123,7 @@ function loadAppointments() {
 
     const q = query(
         collection(db, "Appointments"),
-        where("clinicId", "==", clinicId),
+        where("clinicID", "==", clinicId),
         where("isWalkIn", "==", true),
         where("date", "==", today),
         orderBy("createdAT", "asc")
@@ -225,7 +225,7 @@ addBtn?.addEventListener("click", async () => {
         const snap = await getDocs(
             query(
                 collection(db, "Appointments"),
-                where("clinicId", "==", clinicId),
+                where("clinicID", "==", clinicId),
                 where("isWalkIn", "==", true),
                 where("date", "==", today)
             )
@@ -239,7 +239,7 @@ addBtn?.addEventListener("click", async () => {
         const assignedTime = getNextAvailableTime(existingAppointments);
 
         await addDoc(collection(db, "Appointments"), {
-        clinicId,
+        clinicID: clinicId,
         patientName: name,
         reason,
         status: "waiting",
