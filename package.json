@@ -1,7 +1,7 @@
 {
   "name": "sd-carequeue",
   "version": "1.0.0",
-  "description": "",
+  "description": "[![codecov](https://codecov.io/gh/NkadimengKgothatso/SD-CareQueue/branch/main/graph/badge.svg)](https://codecov.io/gh/NkadimengKgothatso/SD-CareQueue)",
   "main": "index.js",
   "scripts": {
     "test": "jest",
@@ -22,7 +22,12 @@
   },
   "homepage": "https://github.com/NkadimengKgothatso/SD-CareQueue#readme",
   "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.2",
+    "@jest/globals": "^30.3.0",
+    "babel-jest": "^30.3.0",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.3.0"
-  }
+  },
+  "type": "commonjs"
 }
