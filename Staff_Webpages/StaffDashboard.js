@@ -15,15 +15,6 @@ import {
     onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-
-import {
-    sortAppointmentsByTime,
-    filterCancelledAppointments,
-    getDisplayName,
-    calculateStats
-} from "./StaffDashboardLogic.js";
-
-
 /* ================= FIREBASE ================= */
 const firebaseConfig = {
     apiKey: "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
