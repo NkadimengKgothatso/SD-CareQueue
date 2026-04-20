@@ -91,17 +91,22 @@
 
 <tr>
 <td>4</td>
-<td></td>
+<td>As a staff member, I want to manage the queue so that I can track patient progress and update their status in real time</td>
 
 <td>
 <ul>
-
+<li><b>Given</b> I am a logged in staff member <b>when</b> I click on Queue Management, <b>then</b> I should see the list of patients in the queue</li>
+<li><b>Given</b> a patient is in the queue <b>when</b> I change the status of their appointments <b>then</b> it should update immediately</li>
+<li><b>Given</b> another staff member updates a patient’s status, <b>when</b> I am viewing the queue page, <b>then</b> I should see the update in real time</li>
 </ul>
 </td>
 
 <td>
 <ul>
-
+<li>Match UI to prototype<li>
+<li>Delete Walk In Button</li>
+<li>Make clicking button on side bar to cause an event</li>
+<li>Update the queue list in real time</li>
 </ul>
 </td>
 
