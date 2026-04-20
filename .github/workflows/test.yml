@@ -1,38 +1,17 @@
-name: Tests
+name: Coverage
 
 on: [push, pull_request]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: '18'
-          
-      - name: Install dependencies
-        run: npm ci
-        
-      - name: Run tests with coverage
-        run: npm test -- --coverage --runInBand
-        
-      - name: Upload to Codecov
-        uses: codecov/codecov-action@v4
+          node-version: 18
+      - run: npm install
+      - run: npm test -- --coverage
+      - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/lcov.info  # Just use lcov.info, it's enough
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false  # Changed to false to prevent CI failure
-          verbose: false  # Changed to false for cleaner logs
-          
-      - name: Upload coverage artifact (backup)
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage/
-          retention-days: 30
