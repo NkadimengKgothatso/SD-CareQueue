@@ -3,4 +3,4 @@ We have the user’s device (Patient / Staff / Admin), these then access the sys
 
 That web app communicates with the backend over HTTPS, which is important because it encrypts all data in transit
 
-(../../images/PhysicalView.png) 
+![PhysicalView](../../images/PhysicalView.png) 
