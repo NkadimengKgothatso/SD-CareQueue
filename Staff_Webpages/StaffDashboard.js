@@ -18,7 +18,7 @@ import {
 
 /* ================= FIREBASE ================= */
 const firebaseConfig = {
-    apiKey: "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
+    apiKey: "AIzaSy...",
     authDomain: "carequeue-284bb.firebaseapp.com",
     projectId: "carequeue-284bb",
     storageBucket: "carequeue-284bb.appspot.com",
@@ -55,50 +55,64 @@ onAuthStateChanged(auth, async (user) => {
 
         let clinicID = null;
 
-        snapshot.forEach(docSnap => {
+        for (const docSnap of snapshot.docs) {
             const data = docSnap.data();
 
-            
-            clinicID = Number(data.clinicId);
+            // SAFE clinicID handling
+            const rawClinicId = data.clinicId;
+            const parsedId = Number(rawClinicId);
 
-            document.querySelectorAll(".name-Surname").forEach(el => {
-                el.textContent = data.displayName;
+            if (!Number.isFinite(parsedId)) {
+                console.error("Invalid clinicId:", rawClinicId);
+                continue;
+            }
+
+            clinicID = parsedId;
+
+            //Safe DOM updates
+            const nameEls = document?.querySelectorAll?.(".name-Surname") || [];
+            nameEls.forEach(el => {
+                el.textContent = data.displayName || "";
             });
 
             const today = new Date().toDateString();
-            const clinicTimeEl = document.getElementById("clinicAndTime");
-            if (clinicTimeEl) {
-                clinicTimeEl.textContent = `${data.assignedClinic} · ${today}`;
-            }
-        });
+            const clinicTimeEl = document?.getElementById?.("clinicAndTime");
 
-        if (!clinicID) {
-            console.log("No clinicID found");
+            if (clinicTimeEl) {
+                clinicTimeEl.textContent = `${data.assignedClinic || ""} · ${today}`;
+            }
+        }
+
+        //Safe check
+        if (clinicID === null || clinicID === undefined) {
+            console.log("No valid clinicID found");
             return;
         }
 
-        loadAppointments(clinicID);
-        loadStats(clinicID);
+        await loadAppointments(clinicID);
+        await loadStats(clinicID);
 
     } catch (error) {
         console.error("Error loading user:", error);
     }
 });
 
-let cancelledAppointments=0; 
+
 /* ================= LOAD APPOINTMENTS ================= */
 async function loadAppointments(clinicID) {
     try {
-        const container = document.querySelector(".appointments");
+        // Safe DOM access (important for tests)
+        const container = document?.querySelector?.(".appointments");
+        if (!container) return;
 
-       
+        let cancelledAppointments = 0;
+
         const q = query(
             collection(db, "Appointments"),
             where("clinicID", "==", clinicID)
         );
 
         const snapshot = await getDocs(q);
-        console.log("Total docs:", snapshot.size);
 
         if (snapshot.empty) {
             container.innerHTML += `<p class="empty">No upcoming appointments</p>`;
@@ -110,53 +124,48 @@ async function loadAppointments(clinicID) {
             ...doc.data()
         }));
 
-        // Sort locally (no index needed)
         docs.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
 
-       for (const data of docs) {
+        for (const data of docs) {
+            const status = String(data.status || "").toLowerCase().trim();
 
-        const status = String(data.status || "").toLowerCase().trim();
-
-        // SKIP CANCELLED APPOINTMENTS
-        if (status === "cancelled") {
-            cancelledAppointments++;
-            continue;
-            
-        }
-
-        let displayName = "Unknown";
-
-        if (data.userID) {
-            try {
-                const userRef = doc(db, "Users", data.userID);
-                const userSnap = await getDoc(userRef);
-
-                if (userSnap.exists()) {
-                    displayName = userSnap.data().displayName;
-                }
-            } catch (err) {
-                console.error("Error fetching user:", err);
+            if (status === "cancelled") {
+                cancelledAppointments++;
+                continue;
             }
+
+            let displayName = "Unknown";
+
+            if (data.userID) {
+                try {
+                    const userRef = doc(db, "Users", data.userID);
+                    const userSnap = await getDoc(userRef);
+
+                    if (userSnap.exists()) {
+                        displayName = userSnap.data().displayName || "Unknown";
+                    }
+                } catch (err) {
+                    console.error("Error fetching user:", err);
+                }
+            }
+
+            const article = document.createElement("article");
+            article.className = "appointment";
+
+            article.innerHTML = `
+                <time class="time">${data.time || "N/A"}</time>
+                <section class="details">
+                    <strong>${displayName}</strong>
+                    <p>${data.reason || "No reason"}</p>
+                </section>
+                <mark class="badge">${data.status || "Booked"}</mark>
+            `;
+
+            container.appendChild(article);
         }
 
-        const article = document.createElement("article");
-        article.className = "appointment";
-
-        article.innerHTML = `
-            <time class="time">${data.time || "N/A"}</time>
-            <section class="details">
-                <strong>${displayName}</strong>
-                <p>${data.reason || "No reason"}</p>
-            </section>
-            <mark class="badge">${data.status || "Booked"}</mark>
-        `;
-
-        container.appendChild(article);
-    }
-
-    if (snapshot.size === cancelledAppointments) {
+        if (snapshot.size === cancelledAppointments) {
             container.innerHTML += `<p class="empty">No upcoming appointments</p>`;
-            return;
         }
 
     } catch (error) {
@@ -164,7 +173,8 @@ async function loadAppointments(clinicID) {
     }
 }
 
-// ================= SIGN OUT =================
+
+/* ================= SIGN OUT ================= */
 window.signOut = async function () {
     await signOut(auth);
     window.location.href = "/index.html";
@@ -174,6 +184,12 @@ window.signOut = async function () {
 /* ================= LOAD STATS ================= */
 async function loadStats(clinicID) {
     try {
+        const totalEl = document?.getElementById?.("totalToday");
+        const queueEl = document?.getElementById?.("inQueue");
+        const completedEl = document?.getElementById?.("completed");
+        const avgEl = document?.getElementById?.("avgWait");
+
+        // If no DOM (tests), just run logic safely
         const q = query(
             collection(db, "Appointments"),
             where("clinicID", "==", clinicID)
@@ -185,23 +201,11 @@ async function loadStats(clinicID) {
         let inQueue = 0;
         let completed = 0;
 
-        const todayStr = new Date().toLocaleDateString("en-CA");
-
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
-
-            // FIXED DATE HANDLING
-            let docDateStr = null;
-
-            if (data.date?.toDate) {
-                docDateStr = data.date.toDate().toLocaleDateString("en-CA");
-            } else if (data.date) {
-                docDateStr = new Date(data.date).toLocaleDateString("en-CA");
-            }
-
             const status = String(data.status || "").toLowerCase().trim();
 
-            if (status === "booked" || status === "waiting" || status === "scheduled") {
+            if (["booked", "waiting", "scheduled"].includes(status)) {
                 inQueue++;
                 totalToday++;
             }
@@ -212,13 +216,11 @@ async function loadStats(clinicID) {
             }
         });
 
-        // UPDATE UI
-        document.getElementById("totalToday").textContent = totalToday;
-        document.getElementById("inQueue").textContent = inQueue;
-        document.getElementById("completed").textContent = completed;
-
-        document.getElementById("avgWait").textContent =
-            inQueue > 0 ? "15m" : "0m";
+        //Safe DOM updates
+        if (totalEl) totalEl.textContent = totalToday;
+        if (queueEl) queueEl.textContent = inQueue;
+        if (completedEl) completedEl.textContent = completed;
+        if (avgEl) avgEl.textContent = inQueue > 0 ? "15m" : "0m";
 
     } catch (error) {
         console.error("Error loading stats:", error);
