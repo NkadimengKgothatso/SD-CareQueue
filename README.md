@@ -1,4 +1,4 @@
-[![codecov](https://codecov.io/gh/NkadimengKgothatso/SD-CareQueue/branch/main/graph/badge.svg)](https://codecov.io/gh/NkadimengKgothatso/SD-CareQueue)
+![codecov](https://img.shields.io/badge/coverage-not%20available-lightgrey)
 
 # SD CareQueue
 
