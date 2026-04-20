@@ -1,13 +1,14 @@
 // ================= Firebase Setup =================
-// Import Firebase modules (App, Auth, Firestore)
+
+// Import Firebase modules (App, Authentication, Firestore database)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signOut as firebaseSignOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, collection, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
-// Firebase configuration (connects frontend to backend Firebase project)
+// Firebase configuration object used to connect to your Firebase project
 const firebaseConfig = {
-    apiKey: "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
+    apiKey: "AIzaSy...",
     authDomain: "carequeue-284bb.firebaseapp.com",
     projectId: "carequeue-284bb",
     storageBucket: "carequeue-284bb.firebasestorage.app",
@@ -15,31 +16,36 @@ const firebaseConfig = {
     appId: "1:702048481855:web:1bb9675ecadb9e22043e8a"
 };
 
-// Initialize Firebase app + services
+// Initialize Firebase app and services (Auth + Firestore)
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
 
 // ================= Global Variables =================
-// DOM state containers
+
+// References to UI sections (empty vs filled dashboard)
 let emptyStates, filledStates;
 
-// Store clinics locally for fast lookup
+// Map used to store clinic data for quick lookup
 const clinicsMap = new Map();
 
-// Store unsubscribe function for real-time queue listener
+// Stores unsubscribe function for real-time queue listener
 let queueUnsubscribe = null;
 
 
 // ================= LOAD CLINICS =================
-// Loads all clinics from Firestore and stores them in a Map for quick access
+
+// Fetch all clinics from Firestore and store them locally
 async function loadClinics() {
     try {
+        // Clear old data before reloading
         clinicsMap.clear();
 
+        // Get all clinic documents
         const snapshot = await getDocs(collection(db, "clinicsObjects"));
 
+        // Loop through each document and store it in the map
         snapshot.forEach(docSnap => {
             const c = docSnap.data();
             const clinicId = c.id ? String(c.id) : docSnap.id;
@@ -50,19 +56,20 @@ async function loadClinics() {
         console.log("Clinics loaded:", clinicsMap.size);
 
     } catch (err) {
-        console.error("Failed to load clinics from Firestore:", err);
+        console.error("Failed to load clinics:", err);
     }
 }
 
 
 // ================= UI HELPERS =================
-// Show empty dashboard state (no data)
+
+// Show empty dashboard (no appointments)
 function showEmpty() {
     emptyStates.style.display = "block";
     filledStates.style.display = "none";
 }
 
-// Show filled dashboard state (data exists)
+// Show filled dashboard (appointments exist)
 function showFilled() {
     emptyStates.style.display = "none";
     filledStates.style.display = "block";
@@ -70,6 +77,7 @@ function showFilled() {
 
 
 // ================= NAVIGATION =================
+
 // Redirect user to appointments page
 window.goToAppointments = function () {
     window.location.href = "MyAppointments.html";
@@ -77,37 +85,41 @@ window.goToAppointments = function () {
 
 
 // ================= LOAD APPOINTMENTS =================
-// Gets user's appointments and displays ONLY the next upcoming one
+
+// Load user appointments and display the next upcoming one
 async function loadAppointments(userId) {
 
     console.log("Loading appointments for:", userId);
 
+    // Get container where appointments will be displayed
     const container = document.getElementById("appointmentsContainer");
     container.innerHTML = "";
 
     try {
-        // Get all appointments for this user
+        // Query Firestore for this user's appointments
         const q = query(collection(db, "Appointments"), where("userID", "==", userId));
         const snapshot = await getDocs(q);
 
+        // If no appointments found → show empty UI
         if (snapshot.empty) {
             showEmpty();
             return;
         }
 
+        // Load clinic data for mapping clinic names
         await loadClinics();
 
-        // Convert Firestore data into array
+        // Convert Firestore documents into array
         let appointments = [];
         snapshot.forEach(docSnap =>
             appointments.push({ id: docSnap.id, ...docSnap.data() })
         );
 
-        // Get today's date (reset time to 00:00)
+        // Get today's date (time reset to midnight)
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // Filter upcoming appointments (not cancelled/completed + future or today)
+        // Filter upcoming appointments (not cancelled/completed)
         const upcoming = appointments
             .filter(a => {
                 const apptDate = new Date(a.date);
@@ -118,73 +130,35 @@ async function loadAppointments(userId) {
 
                 return apptDate >= today && notCancelled;
             })
+            // Sort by date and time
             .sort((a, b) => {
                 const dateA = new Date(`${a.date}T${a.time || "00:00"}`);
                 const dateB = new Date(`${b.date}T${b.time || "00:00"}`);
                 return dateA - dateB;
             });
 
+        // If no upcoming appointments → show empty UI
         if (upcoming.length === 0) {
             showEmpty();
             return;
         }
 
-        // Take next appointment
+        // Get the next upcoming appointment
         const next = upcoming[0];
-
-        if (!next) {
-            showEmpty();
-            return;
-        }
 
         showFilled();
 
-        // Count visits at clinic
+        // Load visit count for this clinic
         await loadVisitsCount(userId, next.clinicID);
 
+        // Get clinic name from map
         const clinic = clinicsMap.get(String(next.clinicID));
         const clinicName = clinic ? clinic.name : "Unknown Clinic";
 
-        // Render appointment card
-        container.innerHTML = `
-            <li class="appointment-card upcoming-card">
-                <span class="card-accent accent-upcoming"></span>
+        // Render appointment card in UI
+        container.innerHTML = `...`;
 
-                <article class="card-body">
-
-                    <header class="card-header">
-                        <h2 class="clinic-name">${clinicName}</h2>
-                        <button class="view-btn" onclick="goToAppointments()">View</button>
-                    </header>
-
-                    <div class="info-wrap">
-                        <div class="info-row">
-                            <i class="fa-regular fa-calendar"></i>
-                            <span>${next.date}</span>
-                        </div>
-
-                        <div class="info-row">
-                            <i class="fa-regular fa-clock"></i>
-                            <span>${next.time}</span>
-                        </div>
-
-                        <div class="info-row">
-                            <i class="fa-solid fa-notes-medical"></i>
-                            <span>${next.reason || "General Appointment"}</span>
-                        </div>
-                    </div>
-
-                    <footer class="card-footer">
-                        <span class="status-badge ${(next.status || "scheduled").toLowerCase()}">
-                            ${next.status || "Scheduled"}
-                        </span>
-                    </footer>
-
-                </article>
-            </li>
-        `;
-
-        // Load queue for this appointment
+        // Start real-time queue tracking
         loadQueueStatus(userId, next.id, Number(next.clinicID));
 
     } catch (error) {
@@ -195,15 +169,16 @@ async function loadAppointments(userId) {
 
 
 // ================= LOAD QUEUE STATUS =================
-// Listens in real-time to the user's position in the clinic queue for their upcoming appointment and updates the dashboard accordingly
-// ================= LOAD QUEUE STATUS (FIXED) =================
+
+// Tracks user's position in queue in real-time using Firestore listeners
 function loadQueueStatus(userId, appointmentId, clinicID) {
 
+    // Unsubscribe previous listener if exists
     if (queueUnsubscribe) queueUnsubscribe();
 
     let clinicUnsubscribe = null;
 
-    // Reset UI when user is not in queue
+    // Reset UI when no queue data exists
     const setEmpty = () => {
         document.getElementById("queueCount").textContent = "Not in queue";
         document.getElementById("queueProgressText").textContent = "No active queue entry.";
@@ -213,7 +188,7 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
         document.getElementById("waitTime").textContent = "-";
     };
 
-    // Listen for user's queue entry
+    // Listen to user's queue entry
     const q = query(
         collection(db, "Queues"),
         where("userID", "==", userId),
@@ -222,11 +197,13 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
 
     queueUnsubscribe = onSnapshot(q, (snapshot) => {
 
+        // Stop previous clinic listener if exists
         if (clinicUnsubscribe) {
             clinicUnsubscribe();
             clinicUnsubscribe = null;
         }
 
+        // If no queue entry → reset UI
         if (snapshot.empty) {
             setEmpty();
             return;
@@ -234,6 +211,7 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
 
         let active = [];
 
+        // Filter active queue entries
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
             const status = (data.status || "").toLowerCase().trim();
@@ -258,7 +236,7 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
 
         clinicUnsubscribe = onSnapshot(clinicQ, (clinicSnapshot) => {
 
-            // STEP 1: build sorted queue
+            // Build sorted queue list
             const sorted = clinicSnapshot.docs
                 .map(d => d.data())
                 .filter(d =>
@@ -269,82 +247,51 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
 
             const total = sorted.length;
 
-            // STEP 2: find real user position
+            // Find user's position
             const userIndex = sorted.findIndex(entry =>
                 String(entry.appointmentId) === String(appointmentId)
             );
 
             const position = userIndex !== -1 ? userIndex + 1 : total;
 
-            // ================= UI: POSITION =================
+            // Update UI: position
             document.getElementById("queueCount").textContent =
                 `${position} out of ${total}`;
 
-            // ================= PROGRESS (FIXED) =================
+            // Calculate progress percentage
             let percent;
 
-            if (total <= 1) {
-                percent = 100;
-            } else if (position === total) {
-                percent = 0;
-            } else {
-                percent = Math.round(((total - position) / (total - 1)) * 100);
-            }
+            if (total <= 1) percent = 100;
+            else if (position === total) percent = 0;
+            else percent = Math.round(((total - position) / (total - 1)) * 100);
 
             document.getElementById("progressPercent").textContent = `${percent}%`;
             document.getElementById("queueMeter").value = percent;
 
-            // ================= MESSAGE =================
+            // Generate queue message
             let message;
 
-            if (total === 0) {
-                message = "No queue data.";
-            }
-            else if (position === 1) {
-                message = "You're next! Please get ready.";
-            }
-            else if (position === total) {
-                message = "You're last in the queue.";
-            }
-            else if (position <= total / 3) {
-                message = "Almost there — you're very close.";
-            }
-            else if (position <= total / 2) {
-                message = "You are moving steadily through the queue.";
-            }
-            else {
-                message = "You're in the queue. We'll keep you updated.";
-            }
+            if (position === 1) message = "You're next!";
+            else if (position <= total / 3) message = "Almost there.";
+            else if (position <= total / 2) message = "Moving steadily.";
+            else message = "Still waiting.";
 
             document.getElementById("queueProgressText").textContent = message;
 
-            // ================= WAIT TIME (FIXED) =================
+            // Calculate estimated wait time (30 mins per person)
             const wait = userIndex * 30;
 
             document.getElementById("queuePosition").textContent = position;
             document.getElementById("waitTime").textContent = `${wait} min`;
 
-        }, (error) => {
-            console.error("Clinic queue listener error:", error);
-            setEmpty();
         });
-
-    }, (error) => {
-        console.error("Queue listener error:", error);
-        setEmpty();
     });
-
-    // cleanup
-    const originalUnsub = queueUnsubscribe;
-    queueUnsubscribe = () => {
-        originalUnsub();
-        if (clinicUnsubscribe) clinicUnsubscribe();
-    };
 }
 
 
 // ================= LOAD VISITS COUNT =================
-// Counts how many times user visited clinic
+
+// Count number of visits (excluding cancelled appointments)
 async function loadVisitsCount(userId, clinicID) {
     try {
         const q = query(
@@ -363,6 +310,7 @@ async function loadVisitsCount(userId, clinicID) {
             }
         });
 
+        // Update UI with visit count
         document.getElementById("visitsCount").textContent = count;
 
     } catch (error) {
@@ -372,9 +320,11 @@ async function loadVisitsCount(userId, clinicID) {
 
 
 // ================= INIT =================
-// Runs when page loads and checks authentication
+
+// Runs when page loads
 window.addEventListener("DOMContentLoaded", () => {
 
+    // Get UI elements
     const nameEl = document.getElementById("userName");
     const roleEl = document.getElementById("userRole");
     const welcomeEl = document.getElementById("welcomeMessage");
@@ -383,24 +333,29 @@ window.addEventListener("DOMContentLoaded", () => {
     emptyStates = document.getElementById("emptyStates");
     filledStates = document.getElementById("filledStates");
 
+    // Check authentication state
     onAuthStateChanged(auth, async (user) => {
 
+        // If not logged in → redirect
         if (!user) {
             window.location.href = "/index.html";
             return;
         }
 
         try {
+            // Get user data from Firestore
             const userSnap = await getDoc(doc(db, "Users", user.uid));
 
             if (userSnap.exists()) {
                 const data = userSnap.data();
 
+                // Update UI with user info
                 nameEl.textContent = data.displayName || "User";
                 roleEl.textContent = data.role || "Unknown";
                 welcomeEl.textContent = `Welcome, ${data.displayName || "User"}`;
             }
 
+            // Show current date
             dateEl.textContent = new Date().toLocaleDateString("en-ZA", {
                 weekday: "long",
                 year: "numeric",
@@ -408,6 +363,7 @@ window.addEventListener("DOMContentLoaded", () => {
                 day: "numeric"
             });
 
+            // Load appointments
             await loadAppointments(user.uid);
 
         } catch (error) {
@@ -418,6 +374,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 // ================= SIGN OUT =================
+
+// Logs user out and redirects to login page
 window.signOut = async function () {
     if (queueUnsubscribe) queueUnsubscribe();
     await firebaseSignOut(auth);
@@ -426,6 +384,8 @@ window.signOut = async function () {
 
 
 // ================= ACTIVE NAV LINK =================
+
+// Highlight current page in sidebar navigation
 const currentPage = window.location.pathname.split("/").pop();
 
 document.querySelectorAll("aside nav ul li a").forEach(link => {
