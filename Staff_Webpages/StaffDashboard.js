@@ -1,4 +1,3 @@
-// ================= IMPORTS =================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { 
     getFirestore, 
@@ -17,7 +16,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 
-// ================= CONFIG =================
+/* ================= FIREBASE ================= */
 const firebaseConfig = {
     apiKey: "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
     authDomain: "carequeue-284bb.firebaseapp.com",
@@ -27,74 +26,103 @@ const firebaseConfig = {
     appId: "1:702048481855:web:1bb9675ecadb9e22043e8a"
 };
 
-
-// ================= SAFE HELPERS =================
-export function parseClinicId(rawClinicId) {
-    const cleaned = String(rawClinicId).trim();
-    const parsed = Number(cleaned);
-    return Number.isFinite(parsed) ? parsed : null;
-}
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
 
-// ================= CORE LOGIC =================
-export async function handleUser(user, db) {
-    const q = query(
-        collection(db, "ApprovedStaff"),
-        where("email", "==", user.email)
-    );
+/* ================= PREVENT DOUBLE LOAD ================= */
+let hasLoaded = false;
 
-    const snapshot = await getDocs(q);
 
-    if (snapshot.empty) return null;
+/* ================= AUTH LISTENER ================= */
+onAuthStateChanged(auth, async (user) => {
+    if (!user || hasLoaded) return;
+    hasLoaded = true;
 
-    for (const docSnap of snapshot.docs) {
-        const data = docSnap.data();
+    try {
+        const q = query(
+            collection(db, "ApprovedStaff"),
+            where("email", "==", user.email)
+        );
 
-        const clinicID = parseClinicId(data.clinicId);
-        if (clinicID === null) return null;
+        const snapshot = await getDocs(q);
 
-        return {
-            clinicID,
-            data
-        };
+        if (snapshot.empty) {
+            console.log("No staff found");
+            return;
+        }
+
+        let clinicID = null;
+
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+
+            
+            clinicID = Number(data.clinicId);
+
+            document.querySelectorAll(".name-Surname").forEach(el => {
+                el.textContent = data.displayName;
+            });
+
+            const today = new Date().toDateString();
+            const clinicTimeEl = document.getElementById("clinicAndTime");
+            if (clinicTimeEl) {
+                clinicTimeEl.textContent = `${data.assignedClinic} · ${today}`;
+            }
+        });
+
+        if (!clinicID) {
+            console.log("No clinicID found");
+            return;
+        }
+        
+        loadAppointments(clinicID);
+     
+        loadStats(clinicID);
+
+    } catch (error) {
+        console.error("Error loading user:", error);
     }
+});
 
-    return null;
-}
+let cancelledAppointments=0; 
+/* ================= LOAD APPOINTMENTS ================= */
+async function loadAppointments(clinicID) {
+    try {
+        const container = document.querySelector(".appointments");
 
+       
+        const q = query(
+            collection(db, "Appointments"),
+            where("clinicID", "==", clinicID)
+        );
 
-// ================= LOAD APPOINTMENTS =================
-export async function loadAppointments(db, clinicID) {
-    const container = document?.querySelector?.(".appointments");
-    if (!container) return;
+        const snapshot = await getDocs(q);
+        console.log("Total docs:", snapshot.size);
 
-    let cancelledAppointments = 0;
+        if (snapshot.empty) {
+            container.innerHTML += `<p class="empty">No upcoming appointments</p>`;
+            return;
+        }
 
-    const q = query(
-        collection(db, "Appointments"),
-        where("clinicID", "==", clinicID)
-    );
+        const docs = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
 
-    const snapshot = await getDocs(q);
+        // Sort locally (no index needed)
+        docs.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
 
-    if (snapshot.empty) {
-        container.innerHTML += `<p class="empty">No upcoming appointments</p>`;
-        return;
-    }
+       for (const data of docs) {
 
-    const docs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-    }));
-
-    docs.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
-
-    for (const data of docs) {
         const status = String(data.status || "").toLowerCase().trim();
 
+        // SKIP CANCELLED APPOINTMENTS
         if (status === "cancelled") {
             cancelledAppointments++;
             continue;
+            
         }
 
         let displayName = "Unknown";
@@ -105,7 +133,7 @@ export async function loadAppointments(db, clinicID) {
                 const userSnap = await getDoc(userRef);
 
                 if (userSnap.exists()) {
-                    displayName = userSnap.data().displayName || "Unknown";
+                    displayName = userSnap.data().displayName;
                 }
             } catch (err) {
                 console.error("Error fetching user:", err);
@@ -128,102 +156,72 @@ export async function loadAppointments(db, clinicID) {
     }
 
     if (snapshot.size === cancelledAppointments) {
-        container.innerHTML += `<p class="empty">No upcoming appointments</p>`;
+            container.innerHTML += `<p class="empty">No upcoming appointments</p>`;
+            return;
+        }
+
+    } catch (error) {
+        console.error("Error loading appointments:", error);
     }
 }
 
-
-// ================= LOAD STATS =================
-export async function loadStats(db, clinicID) {
-    const totalEl = document?.getElementById?.("totalToday");
-    const queueEl = document?.getElementById?.("inQueue");
-    const completedEl = document?.getElementById?.("completed");
-    const avgEl = document?.getElementById?.("avgWait");
-
-    const q = query(
-        collection(db, "Appointments"),
-        where("clinicID", "==", clinicID)
-    );
-
-    const snapshot = await getDocs(q);
-
-    let totalToday = 0;
-    let inQueue = 0;
-    let completed = 0;
-
-    snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        const status = String(data.status || "").toLowerCase().trim();
-
-        if (["booked", "waiting", "scheduled"].includes(status)) {
-            inQueue++;
-            totalToday++;
-        }
-
-        if (status === "completed") {
-            completed++;
-            totalToday++;
-        }
-    });
-
-    if (totalEl) totalEl.textContent = totalToday;
-    if (queueEl) queueEl.textContent = inQueue;
-    if (completedEl) completedEl.textContent = completed;
-    if (avgEl) avgEl.textContent = inQueue > 0 ? "15m" : "0m";
-}
+// ================= SIGN OUT =================
+window.signOut = async function () {
+    await signOut(auth);
+    window.location.href = "/index.html";
+};
 
 
-// ================= INIT (BROWSER ONLY) =================
-export function initApp() {
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+/* ================= LOAD STATS ================= */
+async function loadStats(clinicID) {
+    try {
+        const q = query(
+            collection(db, "Appointments"),
+            where("clinicID", "==", clinicID)
+        );
 
-    let hasLoaded = false;
+        const snapshot = await getDocs(q);
 
-    onAuthStateChanged(auth, async (user) => {
-        if (!user || hasLoaded) return;
-        hasLoaded = true;
+        let totalToday = 0;
+        let inQueue = 0;
+        let completed = 0;
 
-        try {
-            const result = await handleUser(user, db);
+        const todayStr = new Date().toLocaleDateString("en-CA");
 
-            if (!result) return;
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
 
-            const { clinicID, data } = result;
+            // FIXED DATE HANDLING
+            let docDateStr = null;
 
-            // Safe DOM updates
-            const nameEls = document?.querySelectorAll?.(".name-Surname") || [];
-            nameEls.forEach(el => {
-                el.textContent = data.displayName || "";
-            });
-
-            const today = new Date().toDateString();
-            const clinicTimeEl = document?.getElementById?.("clinicAndTime");
-
-            if (clinicTimeEl) {
-                clinicTimeEl.textContent = `${data.assignedClinic || ""} · ${today}`;
+            if (data.date?.toDate) {
+                docDateStr = data.date.toDate().toLocaleDateString("en-CA");
+            } else if (data.date) {
+                docDateStr = new Date(data.date).toLocaleDateString("en-CA");
             }
 
-            await loadAppointments(db, clinicID);
-            await loadStats(db, clinicID);
+            const status = String(data.status || "").toLowerCase().trim();
 
-        } catch (error) {
-            console.error("Error loading user:", error);
-        }
-    });
+            if (status === "booked" || status === "waiting" || status === "scheduled") {
+                inQueue++;
+                totalToday++;
+            }
 
-    // expose signOut
-    if (typeof window !== "undefined") {
-        window.signOut = async function () {
-            await signOut(auth);
-            window.location.href = "/index.html";
-        };
+            if (status === "completed") {
+                completed++;
+                totalToday++;
+            }
+        });
+
+        // UPDATE UI
+        document.getElementById("totalToday").textContent = totalToday;
+        document.getElementById("inQueue").textContent = inQueue;
+        document.getElementById("completed").textContent = completed;
+
+        document.getElementById("avgWait").textContent =
+            inQueue > 0 ? "15m" : "0m";
+
+    } catch (error) {
+        console.error("Error loading stats:", error);
     }
-}
-
-
-// ================= RUN ONLY IN BROWSER =================
-if (typeof window !== "undefined") {
-    initApp();
 }
