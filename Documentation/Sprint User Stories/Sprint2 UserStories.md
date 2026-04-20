@@ -28,7 +28,7 @@
 <li>Test UAT scenarios</li>
 </ul>
 </td>
-<td align="center"></td>
+<td align="center"> 6 </td>
 </tr>
 
 <tr>
@@ -128,26 +128,18 @@
 <ul>
 <!-- ADD CLINIC -->
 <li><b>Given</b> I am a logged in admin <b>when</b> I add a new clinic with valid details <b>then</b> the clinic should be successfully created and available for patients</li>
-
 <li><b>Given</b> I am adding a new clinic <b>when</b> I submit the form with missing required fields <b>then</b> I should see validation errors and the clinic should not be created</li>
-
 
 <!-- VIEW CLINICS -->
 <li><b>Given</b> I am a logged in admin <b>when</b> I navigate to the clinics page <b>then</b> I should see a list of all clinics</li>
 
-
 <!-- EDIT CLINIC -->
 <li><b>Given</b> I am viewing a clinic <b>when</b> I update its details and save <b>then</b> the changes should be stored and displayed correctly</li>
-
-
-
 <li><b>Given</b> I update a clinic’s details <b>when</b> I return to the clinics list <b>then</b> the updated details should be visible</li>
 
 <!-- REMOVE CLINIC -->
 <li><b>Given</b> I am viewing a clinic <b>when</b> I delete the clinic <b>then</b> it should no longer appear in the clinics list</li>
-
 <li><b>Given</b> I attempt to delete a clinic <b>when</b> I confirm the action <b>then</b> the clinic should be permanently removed</li>
-
 <li><b>Given</b> I attempt to delete a clinic <b>when</b> I cancel the action <b>then</b> the clinic should remain unchanged</li>
 
 <!-- CLINIC HOURS -->
@@ -172,7 +164,7 @@
 </ul>
 </td>
 
-<td align="center"></td>
+<td align="center"> 9 </td>
 </tr>
 
 <tr>
