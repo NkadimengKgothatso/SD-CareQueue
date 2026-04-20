@@ -158,14 +158,11 @@ async function loadAppointments(userId) {
 
 
 // ================= LOAD QUEUE STATUS (REAL-TIME FIXED) =================
-// This function sets up a real-time listener on the "Queues" collection to get live updates on the user's queue status.
-//  It also queries the entire clinic queue to calculate the user's position and estimated wait time.
-
-
 function loadQueueStatus(userId) {
-    
     if (queueUnsubscribe) queueUnsubscribe();
-    // updating the empty state when the user is not in queue or if there's an error with the listener
+
+    let clinicUnsubscribe = null;
+
     const setEmpty = () => {
         document.getElementById("queueCount").textContent = "Not in queue";
         document.getElementById("queueProgressText").textContent = "No active queue entry.";
@@ -175,14 +172,14 @@ function loadQueueStatus(userId) {
         document.getElementById("waitTime").textContent = "-";
     };
 
-    // We listen for any changes to the user's queue entries in real-time. 
     const q = query(collection(db, "Queues"), where("userID", "==", userId));
 
-    queueUnsubscribe = onSnapshot(q, async (snapshot) => {
+    queueUnsubscribe = onSnapshot(q, (snapshot) => {
+
+        if (clinicUnsubscribe) { clinicUnsubscribe(); clinicUnsubscribe = null; }
 
         if (snapshot.empty) { setEmpty(); return; }
-        // We may have multiple queue entries for the user (e.g., if they have multiple appointments),
-        //  so we filter for the active ones and sort by position to find the most relevant entry to display on the dashboard.
+
         let active = [];
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
@@ -196,91 +193,79 @@ function loadQueueStatus(userId) {
 
         active.sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
 
-        // We take the first active queue entry to display on the dashboard.
         const queueData = active[0];
-        const position = queueData.position ?? 1;
-        const clinicID = queueData.clinicID;
+        const clinicID = Number(queueData.clinicID); // ✅ force to number to match Firestore int64
 
-
-
-
-
-
-        // ================= TOTAL: query entire clinic queue =================
-
-        // To calculate the user's position and estimated wait time,
-        //  we need to know how many people are ahead of them in the queue.
         const clinicQ = query(
             collection(db, "Queues"),
             where("clinicID", "==", clinicID)
         );
-        // We get a snapshot of the entire clinic queue and filter for entries that are in "waiting", "scheduled",
-        //  or "active" status to count how many people are currently in the queue.
-       const clinicSnapshot = await getDocs(clinicQ);
-        const total = clinicSnapshot.docs.filter(d => {
-            const s = (d.data().status || "").toLowerCase().trim();
-            return ["waiting", "scheduled", "active"].includes(s);
-        }).length;
 
+        clinicUnsubscribe = onSnapshot(clinicQ, (clinicSnapshot) => {
 
+            // Sort all active clinic entries by position
+            const allActive = clinicSnapshot.docs
+                .filter(d => {
+                    const s = (d.data().status || "").toLowerCase().trim();
+                    return ["waiting", "scheduled", "active"].includes(s);
+                })
+                .map(d => d.data())
+                .sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
 
+            const total = allActive.length;
 
+            // ✅ Normalise both sides to string to prevent type mismatch on userID
+            const userIndex = allActive.findIndex(entry => String(entry.userID) === String(userId));
+            const position = userIndex !== -1 ? userIndex + 1 : (queueData.position ?? 1);
 
+            // ================= UI =================
+            document.getElementById("queueCount").textContent = `${position} out of ${total}`;
 
-      
-         // ================= UI =================
-        // We update the dashboard with the user's position in the queue,
-        // the total number of people in the queue, and an estimated wait time.
-        // We also display a message to encourage the user while they wait.
+            const percent = total > 0
+                ? Math.round(((total - position) / total) * 100)
+                : 0;
 
-        document.getElementById("queueCount").textContent = `${position} out of ${total}`;
+            document.getElementById("progressPercent").textContent = `${percent}%`;
+            document.getElementById("queueMeter").value = percent;
 
-        // We calculate the percentage of the queue that has been processed
-        // based on the user's position and total queue length.
-        const percent = total > 0
-            ? Math.round(((total - position) / total) * 100)
-            : 0;
+            let message = "";
+            if (position === 1) {
+                message = "You're next! Please get ready.";
+            } else if (percent >= 70) {
+                message = "Almost there — you're very close.";
+            } else if (percent >= 40) {
+                message = "You are moving steadily through the queue.";
+            } else {
+                message = "You're in the queue. We'll keep you updated.";
+            }
 
-        document.getElementById("progressPercent").textContent = `${percent}%`;
-        document.getElementById("queueMeter").value = percent;
+            document.getElementById("queueProgressText").textContent = message;
 
-        // We display a motivational message based on queue progress
-        let message = "";
+            // Wait time uses the accurate dynamic position
+            let wait = queueData.estimateWait;
+            if (!wait || wait === 0) {
+                wait = (position - 1) * 30;
+            }
+            document.getElementById("queuePosition").textContent = position;
+            document.getElementById("waitTime").textContent = `${wait} min`;
 
-        if (position === 1) {
-            message = "You're next! Please get ready.";
-        } else if (percent >= 70) {
-            message = "Almost there — you're very close.";
-        } else if (percent >= 40) {
-            message = "You are moving steadily through the queue.";
-        } else {
-            message = "You're in the queue. We'll keep you updated.";
-        }
-
-        document.getElementById("queueProgressText").textContent = message;
-
-        // WAIT TIME CALCULATION 
-        // We check if the queue entry has an "estimateWait" field.
-        // If not, we calculate using 30 minutes per appointment.
-
-        let wait = queueData.estimateWait;
-
-        if (!wait || wait === 0) {
-            wait = (position - 1) * 30;
-        }
-
-        document.getElementById("queuePosition").textContent = position;
-        document.getElementById("waitTime").textContent = `${wait} min`;
-
-                //debugging
+        }, (error) => {
+            console.error("Clinic queue listener error:", error);
+            setEmpty();
+        });
 
     }, (error) => {
         console.error("Queue listener error:", error);
         setEmpty();
     });
-}
 
-   
+    // Wrap queueUnsubscribe so sign-out cancels BOTH listeners cleanly
+    const originalUnsub = queueUnsubscribe;
+    queueUnsubscribe = () => {
+        originalUnsub();
+        if (clinicUnsubscribe) clinicUnsubscribe();
+    };
+}
 
 
 // ================= LOAD VISITS COUNT =================
