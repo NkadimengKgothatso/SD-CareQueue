@@ -1,11 +1,11 @@
 // Admin_WebPages/WalkinLogic.js
 
-// ─── DATE ─────────────────────────────────────────────────────────────
+// DATE 
 function getToday() {
     return new Date().toISOString().split("T")[0];
 }
 
-// ─── TIME CONVERSION ───────────────────────────────────────────────────
+// TIME CONVERSION 
 function timeToMinutes(t) {
     const [h, m] = t.split(":").map(Number);
     return h * 60 + m;
@@ -17,7 +17,7 @@ function minutesToTime(m) {
     return `${h}:${mm}`;
 }
 
-// ─── SLOT CHECK ────────────────────────────────────────────────────────
+//  SLOT CHECK 
 function isTaken(t, appointments, SLOT) {
     const timeMin = typeof t === "string" ? timeToMinutes(t) : t;
 
@@ -27,12 +27,12 @@ function isTaken(t, appointments, SLOT) {
     });
 }
 
-// ─── ROUNDING ──────────────────────────────────────────────────────────
+// ROUNDING 
 function roundToNextSlot(minutes, slot) {
     return Math.ceil(minutes / slot) * slot;
 }
 
-// ─── EXPORTS (NODE / JEST) ────────────────────────────────────────────
+//  EXPORTS (NODE / JEST) 
 if (typeof module !== "undefined" && module.exports) {
     module.exports = {
         getToday,
@@ -43,7 +43,7 @@ if (typeof module !== "undefined" && module.exports) {
     };
 }
 
-// ─── BROWSER GLOBAL (optional UI usage) ───────────────────────────────
+//  BROWSER GLOBAL (optional UI usage) 
 if (typeof window !== "undefined") {
     window.walkinLogic = {
         getToday,
