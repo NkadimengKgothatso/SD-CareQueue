@@ -227,40 +227,7 @@ function loadQueueStatus(userId) {
 
 
 
-        // ================= UI =================
-        // We update the dashboard with the user's position in the queue, the total number of people in the queue, 
-        // and an estimated wait time based on their position.
-        //  We also display a message to encourage the user while they wait.
-
-
-        document.getElementById("queueCount").textContent = `${position} out of ${total}`;
-
-
-
-        // We calculate the percentage of the queue that has been processed based on the user's position and the total queue length.
-        const percent = total > 0
-            ? Math.round(((total - position) / total) * 100)
-            : 0;
-
-        document.getElementById("progressPercent").textContent = `${percent}%`;
-        document.getElementById("queueMeter").value = percent;
-
-        let message = "";
-        if (position === 1) {
-            message = "You're next! Please get ready.";
-        } else if (percent >= 70) {
-            message = "Almost there — you're very close.";
-        } else if (percent >= 40) {
-            message = "You are moving steadily through the queue.";
-        } else {
-            message = "You're in the queue. We'll keep you updated.";
-        }
-
-        document.getElementById("queueProgressText").textContent = message;
-
-
-        // For the estimated wait time, we check if the queue entry has an "estimateWait" field.
-        //  If it does, we use that value.
+      
          // ================= UI =================
         // We update the dashboard with the user's position in the queue, the total number of people in the queue, 
         // and an estimated wait time based on their position.
