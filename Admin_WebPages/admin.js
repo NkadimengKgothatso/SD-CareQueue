@@ -33,7 +33,7 @@ async function isUserAdmin(user) {
 
 // ================= POPULATE SIDEBAR =================
 // Single source of truth for the sidebar user info across ALL admin pages.
-// StaffManagement.js, clinicManagement.js, Dashboard.js, Analytics.js, etc.
+// StaffManagement.js, clinicManagement.js etc.
 // all get this behaviour for free by importing admin.js.
 function populateSidebar(user) {
     const nameEl   = document.getElementById("adminName");

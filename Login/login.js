@@ -86,7 +86,7 @@ function handleRedirect(role) {
   if (role === "patient") {
     window.location.href = "/Patients_WebPages/PatientDashboard.html";
   } else if (role === "staff") {
-    window.location.href = "../Staff_Webpages/Queues.html";
+    window.location.href = "../Staff_Webpages/StaffDashboard.html";
   } else {
     window.location.href = "/Admin_WebPages/StaffManagement.html";
   }
@@ -173,20 +173,30 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 // ================= HELPERS =================
+//When the admin clicks the Google sign-in button, the code immediately disables it 
+//and changes its text to "Signing in…" so they can't click it twice. 
+//If the login fails for any reason, resetBtn puts the button back to how it was
 function resetBtn(btn) {
   btn.disabled = false;
   btn.querySelector("strong.provider-name").textContent = "Continue with Google";
 }
-
+//showError has to do two things:
+//Create the paragraph if it doesn't exist yet
+//Put the error message in it and make it visible
 function showError(msg) {
+  //does the error element already exist
   let el = document.getElementById("auth-error");
   if (!el) {
-    el = document.createElement("p");
-    el.id = "auth-error";
-    el.className = "auth-error";
+  // it doesn't exist yet, so build it from scratch
+    el = document.createElement("p"); // create a new <p> tag
+    el.id = "auth-error";     // give it the id
+    el.className = "auth-error"; // give it the CSS class for red styling
+  // find the buttons section and place the error paragraph just above it  
     const providersSection = document.querySelector("section.providers");
     if (providersSection) providersSection.before(el);
+//After this block, el is a real paragraph element sitting on the page, 
+//whether it was just created or was already there from a previous error.    
   }
-  el.textContent = msg;
-  el.style.display = "block";
+  el.textContent = msg; // e.g. "Access denied: You are not authorized as an administrator."
+  el.style.display = "block";  // make it visible (CSS had it hidden by default until there's actually an error to show)
 }

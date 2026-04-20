@@ -1,14 +1,23 @@
 {
+  
   "name": "sd-carequeue",
   "version": "1.0.0",
-  "description": "[![codecov](https://codecov.io/gh/NkadimengKgothatso/SD-CareQueue/branch/main/graph/badge.svg)](https://codecov.io/gh/NkadimengKgothatso/SD-CareQueue)",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "jest",
     "coverage": "jest --coverage"
   },
   "jest": {
-    "testEnvironment": "jsdom"
+    "testEnvironment": "jsdom",
+    "collectCoverageFrom": [
+    "Login/authLogic.js",
+    "Admin_WebPages/staffLogic.js",
+    "Patients_WebPages/*Logic.js",
+    "Staff_Webpages/WalkinLogic.js",
+    "!**/*.test.js",
+    "!**/node_modules/**"
+  ]
   },
   "repository": {
     "type": "git",
@@ -22,12 +31,9 @@
   },
   "homepage": "https://github.com/NkadimengKgothatso/SD-CareQueue#readme",
   "devDependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/preset-env": "^7.29.2",
-    "@jest/globals": "^30.3.0",
-    "babel-jest": "^30.3.0",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.3.0"
-  },
-  "type": "commonjs"
+  }
 }
+
+
