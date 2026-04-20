@@ -229,16 +229,14 @@ function loadQueueStatus(userId) {
 
       
          // ================= UI =================
-        // We update the dashboard with the user's position in the queue, the total number of people in the queue, 
-        // and an estimated wait time based on their position.
-        //  We also display a message to encourage the user while they wait.
-
+        // We update the dashboard with the user's position in the queue,
+        // the total number of people in the queue, and an estimated wait time.
+        // We also display a message to encourage the user while they wait.
 
         document.getElementById("queueCount").textContent = `${position} out of ${total}`;
 
-
-
-        // We calculate the percentage of the queue that has been processed based on the user's position and the total queue length.
+        // We calculate the percentage of the queue that has been processed
+        // based on the user's position and total queue length.
         const percent = total > 0
             ? Math.round(((total - position) / total) * 100)
             : 0;
@@ -246,7 +244,9 @@ function loadQueueStatus(userId) {
         document.getElementById("progressPercent").textContent = `${percent}%`;
         document.getElementById("queueMeter").value = percent;
 
+        // We display a motivational message based on queue progress
         let message = "";
+
         if (position === 1) {
             message = "You're next! Please get ready.";
         } else if (percent >= 70) {
@@ -259,19 +259,20 @@ function loadQueueStatus(userId) {
 
         document.getElementById("queueProgressText").textContent = message;
 
+        // WAIT TIME CALCULATION 
+        // We check if the queue entry has an "estimateWait" field.
+        // If not, we calculate using 30 minutes per appointment.
 
-        // For the estimated wait time, we check if the queue entry has an "estimateWait" field.
-        //  If it does, we use that value.
         let wait = queueData.estimateWait;
 
-        // If no stored estimate, calculate using 30 min per appointment
         if (!wait || wait === 0) {
             wait = (position - 1) * 30;
         }
+
         document.getElementById("queuePosition").textContent = position;
         document.getElementById("waitTime").textContent = `${wait} min`;
 
-        //debugging
+                //debugging
 
     }, (error) => {
         console.error("Queue listener error:", error);
