@@ -224,7 +224,7 @@ async function loadStats(clinicID) {
         document.getElementById("completed").textContent = completed;
 
         document.getElementById("avgWait").textContent =
-            inQueue > 0 ? "15m" : "0m";
+            inQueue > 0 ? "30m" : "0m";
 
     } catch (error) {
         console.error("Error loading stats:", error);
