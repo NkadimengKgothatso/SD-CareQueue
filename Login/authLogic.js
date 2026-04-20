@@ -1,6 +1,6 @@
 // Login/authLogic.js
 
-function handleRedirect(role, user, navigate) {
+function handleRedirect(role, navigate) {
 //Jest runs in Node.js>there is no real browser,
 // so window.location.href doesn't work.
 // The optional navigate argument lets tests swap out window.location.href
@@ -12,7 +12,7 @@ function handleRedirect(role, user, navigate) {
    if (role === "patient") {
     go("/Patients_WebPages/PatientDashboard.html");
   } else if (role === "staff") {
-    go("../Staff_Webpages/Queues.html");
+    go("../Staff_Webpages/StaffDashboard.html");
   } else if (role === "admin") {
     go("/Admin_WebPages/StaffManagement.html");
   }

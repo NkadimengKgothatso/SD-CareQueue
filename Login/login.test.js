@@ -28,7 +28,7 @@ describe("handleRedirect()", () => {
   test("redirects a staff member to the staff queue page", () => {
     const go = jest.fn();
     handleRedirect("staff", go);
-    expect(go).toHaveBeenCalledWith("../Staff_Webpages/Queues.html");
+    expect(go).toHaveBeenCalledWith("../Staff_Webpages/StaffDashboard.html");
   });
 
   // Admin now redirects to the Staff Management page

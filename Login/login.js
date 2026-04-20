@@ -86,7 +86,7 @@ function handleRedirect(role) {
   if (role === "patient") {
     window.location.href = "/Patients_WebPages/PatientDashboard.html";
   } else if (role === "staff") {
-    window.location.href = "../Staff_Webpages/Queues.html";
+    window.location.href = "../Staff_Webpages/StaffDashboard.html";
   } else {
     window.location.href = "/Admin_WebPages/StaffManagement.html";
   }
