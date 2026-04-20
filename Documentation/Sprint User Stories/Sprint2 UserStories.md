@@ -91,17 +91,22 @@
 
 <tr>
 <td>4</td>
-<td></td>
+<td>As a staff member, I want to manage the queue so that I can track patient progress and update their status in real time</td>
 
 <td>
 <ul>
-
+<li><b>Given</b> I am a logged in staff member <b>when</b> I click on Queue Management, <b>then</b> I should see the list of patients in the queue</li>
+<li><b>Given</b> a patient is in the queue <b>when</b> I change the status of their appointments <b>then</b> it should update immediately</li>
+<li><b>Given</b> another staff member updates a patient’s status, <b>when</b> I am viewing the queue page, <b>then</b> I should see the update in real time</li>
 </ul>
 </td>
 
 <td>
 <ul>
-
+<li>Match UI to prototype<li>
+<li>Delete Walk In Button</li>
+<li>Make clicking button on side bar to cause an event</li>
+<li>Update the queue list in real time</li>
 </ul>
 </td>
 
@@ -129,21 +134,28 @@
 
 <tr>
 <td>6</td>
-<td></td>
+<td>As a staff member, I want to see the upcoming appointments so that I can prepare in advance and manage my schedule</td>
 
 <td>
 <ul>
 
+<li><b>Given</b> there are no upcoming appointments <b>when</b> I open the appointments page ,  <b>then</b> I should see a message like “No upcoming appointments” </li>
+<li><b>Given</b> there are many appointments <b>when</b> I open the appointments page, <b>then</b> the list should load within an acceptable time (under 2 seconds)</li>
+<li><b>Given</b> I am logged in as a staff member, <b>when</b> I navigate to the appointments section, <b>then</b> I should see a list of all upcoming appointments of today and the list should be sorted by time (earliest first)</li>
+<li><b>Given</b> new appointments are added or existing ones are updated, <b>when</b> I refresh or revisit the page, <b>then</b> I should see the latest and accurate appointment data</li>
 </ul>
 </td>
 
 <td>
 <ul>
-
+<li>Display the staff's name and their assigned clinic<li>
+<li>Display the day's statistics of the clinic</li>
+<li>Display upcoming appointments in the dashboard</li>
+<li>Create UI for the dashboard</li>
 </ul>
 </td>
 
-<td align="center"></td>
+<td align="center">7</td>
 </tr>
 
 </table>
