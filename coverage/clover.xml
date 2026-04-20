@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1776680274649" clover="3.2.0">
-  <project timestamp="1776680274649" name="All files">
+<coverage generated="1776691428311" clover="3.2.0">
+  <project timestamp="1776691428311" name="All files">
     <metrics statements="59" coveredstatements="59" conditionals="62" coveredconditionals="56" methods="22" coveredmethods="21" elements="143" coveredelements="136" complexity="0" loc="59" ncloc="59" packages="4" files="4" classes="4"/>
     <package name="Admin_WebPages">
       <metrics statements="16" coveredstatements="16" conditionals="24" coveredconditionals="22" methods="6" coveredmethods="6"/>
-      <file name="staffLogic.js" path="/Users/karabomachimana/sd project/SD-CareQueue-1/Admin_WebPages/staffLogic.js">
+      <file name="staffLogic.js" path="C:\Users\deblutda\OneDrive\Desktop\my projects\SD-CAreQueue\SD-CareQueue\Admin_WebPages\staffLogic.js">
         <metrics statements="16" coveredstatements="16" conditionals="24" coveredconditionals="22" methods="6" coveredmethods="6"/>
         <line num="19" count="6" type="cond" truecount="5" falsecount="0"/>
         <line num="20" count="5" type="stmt"/>
@@ -26,7 +26,7 @@
     </package>
     <package name="Login">
       <metrics statements="15" coveredstatements="15" conditionals="16" coveredconditionals="15" methods="4" coveredmethods="3"/>
-      <file name="authLogic.js" path="/Users/karabomachimana/sd project/SD-CareQueue-1/Login/authLogic.js">
+      <file name="authLogic.js" path="C:\Users\deblutda\OneDrive\Desktop\my projects\SD-CAreQueue\SD-CareQueue\Login\authLogic.js">
         <metrics statements="15" coveredstatements="15" conditionals="16" coveredconditionals="15" methods="4" coveredmethods="3"/>
         <line num="10" count="4" type="cond" truecount="1" falsecount="1"/>
         <line num="12" count="4" type="cond" truecount="2" falsecount="0"/>
@@ -47,26 +47,26 @@
     </package>
     <package name="Patients_WebPages">
       <metrics statements="13" coveredstatements="13" conditionals="12" coveredconditionals="12" methods="6" coveredmethods="6"/>
-      <file name="dashboardLogic.js" path="/Users/karabomachimana/sd project/SD-CareQueue-1/Patients_WebPages/dashboardLogic.js">
+      <file name="dashboardLogic.js" path="C:\Users\deblutda\OneDrive\Desktop\my projects\SD-CAreQueue\SD-CareQueue\Patients_WebPages\dashboardLogic.js">
         <metrics statements="13" coveredstatements="13" conditionals="12" coveredconditionals="12" methods="6" coveredmethods="6"/>
-        <line num="4" count="3" type="stmt"/>
-        <line num="5" count="3" type="stmt"/>
-        <line num="6" count="6" type="stmt"/>
-        <line num="7" count="2" type="stmt"/>
-        <line num="11" count="4" type="cond" truecount="2" falsecount="0"/>
-        <line num="12" count="3" type="stmt"/>
-        <line num="16" count="3" type="cond" truecount="4" falsecount="0"/>
-        <line num="17" count="2" type="stmt"/>
-        <line num="21" count="4" type="cond" truecount="2" falsecount="0"/>
-        <line num="22" count="3" type="cond" truecount="2" falsecount="0"/>
-        <line num="23" count="2" type="cond" truecount="2" falsecount="0"/>
-        <line num="24" count="1" type="stmt"/>
-        <line num="27" count="1" type="stmt"/>
+        <line num="6" count="3" type="stmt"/>
+        <line num="9" count="3" type="stmt"/>
+        <line num="11" count="6" type="stmt"/>
+        <line num="13" count="2" type="stmt"/>
+        <line num="19" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="22" count="3" type="stmt"/>
+        <line num="28" count="3" type="cond" truecount="4" falsecount="0"/>
+        <line num="31" count="2" type="stmt"/>
+        <line num="37" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="40" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="43" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="50" count="1" type="stmt"/>
       </file>
     </package>
     <package name="Staff_Webpages">
       <metrics statements="15" coveredstatements="15" conditionals="10" coveredconditionals="7" methods="6" coveredmethods="6"/>
-      <file name="WalkinLogic.js" path="/Users/karabomachimana/sd project/SD-CareQueue-1/Staff_Webpages/WalkinLogic.js">
+      <file name="WalkinLogic.js" path="C:\Users\deblutda\OneDrive\Desktop\my projects\SD-CAreQueue\SD-CareQueue\Staff_Webpages\WalkinLogic.js">
         <metrics statements="15" coveredstatements="15" conditionals="10" coveredconditionals="7" methods="6" coveredmethods="6"/>
         <line num="5" count="2" type="stmt"/>
         <line num="10" count="5" type="stmt"/>
