@@ -131,17 +131,15 @@
 
 <li><b>Given</b> I am adding a new clinic <b>when</b> I submit the form with missing required fields <b>then</b> I should see validation errors and the clinic should not be created</li>
 
-<li><b>Given</b> I am adding a clinic <b>when</b> I enter duplicate clinic details (e.g. same name & location) <b>then</b> the system should prevent duplication or notify me</li>
 
 <!-- VIEW CLINICS -->
 <li><b>Given</b> I am a logged in admin <b>when</b> I navigate to the clinics page <b>then</b> I should see a list of all clinics</li>
 
-<li><b>Given</b> there are no clinics in the system <b>when</b> I open the clinics page <b>then</b> I should see an empty state message</li>
 
 <!-- EDIT CLINIC -->
 <li><b>Given</b> I am viewing a clinic <b>when</b> I update its details and save <b>then</b> the changes should be stored and displayed correctly</li>
 
-<li><b>Given</b> I am editing a clinic <b>when</b> I enter invalid data <b>then</b> the system should show validation errors and prevent saving</li>
+
 
 <li><b>Given</b> I update a clinic’s details <b>when</b> I return to the clinics list <b>then</b> the updated details should be visible</li>
 
@@ -160,13 +158,10 @@
 <li><b>Given</b> I enter invalid hours (e.g. closing before opening) <b>when</b> I submit <b>then</b> the system should show an error</li>
 
 <!-- SEARCH -->
-<li><b>Given</b> I am on the clinics page <b>when</b> I search by clinic name <b>then</b> matching clinics should be displayed</li>
-
-<li><b>Given</b> I search by location <b>when</b> results exist <b>then</b> only relevant clinics should be shown</li>
+<li><b>Given</b> I am on the clinics page <b>when</b> I search by clinic name or location <b>then</b> matching clinics should be displayed</li>
 
 <li><b>Given</b> I search for a clinic <b>when</b> no match is found <b>then</b> I should see a "no results found" message</li>
 
-<li><b>Given</b> I clear the search input <b>when</b> I view the page <b>then</b> all clinics should be displayed again</li>
 
 </ul>
 </td>
