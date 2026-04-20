@@ -48,27 +48,28 @@ let unsubscribe = null;
 // DATE HELPERS (NEW), HELPS WITH RESETTING TICKET NUMBERS DAILY
 
 function getToday() {
-    return new Date().toISOString().split("T")[0];
+    return new Date().toISOString().split("T")[0];    //gets current day and time, splits them by T and takes only the date part ,
+                                                     //  e.g(2026-04-20T14:35:22.123Z)
 }
 
 
 // STAFF FETCH
 async function getStaffProfile(email) {
 
-    const cleanEmail = (email || "").trim().toLowerCase();
+    const cleanEmail = (email || "").trim().toLowerCase(); //cleans email input
 
-    const snapshot = await getDocs(collection(db, "ApprovedStaff"));
+    const snapshot = await getDocs(collection(db, "ApprovedStaff"));  //get all documents from Appointment collection
 
     const match = snapshot.docs.find(doc => {
         const data = doc.data();
-        return (data.email || "").trim().toLowerCase() === cleanEmail;
+        return (data.email || "").trim().toLowerCase() === cleanEmail;   //goes through all documents to find matching email
     });
 
     if (!match) return null;
 
     return {
         id: match.id,
-        ...match.data()
+        ...match.data()      //else return all fields if found
     };
 }
 
@@ -77,7 +78,7 @@ async function getStaffProfile(email) {
 // converts both parts into numbers
 // calculates total minutes since midnight (hours * 60 + minutes)
 function timeToMinutes(t) {
-    const [h, m] = t.split(":").map(Number);
+    const [h, m] = t.split(":").map(Number);   //stores them in a map as numbers
     return h * 60 + m;
 }
 
@@ -168,18 +169,18 @@ function getNextAvailableTime(appointments) {
 
     console.log(" START SLOT:", minutesToTime(t));
 
-    while (t + SLOT <= END) {
+    while (t + SLOT <= END) {                                         //as long as the next slot does not go past the end slot
 
-        console.log(" CHECKING SLOT:", minutesToTime(t), "=>", t);
+        console.log(" CHECKING SLOT:", minutesToTime(t), "=>", t);  
 
-        if (!isTaken(t, usedArray, SLOT)) {
+        if (!isTaken(t, usedArray, SLOT)) {        //Loops through time slots and returns the first available slot that is not already booked.
             console.log(" SELECTED SLOT:", minutesToTime(t));
             return minutesToTime(t);
         }
 
         console.log(" BLOCKED SLOT:", minutesToTime(t));
 
-        t += SLOT;
+        t += SLOT;    //increment by 30
     }
 
     console.log(" NO SLOT FOUND");
@@ -199,7 +200,7 @@ function getNextAvailableTime(appointments) {
 // updates the table body with the newly generated rows
 function loadAppointments() {
 
-    if (!clinicId) return;
+    if (!clinicId) return;      //stop if clinicID is not found or valid
 
     if (unsubscribe) unsubscribe();
 
@@ -213,12 +214,13 @@ function loadAppointments() {
         orderBy("createdAT", "asc")
     );
 
-    unsubscribe = onSnapshot(q, (snapshot) => {
+    unsubscribe = onSnapshot(q, (snapshot) => {    //sets up a live connection to Firestore so your data updates 
+                                                  // automatically whenever something changes.
 
         let rows = "";
         let index = 1;
 
-        snapshot.forEach(docSnap => {
+        snapshot.forEach(docSnap => {               //loop through each appointment, get the data
             const d = docSnap.data();
 
             rows += `
@@ -369,7 +371,7 @@ addBtn?.addEventListener("click", async () => {
 
         console.log(" ASSIGNED TIME RESULT:", assignedTime);
 
-        await addDoc(collection(db, "Appointments"), {
+        await addDoc(collection(db, "Appointments"), {             //adds the new appointment
             clinicID: clinicId,
             patientName: name,
             reason,
@@ -405,11 +407,11 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    const staff = await getStaffProfile(user.email);
+    const staff = await getStaffProfile(user.email);   //get staff profile
 
-    if (!staff) return;
+    if (!staff) return;   //stop execution if staff doesnt exist
 
-   clinicId = Number(staff.clinicId);
+   clinicId = Number(staff.clinicId);                       //store staff details
     assignedClinic = staff.assignedClinic;
 
     if (nameSurnameEl) {
