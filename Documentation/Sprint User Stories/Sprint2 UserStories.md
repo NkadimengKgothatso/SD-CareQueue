@@ -57,21 +57,36 @@
 
 <tr>
 <td>3</td>
-<td></td>
+<td>As a patient, I want a simple and accurate dashboard so that I can easily view my queue details and appointments without confusion.</td>
 
 <td>
 <ul>
+<li><b>Given</b> no upcoming appointments, <b>When</b> I open the dashboard, <b>Then</b> I see a clear “no upcoming appointments” message in the Next Appointment card</li>
 
+<li><b>Given</b> a booked appointment, <b>When</b> I open the dashboard, <b>Then</b> Next Appointment shows clinic name, date, and time correctly</li>
+
+<li><b>Given</b> I view the queue section, <b>When</b> data loads, <b>Then</b> I see correct position, estimated wait time, and queue status</li>
+
+<li><b>Given</b> I open the dashboard, <b>When</b> it loads, <b>Then</b> I do NOT see service score or analytics anywhere</li>
+
+<li><b>Given</b> I interact with the dashboard, <b>When</b> data is missing, <b>Then</b> I see meaningful empty states instead</li>
 </ul>
 </td>
 
 <td>
 <ul>
-
+<li>Create clean dashboard UI layout</li>
+<li>Replace all dummy variables with real data bindings</li>
+<li>Implement correct queue details (position, wait time, status)</li>
+<li>Remove service score feature from UI and logic</li>
+<li>Remove analytics section completely</li>
+<li>Ensure empty states display properly</li>
+<li>Ensure dashboard shows only patient-relevant information</li>
+<li>Add navigation buttons (Find Clinic, Book Appointment, View Appointments)</li>
 </ul>
 </td>
 
-<td align="center"></td>
+<td align="center">8</td>
 </tr>
 
 <tr>
