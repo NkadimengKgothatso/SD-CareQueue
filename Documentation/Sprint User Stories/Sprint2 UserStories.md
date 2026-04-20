@@ -114,7 +114,7 @@
 </tr>
 
 <tr>
-
+<td>5</td>
 <td><ul>
 <li>As an admin, I want to add a new clinic, so that it becomes available for patients to book appointments.</li>
 <li>As an admin, I want to view a list of all clinics, so that it becomes available for patients to book appointments.</li>
@@ -161,8 +161,6 @@
 <li><b>Given</b> I am on the clinics page <b>when</b> I search by clinic name or location <b>then</b> matching clinics should be displayed</li>
 
 <li><b>Given</b> I search for a clinic <b>when</b> no match is found <b>then</b> I should see a "no results found" message</li>
-
-
 </ul>
 </td>
 
