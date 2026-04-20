@@ -114,15 +114,15 @@
 </tr>
 
 <tr>
-<ul>
+
+<td><ul>
 <li>As an admin, I want to add a new clinic, so that it becomes available for patients to book appointments.</li>
 <li>As an admin, I want to view a list of all clinics, so that it becomes available for patients to book appointments.</li>
 <li>As an admin, I want to edit clinic details (name, location, hours), so that the information stays accurate.</li>
 <li>As an admin, I want to remove a clinic, so that outdated or closed clinics are no longer visible.</li>
 <li>As an admin, I want to set or update clinic opening hours, so that patients know when clinics are available.</li>
 <li>As an admin, I want to search for a clinic by name or location, so that I can quickly find specific clinics.</li>
-</ul>
-<td>As an admin, I want to add a new clinic, So that it becomes available for patients to book appointments.</td>
+</ul></td>
 
 <td>
 <ul>
