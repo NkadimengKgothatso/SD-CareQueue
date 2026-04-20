@@ -140,6 +140,10 @@ async function loadAppointments(clinicID) {
             }
         }
 
+        else if(data.patientName){  
+            displayName = data.patientName; 
+        } 
+
         const article = document.createElement("article");
         article.className = "appointment";
 
