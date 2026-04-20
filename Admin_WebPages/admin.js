@@ -73,10 +73,5 @@ export async function initAdminPage() {
     });
 }
 
-// ================= SIGN OUT =================
-export async function adminSignOut() {
-    await signOut(auth);
-    window.location.href = "/index.html";
-}
 
 export { auth, db };
