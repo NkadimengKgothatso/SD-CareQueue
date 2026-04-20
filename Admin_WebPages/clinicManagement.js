@@ -137,7 +137,7 @@ function addClinicToUI(id, name, location, status = "Active", service, operating
 
     // 🔥 MANAGE (EDIT) — bug preserved: hours and services not passed
     clinic.querySelector(".manage-btn").addEventListener("click", () => {
-        openEditModal(id, name, location, status);
+        openEditModal(id, name, location, status, operatingHours, service);
     });
 }
 
@@ -221,18 +221,16 @@ function renderClinics(list) {
     });
 }
 
-// Bug preserved: function only receives 4 params, hours and services are undefined inside
-function openEditModal(id, name, address, status) {
+function openEditModal(id, name, address, status, hours, services) {
     editingClinicId = id;
-
     manageModal.style.display = "flex";
 
-    document.querySelector("#ManageClinicModal #ManageClinicName").value     = name;
-    document.querySelector("#ManageClinicModal #ManageLocation").value        = address;
-    document.querySelector("#ManageClinicModal #ManageClinicStatus").value    = status;
-    document.querySelector("#ManageClinicModal #ManageClinicHours").value     = hours || "";
-    document.querySelector("#ManageClinicModal #ManageClinicServices").value  = 
+    document.querySelector("#ManageClinicModal #ManageClinicName").value = name;
+    document.querySelector("#ManageClinicModal #ManageLocation").value = address;
+    document.querySelector("#ManageClinicModal #ManageClinicStatus").value = status;
+    document.querySelector("#ManageClinicModal #ManageClinicHours").value = hours || "";
+    document.querySelector("#ManageClinicModal #ManageClinicServices").value = 
         Array.isArray(services) ? services.join(", ") : (services || "");
 
-    document.querySelector("#ManageClinicModal button").textContent = "Update Clinic";
+    document.querySelector("#ManageClinicModal button[type='submit']").textContent = "Update Clinic";
 }

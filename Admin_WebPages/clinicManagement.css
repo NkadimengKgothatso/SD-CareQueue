@@ -365,7 +365,7 @@
     flex: 1;
     flex-direction: row;
     gap: 8px;
-    font-size: 13.5px;
+    font-size: 11px;
     color: var(--color-text-secondary);
 }
  
