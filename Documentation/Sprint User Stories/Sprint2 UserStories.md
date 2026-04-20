@@ -115,17 +115,67 @@
 
 <tr>
 <td>5</td>
-<td></td>
+<td>As an admin, I can manage clinic details(operating hours, services, clinic name, clinic location) So that clinic information is accurate</td>
+<td>As an admin, I want to add a new clinic, so that it becomes available for patients to book appointments.</td>
+<td>As an admin, I want to view a list of all clinics, so that it becomes available for patients to book appointments.</td>
+<td>As an admin, I want to edit clinic details (name, location, hours), so that the information stays accurate.</td>
+<td>As an admin, I want to remove a clinic, so that outdated or closed clinics are no longer visible.</td>
+<td>As an admin, I want to set or update clinic opening hours, so that patients know when clinics are available.</td>
+<td>As an admin, I want to search for a clinic by name or location, so that I can quickly find specific clinics.</td>
+<td>As an admin, I want to add a new clinic, So that it becomes available for patients to book appointments.</td>
 
 <td>
 <ul>
+<!-- ADD CLINIC -->
+<li><b>Given</b> I am a logged in admin <b>when</b> I add a new clinic with valid details <b>then</b> the clinic should be successfully created and available for patients</li>
+
+<li><b>Given</b> I am adding a new clinic <b>when</b> I submit the form with missing required fields <b>then</b> I should see validation errors and the clinic should not be created</li>
+
+<li><b>Given</b> I am adding a clinic <b>when</b> I enter duplicate clinic details (e.g. same name & location) <b>then</b> the system should prevent duplication or notify me</li>
+
+<!-- VIEW CLINICS -->
+<li><b>Given</b> I am a logged in admin <b>when</b> I navigate to the clinics page <b>then</b> I should see a list of all clinics</li>
+
+<li><b>Given</b> there are no clinics in the system <b>when</b> I open the clinics page <b>then</b> I should see an empty state message</li>
+
+<!-- EDIT CLINIC -->
+<li><b>Given</b> I am viewing a clinic <b>when</b> I update its details and save <b>then</b> the changes should be stored and displayed correctly</li>
+
+<li><b>Given</b> I am editing a clinic <b>when</b> I enter invalid data <b>then</b> the system should show validation errors and prevent saving</li>
+
+<li><b>Given</b> I update a clinic’s details <b>when</b> I return to the clinics list <b>then</b> the updated details should be visible</li>
+
+<!-- REMOVE CLINIC -->
+<li><b>Given</b> I am viewing a clinic <b>when</b> I delete the clinic <b>then</b> it should no longer appear in the clinics list</li>
+
+<li><b>Given</b> I attempt to delete a clinic <b>when</b> I confirm the action <b>then</b> the clinic should be permanently removed</li>
+
+<li><b>Given</b> I attempt to delete a clinic <b>when</b> I cancel the action <b>then</b> the clinic should remain unchanged</li>
+
+<!-- CLINIC HOURS -->
+<li><b>Given</b> I am a logged in admin <b>when</b> I set clinic opening hours <b>then</b> the hours should be saved and visible to patients</li>
+
+<li><b>Given</b> I update clinic hours <b>when</b> I save changes <b>then</b> the updated hours should overwrite the previous ones</li>
+
+<li><b>Given</b> I enter invalid hours (e.g. closing before opening) <b>when</b> I submit <b>then</b> the system should show an error</li>
+
+<!-- SEARCH -->
+<li><b>Given</b> I am on the clinics page <b>when</b> I search by clinic name <b>then</b> matching clinics should be displayed</li>
+
+<li><b>Given</b> I search by location <b>when</b> results exist <b>then</b> only relevant clinics should be shown</li>
+
+<li><b>Given</b> I search for a clinic <b>when</b> no match is found <b>then</b> I should see a "no results found" message</li>
+
+<li><b>Given</b> I clear the search input <b>when</b> I view the page <b>then</b> all clinics should be displayed again</li>
 
 </ul>
 </td>
 
 <td>
 <ul>
-
+<li>Implement clinic management UI </li>
+<li>Implement Add Clinic button</li>
+<li>Implement manage button</li>
 </ul>
 </td>
 
