@@ -58,7 +58,8 @@ onAuthStateChanged(auth, async (user) => {
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
 
-            clinicID = data.clinicId;
+            
+            clinicID = Number(data.clinicId);
 
             document.querySelectorAll(".name-Surname").forEach(el => {
                 el.textContent = data.displayName;
@@ -75,8 +76,9 @@ onAuthStateChanged(auth, async (user) => {
             console.log("No clinicID found");
             return;
         }
-
+        
         loadAppointments(clinicID);
+     
         loadStats(clinicID);
 
     } catch (error) {
