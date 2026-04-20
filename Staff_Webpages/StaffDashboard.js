@@ -16,6 +16,14 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 
+import {
+    sortAppointmentsByTime,
+    filterCancelledAppointments,
+    getDisplayName,
+    calculateStats
+} from "./StaffDashboardLogic.js";
+
+
 /* ================= FIREBASE ================= */
 const firebaseConfig = {
     apiKey: "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
@@ -143,6 +151,8 @@ async function loadAppointments(clinicID) {
         else if(data.patientName){  
             displayName = data.patientName; 
         } 
+
+
 
         const article = document.createElement("article");
         article.className = "appointment";
