@@ -72,18 +72,33 @@ async function getStaffProfile(email) {
     };
 }
 
-
+// takes a time string in the format "hh:mm"
+// splits it into hours and minutes
+// converts both parts into numbers
+// calculates total minutes since midnight (hours * 60 + minutes)
 function timeToMinutes(t) {
     const [h, m] = t.split(":").map(Number);
     return h * 60 + m;
 }
 
+
+// converts total minutes since midnight into a time string (hh:mm)
+// calculates hours by dividing minutes by 60 and removing the decimal part
+// calculates remaining minutes using modulus (remainder after division by 60)
+// ensures both hours and minutes are always 2 digits (adds leading zero if needed)
+// returns the formatted time string in "hh:mm" format
 function minutesToTime(m) {
     const h = String(Math.floor(m / 60)).padStart(2, "0");
     const mm = String(m % 60).padStart(2, "0");
     return `${h}:${mm}`;
 }
 
+
+// checks whether a given time slot is already taken by an existing appointment
+// loops through all appointments and checks if any appointment overlaps with the given time
+// converts each appointment time into minutes for easy comparison
+// returns true if the given time falls within an existing appointment slot
+// otherwise returns false if no overlap is found
 function isTaken(t, appointments, SLOT) {
     return appointments.some(a => {
         const start = timeToMinutes(a.time);
@@ -91,10 +106,26 @@ function isTaken(t, appointments, SLOT) {
     });
 }
 
+
+// rounds a given time (in minutes) up to the next available time slot
+// divides the minutes by the slot size to find how many slots have passed
+// uses Math.ceil to always round up to the next full slot
+// multiplies back by slot size to convert it back into minutes
+// ensures appointments always align to fixed intervals (e.g. 15 or 30 minutes)
 function roundToNextSlot(minutes, slot) {
     return Math.ceil(minutes / slot) * slot;
 }
 
+
+// finds the next available appointment time in the clinic schedule
+// defines clinic working hours (START to END) and fixed time slot size
+// gets the current time and converts it into total minutes for comparison
+// filters out invalid or cancelled appointments so they are not counted
+// stores all used appointment times in a set for quick lookup
+// starts searching from the next valid time slot after the current time
+// loops through each slot and checks if it is already taken
+// returns the first available time slot in "hh:mm" format
+// returns "FULL" if no slots are available within working hours
 function getNextAvailableTime(appointments) {
 
     const START = 8 * 60;
@@ -135,7 +166,7 @@ function getNextAvailableTime(appointments) {
         Math.ceil(currentMinutes / SLOT) * SLOT
     );
 
-    console.log("🚀 START SLOT:", minutesToTime(t));
+    console.log(" START SLOT:", minutesToTime(t));
 
     while (t + SLOT <= END) {
 
@@ -157,6 +188,15 @@ function getNextAvailableTime(appointments) {
 
 
 // LOAD APPOINTMENTS (ONLY WALK-INS TODAY)
+// loads today's walk-in appointments for the selected clinic in real time
+// exits early if no clinic is selected
+// removes previous realtime listener to avoid duplicate subscriptions
+// gets today's date and builds a Firestore query for walk-in appointments only
+// filters by clinic id, date, and walk-in status, then orders by creation time
+// listens to database changes in real time using onSnapshot
+// builds html table rows from the returned appointment data
+// displays fallback values when fields are missing (e.g. "-", "unknown")
+// updates the table body with the newly generated rows
 function loadAppointments() {
 
     if (!clinicId) return;
@@ -199,6 +239,13 @@ function loadAppointments() {
 
 
 // MODAL FOR CONFIRMING PATIENT
+
+// displays a confirmation modal dialog and returns a promise based on user choice
+// removes any existing confirmation modal to avoid duplicates
+// creates a new <dialog> element and sets its html content with message and buttons
+// appends the modal to the document body and displays it
+// if the user clicks cancel, the modal closes and the promise resolves to false
+// if the user clicks confirm, the modal closes and the promise resolves to true
 function showConfirmModal(message) {
     return new Promise((resolve) => {
 
@@ -248,6 +295,8 @@ function showConfirmModal(message) {
 
 
 // ADD WALK-IN (WITH TICKET SYSTEM)
+
+// handles adding a walk-in patient and assigning them a queue slot
 addBtn?.addEventListener("click", async () => {
 
     const name = nameInput?.value.trim();
@@ -318,7 +367,7 @@ addBtn?.addEventListener("click", async () => {
         // 4. CORRECT SLOT CALCULATION (USES ALL APPOINTMENTS)
         const assignedTime = getNextAvailableTime(existingAppointments);
 
-        console.log("⏰ ASSIGNED TIME RESULT:", assignedTime);
+        console.log(" ASSIGNED TIME RESULT:", assignedTime);
 
         await addDoc(collection(db, "Appointments"), {
             clinicID: clinicId,
@@ -343,6 +392,11 @@ addBtn?.addEventListener("click", async () => {
 
 
 // AUTH BOOTSTRAP (UNCHANGED)
+// This listens for authentication state changes (login/logout)
+// When a user logs in, it fetches their staff profile from the database
+// It then stores their clinic information and updates the UI accordingly
+// If no user is logged in, it resets the display to default values
+
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
