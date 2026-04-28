@@ -87,7 +87,7 @@ function buildStaffTableHTML(staffList) {
  StaffManagement.js filters out the nulls before building the dropdown.
  */
 function buildClinicOption(id, name) {
-  if (!name) return null;
+  if (!id || !name) return null;
   return { value: id, label: name };
 }
 

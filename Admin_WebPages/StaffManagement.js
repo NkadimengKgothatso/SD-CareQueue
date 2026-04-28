@@ -90,7 +90,7 @@ async function loadClinics() {
   // buildClinicOption lives in staffLogic.js.
   // It returns { value, label } for valid clinics, or null if the
 // clinic document has no name (broken data — skip it).          
-            const opt = window.staffLogic.buildClinicOption(docSnap.id, clinic.name);
+            const opt = window.staffLogic.buildClinicOption(clinic.id, clinic.name);
             if (!opt) return; // skip clinics with no name
  // Create a real <option> element and add it to the <select> dropdown.
             const option       = document.createElement("option");
