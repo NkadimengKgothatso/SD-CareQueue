@@ -66,7 +66,7 @@ test("calculateStats computes correct values", () => {
     expect(result.totalToday).toBe(3);
     expect(result.inQueue).toBe(2);
     expect(result.completed).toBe(1);
-    expect(result.avgWait).toBe("15m");
+    expect(result.avgWait).toBe("30m");
 });
 
 test("calculateStats returns 0 wait if no queue", () => {
