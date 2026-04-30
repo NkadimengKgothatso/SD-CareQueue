@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Care Queue | Admin -Analytics</title>
+    <!-- Base admin portal styles first -->
+    <link rel="stylesheet" href="/Admin_WebPages/admin.css">
+    <!-- Clinic-specific styles layered on top (cards, search bar, clinic chips) -->
+    <link rel="stylesheet" href="/Admin_WebPages/analytics.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <section class="admin-container">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <section class="sidebar-header">
+                <section class="logo">
+                    <section class="logo-icon"></section>
+                    <span class="logo-name">Care Queue</span>
+                </section>
+            </section>
+            <nav class="sidebar-nav">
+                <section class="nav-item" onclick="window.location.href='/Admin_WebPages/Dashboard.html'">
+                    <section class="nav-dot"></section>
+                    <span>Dashboard</span>
+                </section>
+                <section class="nav-item" onclick="window.location.href='/Admin_WebPages/ClinicManagement.html'">
+                    <section class="nav-dot"></section>
+                    <span>Clinic Management</span>
+                </section>
+                <section class="nav-item" onclick="window.location.href='/Admin_WebPages/StaffManagement.html'">
+                    <section class="nav-dot"></section>
+                    <span>Staff Management</span>
+                </section>
+                <section class="nav-item active" onclick="window.location.href='/Admin_WebPages/Analytics.html'">
+                    <section class="nav-dot"></section>
+                    <span>Analytics</span>
+                </section>
+            </nav>
+            <section class="sidebar-footer">
+                <section class="user-info">
+                    <section class="user-avatar" id="adminAvatar">AD</section>
+                    <section class="user-details">
+                        <section class="user-name" id="adminName">Admin</section>
+                        <section class="user-email" id="adminEmail">admin@email.com</section>
+                    </section>
+                </section>
+            </section>
+        </aside>
+
+
+
+        <main class="analytics-main">
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <div>
+            <h1 class="page-title">Analytics</h1>
+            <p class="page-subtitle">View clinic performance insights</p>
+        </div>
+    </header>
+
+    <!-- Filters -->
+    <section class="card filters-card">
+        <header class="card-header">
+            <h2>Reports</h2>
+        </header>
+
+        <form class="filters-form" id="filterForm">
+            <div class="filter-group">
+                <label for="dateFrom">From</label>
+                <input type="date" id="dateFrom">
+            </div>
+
+            <div class="filter-group">
+                <label for="dateTo">To</label>
+                <input type="date" id="dateTo">
+            </div>
+
+            <button type="submit" class="btn-primary">Apply</button>
+            <button type="button" id="exportCSV" class="btn-secondary">Export CSV</button>
+            <button type="button" id="exportPDF" class="btn-primary">Export PDF</button>
+        </form>
+    </section>
+
+    <!-- KPI Cards -->
+    <section class="kpi-grid">
+        <article class="kpi-card">
+            <span>Patients seen</span>
+            <h3 id="patientsValue">—</h3>
+        </article>
+
+        <article class="kpi-card">
+            <span>Avg wait time</span>
+            <h3 id="waitValue">—</h3>
+        </article>
+
+        <article class="kpi-card">
+            <span>No-show rate</span>
+            <h3 id="noShowValue">—</h3>
+        </article>
+
+        <article class="kpi-card">
+            <span>vs last month</span>
+            <h3 id="trendValue">—</h3>
+        </article>
+    </section>
+
+    <!-- Table Report -->
+    <section class="card">
+        <header class="card-header">
+            <h2>Avg Wait Time by Clinic</h2>
+        </header>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Clinic</th>
+                        <th>Avg Wait</th>
+                        <th>Volume</th>
+                        <th>No-show</th>
+                    </tr>
+                </thead>
+                <tbody id="waitTableBody">
+                    <!-- JS will populate -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Chart -->
+    <section class="card">
+        <header class="card-header">
+            <h2>No-show Rates</h2>
+        </header>
+        <canvas id="noShowChart"></canvas>
+    </section>
+
+</main>
+
+        
+</html>
