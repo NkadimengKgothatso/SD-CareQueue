@@ -87,15 +87,7 @@ The system aims to:
 * Custom dashboard views
 * Export reports as CSV or PDF
 
----
 
-## **Bonus Feature**
-
-* Machine Learning-based wait time prediction using:
-
-  * Historical queue data
-  * Time of day
-  * Day of the week
 
 ---
 
