@@ -70,7 +70,6 @@ async function loadClinics() {
 document.addEventListener("DOMContentLoaded", () => {
 
     try {
-
         initAdminPage();
 
         loadClinics();
@@ -97,13 +96,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (e.key === "ArrowDown") {
                 activeRowIndex = Math.min(activeRowIndex + 1, rows.length - 1);
                 setActiveRow(rows, activeRowIndex);
-                rows[activeRowIndex].scrollIntoView({ block: "center" });
+                rows[activeRowIndex]?.scrollIntoView({ block: "center" });
             }
 
             if (e.key === "ArrowUp") {
                 activeRowIndex = Math.max(activeRowIndex - 1, 0);
                 setActiveRow(rows, activeRowIndex);
-                rows[activeRowIndex].scrollIntoView({ block: "center" });
+                rows[activeRowIndex]?.scrollIntoView({ block: "center" });
             }
         });
 
@@ -111,25 +110,32 @@ document.addEventListener("DOMContentLoaded", () => {
         const csvBtn = document.getElementById("exportCSV");
         const pdfBtn = document.getElementById("exportPDF");
 
-        if (csvBtn) {
-            csvBtn.onclick = () => {
-                const from = document.getElementById("dateFrom").value;
-                const to = document.getElementById("dateTo").value;
+        csvBtn?.addEventListener("click", () => {
+            const from = document.getElementById("dateFrom").value;
+            const to = document.getElementById("dateTo").value;
 
-                const data = getCurrentExportData(from, to);
-                exportCSV(data);
-            };
-        }
+            exportCSV(getCurrentExportData(from, to));
+        });
 
-        if (pdfBtn) {
-            pdfBtn.onclick = () => {
-                const from = document.getElementById("dateFrom").value;
-                const to = document.getElementById("dateTo").value;
+        pdfBtn?.addEventListener("click", () => {
+            const from = document.getElementById("dateFrom").value;
+            const to = document.getElementById("dateTo").value;
 
-                const data = getCurrentExportData(from, to);
-                exportPDF(data);
-            };
-        }
+            exportPDF(getCurrentExportData(from, to));
+        });
+
+        // ================= SEARCH =================
+        const search = document.getElementById("clinicSearch");
+
+        search?.addEventListener("input", (e) => {
+            const value = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll("#waitTableBody tr");
+
+            rows.forEach(row => {
+                const name = row.children[0]?.textContent.toLowerCase() || "";
+                row.style.display = name.includes(value) ? "" : "none";
+            });
+        });
 
     } catch (err) {
         console.error("INIT ERROR:", err);
@@ -505,6 +511,8 @@ function calculatePatientsTrend(from, to) {
 }
 
 function setActiveRow(rows, index) {
+    if (!rows.length) return;
+
     rows.forEach(r => r.classList.remove("active-row"));
 
     if (rows[index]) {
