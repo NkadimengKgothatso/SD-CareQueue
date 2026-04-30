@@ -69,42 +69,72 @@ async function loadClinics() {
 // ================= INIT =================
 document.addEventListener("DOMContentLoaded", () => {
 
-    initAdminPage();
+    try {
 
-    loadClinics();
-    loadAppointments();
-    loadQueues();
+        initAdminPage();
 
-    const form = document.getElementById("filterForm");
+        loadClinics();
+        loadAppointments();
+        loadQueues();
 
-    form.addEventListener("submit", (e) => {
-        e.preventDefault();
+        const form = document.getElementById("filterForm");
 
-        const from = document.getElementById("dateFrom").value;
-        const to = document.getElementById("dateTo").value;
+        form?.addEventListener("submit", (e) => {
+            e.preventDefault();
 
-        renderDashboard(from, to);
-    });
+            const from = document.getElementById("dateFrom").value;
+            const to = document.getElementById("dateTo").value;
 
+            renderDashboard(from, to);
+        });
 
-    document.addEventListener("keydown", (e) => {
-    const rows = document.querySelectorAll("#waitTableBody tr");
-    if (!rows.length) return;
+        // ================= KEYBOARD NAV =================
+        document.addEventListener("keydown", (e) => {
 
-    if (e.key === "ArrowDown") {
-        activeRowIndex = Math.min(activeRowIndex + 1, rows.length - 1);
-        setActiveRow(rows, activeRowIndex);
-        rows[activeRowIndex].scrollIntoView({ block: "center" });
-    }
+            const rows = document.querySelectorAll("#waitTableBody tr");
+            if (!rows.length) return;
 
-    if (e.key === "ArrowUp") {
-        activeRowIndex = Math.max(activeRowIndex - 1, 0);
-        setActiveRow(rows, activeRowIndex);
-        rows[activeRowIndex].scrollIntoView({ block: "center" });
+            if (e.key === "ArrowDown") {
+                activeRowIndex = Math.min(activeRowIndex + 1, rows.length - 1);
+                setActiveRow(rows, activeRowIndex);
+                rows[activeRowIndex].scrollIntoView({ block: "center" });
+            }
+
+            if (e.key === "ArrowUp") {
+                activeRowIndex = Math.max(activeRowIndex - 1, 0);
+                setActiveRow(rows, activeRowIndex);
+                rows[activeRowIndex].scrollIntoView({ block: "center" });
+            }
+        });
+
+        // ================= EXPORT BUTTONS =================
+        const csvBtn = document.getElementById("exportCSV");
+        const pdfBtn = document.getElementById("exportPDF");
+
+        if (csvBtn) {
+            csvBtn.onclick = () => {
+                const from = document.getElementById("dateFrom").value;
+                const to = document.getElementById("dateTo").value;
+
+                const data = getCurrentExportData(from, to);
+                exportCSV(data);
+            };
+        }
+
+        if (pdfBtn) {
+            pdfBtn.onclick = () => {
+                const from = document.getElementById("dateFrom").value;
+                const to = document.getElementById("dateTo").value;
+
+                const data = getCurrentExportData(from, to);
+                exportPDF(data);
+            };
+        }
+
+    } catch (err) {
+        console.error("INIT ERROR:", err);
     }
 });
-});
-
 // ================= CHECK + RENDER =================
 function checkAndRender() {
     if (dataLoaded.appointments && dataLoaded.queues && dataLoaded.clinics) {
@@ -260,6 +290,125 @@ function getRateColor(rate) {
     if (r < 10) return "green";
     if (r < 20) return "orange";
     return "red";
+}
+
+
+function getCurrentExportData(from, to) {
+
+    const filteredAppointments = (from && to)
+        ? appointments.filter(a => inDateRange(a.date, from, to))
+        : appointments;
+
+    const queueStats = getQueueAnalytics(
+        (from && to)
+            ? queues.filter(q => inDateRange(q.date, from, to))
+            : queues
+    );
+
+    const noShowStats = getNoShowRateByClinic(filteredAppointments);
+
+    return clinics.map(clinic => {
+
+        const q = queueStats[clinic.id] || {
+            total: 0,
+            totalWait: 0
+        };
+
+        const n = noShowStats[clinic.id] || { rate: "0.0" };
+
+        return {
+            clinic: clinic.name,
+            avgWait: q.total > 0 ? (q.totalWait / q.total).toFixed(1) : "0.0",
+            volume: q.total,
+            noShowRate: n.rate + "%"
+        };
+    });
+}
+
+
+function exportCSV(data) {
+
+    const headers = ["Clinic", "Avg Wait", "Volume", "No-Show Rate"];
+
+    const rows = data.map(d => [
+        d.clinic,
+        d.avgWait,
+        d.volume,
+        d.noShowRate
+    ]);
+
+    const csv = [
+        headers.join(","),
+        ...rows.map(r => r.join(","))
+    ].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "clinic-analytics.csv";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
+function exportPDF(data) {
+
+    const win = window.open("", "_blank");
+
+    win.document.write(`
+        <html>
+        <head>
+            <title>Clinic Analytics Report</title>
+            <style>
+                body { font-family: Arial; padding: 20px; }
+                h2 { margin-bottom: 20px; }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+
+                th, td {
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                }
+
+                th {
+                    background: #f3f4f6;
+                }
+            </style>
+        </head>
+        <body>
+            <h2>Clinic Analytics Report</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Clinic</th>
+                        <th>Avg Wait</th>
+                        <th>Volume</th>
+                        <th>No-Show Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.map(d => `
+                        <tr>
+                            <td>${d.clinic}</td>
+                            <td>${d.avgWait}</td>
+                            <td>${d.volume}</td>
+                            <td>${d.noShowRate}</td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
+        </body>
+        </html>
+    `);
+
+    win.document.close();
+    win.print();
 }
 
 // ================= RENDER DASHBOARD =================

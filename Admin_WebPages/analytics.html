@@ -80,6 +80,8 @@
                 <input type="date" id="dateTo">
             </div>
 
+             
+
             <button type="submit" class="btn-primary">Apply</button>
             <button type="button" id="exportCSV" class="btn-secondary">Export CSV</button>
             <button type="button" id="exportPDF" class="btn-primary">Export PDF</button>
@@ -116,28 +118,39 @@
     </section>
 </section><br></br>
 
+ 
 
     <!-- Table Report -->
     <section class="card">
         <header class="card-header">
-            <h2>Clinic Performance Analytics</h2>
-        </header>
+    <h2>Clinic Performance Analytics</h2>
+</header>
 
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Clinic</th>
-                        <th>Avg Wait</th>
-                        <th>Volume</th>
-                        <th>No-Show Rates</th>
-                    </tr>
-                </thead>
-                <tbody id="waitTableBody">
-                    <!-- JS will populate -->
-                </tbody>
-            </table>
-        </div>
+<!-- Search Bar -->
+<section class="filter-group">
+    <label for="clinicSearch">Search Clinic</label>
+    <input 
+        type="text" 
+        id="clinicSearch" 
+        placeholder="Type clinic name..."
+    />
+</section>
+
+<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>Clinic</th>
+                <th>Avg Wait</th>
+                <th>Volume</th>
+                <th>No-Show Rates</th>
+            </tr>
+        </thead>
+        <tbody id="waitTableBody">
+            <!-- JS will populate -->
+        </tbody>
+    </table>
+</div>
     </section>
 
  
