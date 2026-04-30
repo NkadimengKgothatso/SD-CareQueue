@@ -135,3 +135,15 @@ table thead th {
     background: white;
     z-index: 2;
 }
+
+/* highlights rows */
+tr.active-row {
+    background: rgba(139, 92, 246, 0.12);
+    outline: 2px solid rgba(139, 92, 246, 0.25);
+    transition: 0.15s ease;
+}
+
+tr:hover {
+    background: rgba(139, 92, 246, 0.06);
+    cursor: pointer;
+}
