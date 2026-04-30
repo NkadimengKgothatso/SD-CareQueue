@@ -1,44 +1,7 @@
 /* ============================================================
    Staff View Styles
    ============================================================ */
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
 
-span.logo-icon {
-    width: 28px;
-    height: 28px;
-    background:  var(--clr-primary);
-    border-radius: 7px;
-    position: relative;
-    display: inline-block;
-}
-
-span.logo-icon::before {
-    content: '';
-    position: absolute;
-    background: white;
-    width: 3px; height: 13px;
-    left: 12px; top: 7px;
-    border-radius: 1px;
-}
-
-span.logo-icon::after {
-    content: '';
-    position: absolute;
-    background: white;
-    width: 13px; height: 3px;
-    left: 7px; top: 12px;
-    border-radius: 1px;
-}
-
-span.logo-name {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--clr-primary);
-}
 /* ── CSS Variables ──────────────────────────────────────── */
 :root {
     --clr-primary:       #4584c4;
@@ -55,26 +18,198 @@ span.logo-name {
     --clr-surface:       #ffffff;
     --clr-bg:            #f4f6f8;
     --bg:                #f4f7f6;
-    --radius-card: 12px;
-    --radius-btn:  8px;
-    --radius:    14px;
-    --shadow-card: 0 2px 8px rgba(0,0,0,0.08);
-    --shadow-hover: 0 6px 18px rgba(0,0,0,0.13);
-
-    --transition: 0.2s ease;
+    --radius-card:       12px;
+    --radius-btn:        8px;
+    --radius:            14px;
+    --shadow-card:       0 2px 8px rgba(0,0,0,0.08);
+    --shadow-hover:      0 6px 18px rgba(0,0,0,0.13);
+    --transition:        0.2s ease;
 }
 
+/* ── Base ───────────────────────────────────────────────── */
 body {
-  margin: 0;
-  padding: 0;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-               "Helvetica Neue", Arial, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  -webkit-font-smoothing: antialiased;
+    margin: 0;
+    padding: 0;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
 }
-main{
+
+main {
     padding: 2rem;
+}
+
+/* ── Layout ─────────────────────────────────────────────── */
+.container {
+    display: flex;
+    height: calc(100vh - 60px);
+}
+
+/* ── Top Bar ────────────────────────────────────────────── */
+.top-bar {
+    height: 60px;
+    background: #fff;
+    border-bottom: 1px solid var(--clr-border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* ── Logo ───────────────────────────────────────────────── */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+span.logo-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--clr-primary);
+    border-radius: 7px;
+    position: relative;
+    display: inline-block;
+}
+
+span.logo-icon::before {
+    content: '';
+    position: absolute;
+    background: white;
+    width: 3px;
+    height: 13px;
+    left: 12px;
+    top: 7px;
+    border-radius: 1px;
+}
+
+span.logo-icon::after {
+    content: '';
+    position: absolute;
+    background: white;
+    width: 13px;
+    height: 3px;
+    left: 7px;
+    top: 12px;
+    border-radius: 1px;
+}
+
+span.logo-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--clr-primary);
+}
+
+/* ── Sidebar ────────────────────────────────────────────── */
+aside,
+.sidebar {
+    width: 240px;
+    height: 100%;
+    background: white;
+    padding: 20px 0;
+    border-right: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Nav List */
+.sidebar ul,
+aside ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar li,
+aside ul li {
+    margin: 4px 8px;
+}
+
+/* Links */
+.sidebar a,
+aside ul li a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    text-decoration: none;
+    color: #333;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+}
+
+/* Hover */
+.sidebar a:hover,
+aside ul li a:hover {
+    background: var(--clr-primary-light);
+    color: var(--clr-primary);
+}
+
+/* Active Page */
+.sidebar a.active,
+aside ul li a.active {
+    background: var(--clr-primary);
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* ── User Section ───────────────────────────────────────── */
+.user-section,
+.user-Section {
+    padding: 16px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-top: auto;
+}
+
+.user-section i,
+.user-Section i {
+    color: var(--clr-primary);
+    font-size: 20px;
+    margin-top: 2px;
+}
+
+.name-Surname {
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0 0 2px;
+    color: #1a1a2e;
+}
+
+.user-Identity {
+    font-size: 0.82rem;
+    color: var(--clr-muted);
+    margin: 0 0 6px;
+}
+
+/* ── Sign Out Button ────────────────────────────────────── */
+.sign-out-btn {
+    background: transparent;
+    color: var(--clr-danger);
+    border: 1px solid var(--clr-danger);
+    padding: 7px 12px;
+    border-radius: var(--radius-btn);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.sign-out-btn:hover {
+    background: var(--clr-danger);
+    color: white;
 }
 
 /* ── Day Stats Bar ──────────────────────────────────────── */
@@ -116,12 +251,6 @@ main{
     margin-top: 2px;
 }
 
-@media (max-width: 640px) {
-    .day-stats {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
 /* ── Queue List ─────────────────────────────────────────── */
 #upcoming {
     list-style: none;
@@ -131,95 +260,6 @@ main{
     flex-direction: column;
     gap: 14px;
 }
-
-/* ===== SIDEBAR ===== */
-aside,
-.sidebar {
-    width: 240px;
-    height: 100%;
-    background: white;
-    padding: 20px 0;
-    border-right: 1px solid #dee2e6;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    
-}
-
-/* NAV LIST */
-.sidebar ul,
-aside ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.sidebar li,
-aside ul li {
-    margin: 4px 8px;
-}
-
-/* LINKS */
-.sidebar a,
-aside ul li a {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 20px;
-    text-decoration: none;
-    color: #333;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: background 0.2s, color 0.2s;
-}
-
-/* HOVER */
-.sidebar a:hover,
-aside ul li a:hover {
-    background: var(--clr-primary-light);
-    color: var(--clr-primary);
-}
-
-/* ACTIVE PAGE */
-.sidebar a.active,
-aside ul li a.active {
-    background: var(--clr-primary);
-    color: #ffffff;
-    font-weight: 700;
-}
-
-/* USER SECTION */
-.user-section,
-.user-Section {
-    padding: 15px 20px;
-    border-top: 1px solid #eee;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-top: auto;
-}
-
-.user-section i,
-.user-Section i {
-    color: var(--clr-primary);
-    font-size: 20px;
-}
-
-.name-Surname {
-    font-weight: 600;
-    margin-bottom: 2px;
-    color: #1a1a2e;
-}
-
-.user-Identity {
-    font-size: 0.82rem;
-    color: var(--clr-muted);
-}
-
-
-
-
-
 
 /* ── Queue Card ─────────────────────────────────────────── */
 .queue-card {
@@ -358,7 +398,6 @@ aside ul li a.active {
     transform: scale(0.97);
 }
 
-/* Advance (primary action) */
 .advance-btn {
     background: var(--clr-primary);
     color: #fff;
@@ -369,7 +408,6 @@ aside ul li a.active {
     box-shadow: 0 2px 8px rgba(24, 95, 165, 0.35);
 }
 
-/* Cancel */
 .cancel-btn-queue {
     background: var(--clr-danger-light);
     color: var(--clr-danger);
@@ -461,6 +499,85 @@ aside ul li a.active {
 .loading-state i {
     font-size: 1.6rem;
     color: var(--clr-primary);
+}
+
+/* ── Shared Button Styles ───────────────────────────────── */
+.primary-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 20px;
+    background: var(--clr-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-btn);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background var(--transition), box-shadow var(--transition);
+}
+
+.primary-btn:hover {
+    background: var(--clr-primary-dark);
+    box-shadow: 0 3px 10px rgba(24, 95, 165, 0.35);
+}
+
+.secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 18px;
+    background: transparent;
+    color: var(--clr-muted);
+    border: 1.5px solid var(--clr-border);
+    border-radius: var(--radius-btn);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--transition);
+}
+
+.secondary-btn:hover {
+    background: var(--clr-bg);
+}
+
+.confirm-Button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 26px;
+    background: var(--clr-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-btn);
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background var(--transition), box-shadow var(--transition);
+}
+
+.confirm-Button:hover {
+    background: var(--clr-primary-dark);
+    box-shadow: 0 4px 14px rgba(24, 95, 165, 0.35);
+}
+
+.view-all {
+    margin-top: 16px;
+    width: 100%;
+    color: white;
+    background: var(--clr-primary);
+    border: 1px solid var(--clr-primary-dark);
+    padding: 10px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.view-all:hover {
+    background: var(--clr-primary-dark);
 }
 
 /* ── Walk-in Trigger Button ─────────────────────────────── */
@@ -568,260 +685,156 @@ aside ul li a.active {
     font-weight: 600;
 }
 
-/* ── Shared Button Styles ───────────────────────────────── */
-.primary-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 10px 20px;
-    background: var(--clr-primary);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-btn);
-    font-size: 0.9rem;
+/* ── Dashboard Styles ───────────────────────────────────── */
+.dashboard-content {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 20px;
+}
+
+.dashboard-header h2 {
+    font-size: 26px;
     font-weight: 700;
-    cursor: pointer;
-    transition: background var(--transition), box-shadow var(--transition);
+    margin: 0 0 6px;
+    letter-spacing: -0.4px;
 }
 
-.primary-btn:hover {
-    background: var(--clr-primary-dark);
-    box-shadow: 0 3px 10px rgba(24, 95, 165, 0.35);
+.dashboard-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
 }
 
-.secondary-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 10px 18px;
-    background: transparent;
-    color: var(--clr-muted);
-    border: 1.5px solid var(--clr-border);
-    border-radius: var(--radius-btn);
-    font-size: 0.9rem;
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 28px 0;
+}
+
+.stat {
+    background: var(--clr-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat h2 {
+    margin: 0 0 4px;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.5px;
+}
+
+.stat p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.stat .improving {
+    display: inline-block;
+    margin-top: 8px;
+    color: var(--green-600);
+    font-size: 12px;
     font-weight: 600;
-    cursor: pointer;
-    transition: background var(--transition);
+    background: var(--green-50);
+    padding: 3px 8px;
+    border-radius: 999px;
 }
 
-.secondary-btn:hover {
-    background: var(--clr-bg);
-}
-
-/* ── Confirm Button ─────────────────────────────────────── */
-.confirm-Button {
-    display: inline-flex;
+.appointment {
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
     align-items: center;
-    gap: 8px;
-    padding: 12px 26px;
-    background: var(--clr-primary);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-btn);
-    font-size: 0.95rem;
+    gap: 14px;
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.appointment .time {
     font-weight: 700;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: background var(--transition), box-shadow var(--transition);
+    font-size: 15px;
+    color: var(--green-700);
+    background: var(--green-50);
+    padding: 8px 10px;
+    border-radius: 8px;
+    text-align: center;
 }
 
-.confirm-Button:hover {
-    background: var(--clr-primary-dark);
-    box-shadow: 0 4px 14px rgba(24, 95, 165, 0.35);
-}
-/*View all BTN*/
-
-.view-all {
-  margin-top: 16px;
-  width: 100%;
-  color: white;
-  background: var(--clr-primary);
-  border: 1px solid var(--clr-primary-dark);
-  padding: 10px;
-  border-radius: var(--radius);
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-.view-all:hover {
-  background: var(--clr-primary-dark);
+.appointment .details strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
 }
 
+.appointment .details p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
+}
 
+.appointments,
+.notifications {
+    background: var(--clr-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
+}
+
+.appointments h3,
+.notifications h3 {
+    margin: 0 0 16px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: var(--soft);
+}
+
+.notification {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s ease;
+}
+
+.notification:hover { background: #fafafa; }
+
+.notification p {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: var(--text);
+}
+
+.notification small {
+    color: var(--soft);
+    font-size: 12px;
+}
 
 /* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+    .day-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 600px) {
     .queue-position { min-width: 38px; font-size: 1.1rem; }
     .card-body      { padding: 12px; }
     .queue-actions  { flex-direction: column; align-items: flex-start; }
     .action-btn     { width: 100%; justify-content: center; }
 }
-
-
-/*WILSON ADDED THIS STYLES*/
-/* Content grid */
-.dashboard-content {
-  display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: 20px;
-}
-
-.dashboard-header h2 {
-  font-size: 26px;
-  font-weight: 700;
-  margin: 0 0 6px;
-  letter-spacing: -0.4px;
-}
-.dashboard-header p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-
-/* Stats */
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin: 28px 0;
-}
-
-.stat {
-  background: var(--clr-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px 22px;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.stat h2 {
-  margin: 0 0 4px;
-  font-size: 30px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.5px;
-}
-
-.stat p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 500;
-}
-.stat .improving {
-  display: inline-block;
-  margin-top: 8px;
-  color: var(--green-600);
-  font-size: 12px;
-  font-weight: 600;
-  background: var(--green-50);
-  padding: 3px 8px;
-  border-radius: 999px;
-}
-
-
-/* Appointment row */
-.appointment {
-  display: grid;
-  grid-template-columns: 64px 1fr auto;
-  align-items: center;
-  gap: 14px;
-  padding: 14px;
-  border-radius: var(--radius-sm);
-  border: 1px solid transparent;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-
-.appointment .time {
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--green-700);
-  background: var(--green-50);
-  padding: 8px 10px;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.appointment .details strong {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-.appointment .details p {
-  margin: 0;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.appointments,
-.notifications {
-  background: var(--clr-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 22px;
-  box-shadow: var(--shadow-sm);
-}
-
-.appointments h3,
-.notifications h3 {
-  margin: 0 0 16px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  color: var(--soft);
-}
-
-
-/* Notifications */
-.notification {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px;
-  border-radius: var(--radius-sm);
-  transition: background 0.15s ease;
-}
-.notification:hover { background: #fafafa; }
-
-.notification p {
-  margin: 0;
-  font-size: 13.5px;
-  line-height: 1.45;
-  color: var(--text);
-}
-.notification small {
-  color: var(--soft);
-  font-size: 12px;
-}
-
-.sign-out-btn {
-    background:lightblue;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-}
-
-.container {
-    display: flex;
-    height: calc(100vh - 60px);
-}
-
 
 
