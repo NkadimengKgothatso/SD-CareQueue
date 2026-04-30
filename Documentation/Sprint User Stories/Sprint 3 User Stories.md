@@ -19,9 +19,7 @@ As a clinic staff member, I want to set my weekly availability so that patients 
 <td>
 <ul>
 <li>When a staff member toggles a day off, the time inputs for that day should become disabled and the row should appear faded</li>
-<li>Saturday and Sunday should be toggled off by default with their time inputs disabled</li>
 <li>When a staff member clicks "Save Availability", their schedule should be saved to Firestore under the StaffAvailability collection</li>
-<li>Monday to Friday should be toggled on by default with time inputs set to 08:00 – 17:00</li>
 <li>When a staff member revisits the page, their previously saved availability should load automatically</li>
 </ul>
 </td>
