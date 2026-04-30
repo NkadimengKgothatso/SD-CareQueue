@@ -43,7 +43,7 @@ As a clinic staff member, I want to set my weekly availability so that patients 
 <tr>
 <td>2</td>
 <td>
-As a patient, I want to see estimated wait times and my queue position so that I can plan my time better and avoid unnecessary waiting.
+As a patient, I want to see estimated wait times  so that I can plan my time better and avoid unnecessary waiting.
 </td>
 
 <td>
