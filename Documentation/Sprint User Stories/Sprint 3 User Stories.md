@@ -84,7 +84,6 @@ so that I can understand clinic efficiency and improve operational decisions.
 <ul>
 <li> Given the admin is on the Analytics page,When the Wait Time Report section is loaded,
  Then the system displays the average patient wait time grouped by clinic</li>
-<li> Given that analytics data is displayed on the Analytics page, When the admin selects the export option ,Then the system shall generate a downloadable file in either CSV or PDF format.</li>
 <li>Given that appointment data exists in the system, when the No-Show Rate Report section is displayed on the Analytics page, Then the system shall calculate and present the percentage of missed appointments per clinic.</li>
 <li>Given that multiple clinics and date ranges exist in the system, When the admin applies filters on the Analytics page, Then the system shall update all report sections accordingly to display only data that matches the selected clinic and date range criteria.</li>
 </ul>
@@ -96,8 +95,6 @@ so that I can understand clinic efficiency and improve operational decisions.
 <li>Support filtering by clinic and date range</li>
 <li>Display reports</li>
 <li>Ensure layout is responsive and readable</li>
-<li>Export reports to CSV</li>
-<li>Export reports to PDF</li>
 <li>Design User Interface</li>
 
 
