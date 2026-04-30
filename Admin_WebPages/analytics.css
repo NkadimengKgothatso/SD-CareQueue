@@ -123,3 +123,15 @@ canvas {
     width: 100%;
     max-height: 300px;
 }
+
+.table-wrapper {
+    max-height: 200px; /* roughly 4 rows */
+    overflow-y: auto;
+}
+
+table thead th {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 2;
+}
