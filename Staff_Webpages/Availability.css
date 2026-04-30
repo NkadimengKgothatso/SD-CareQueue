@@ -1,0 +1,233 @@
+/* ============================================================
+   Availability Page Styles
+   ============================================================ */
+
+
+
+/* ── Top Bar ──────────────────────────────────────────────── */
+.top-bar {
+    height: 60px;
+    background: #fff;
+    border-bottom: 1px solid var(--clr-border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* ── Page Header ──────────────────────────────────────────── */
+.page-header {
+    margin-bottom: 28px;
+}
+
+.page-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 4px;
+    color: #1a1a2e;
+}
+
+.page-header p {
+    margin: 0;
+    color: var(--clr-muted);
+    font-size: 14px;
+}
+
+/* ── Week Schedule Card ───────────────────────────────────── */
+.week-card {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    max-width: 720px;
+}
+
+.week-card-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--clr-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.week-card-header h3 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--clr-muted);
+}
+
+/* ── Day Row ──────────────────────────────────────────────── */
+.day-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 22px;
+    border-bottom: 1px solid #f0f2f5;
+    transition: background 0.15s ease;
+}
+
+.day-row:last-child {
+    border-bottom: none;
+}
+
+.day-row:hover {
+    background: var(--clr-primary-light);
+}
+
+.day-row.day-off .time-range {
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+/* ── Day Label + Toggle ───────────────────────────────────── */
+.day-label-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.day-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: #1a1a2e;
+    min-width: 85px;
+}
+
+/* ── Toggle Switch ────────────────────────────────────────── */
+.toggle-switch {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: #ccc;
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.toggle-slider::before {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 3px;
+    top: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--clr-primary);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(18px);
+}
+
+/* ── Time Range ───────────────────────────────────────────── */
+.time-range {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    transition: opacity 0.2s ease;
+}
+
+.time-range label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--clr-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.time-input {
+    padding: 8px 12px;
+    border: 1.5px solid var(--clr-border);
+    border-radius: var(--radius-btn);
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a2e;
+    background: #f8f9fa;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.time-input:focus {
+    border-color: var(--clr-primary);
+    box-shadow: 0 0 0 3px rgba(69,132,196,0.15);
+    background: #fff;
+}
+
+.time-input:disabled {
+    cursor: not-allowed;
+}
+
+.time-separator {
+    color: var(--clr-muted);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* ── Save Section ─────────────────────────────────────────── */
+.save-section {
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.save-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: var(--clr-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-btn);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.save-btn:hover {
+    background: var(--clr-primary-dark);
+    box-shadow: 0 4px 14px rgba(24,95,165,0.3);
+}
+
+.save-status {
+    font-size: 13px;
+    color: var(--clr-muted);
+    font-style: italic;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 700px) {
+    .day-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+}

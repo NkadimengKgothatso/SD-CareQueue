@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>My Availability – Care Queue</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link rel="stylesheet" href="Staff.css">
+        <link rel="stylesheet" href="Availability.css">
+    </head>
+
+    <body>
+
+        <!-- Top Navigation Bar -->
+        <header class="top-bar">
+            <nav class="logo">
+                <span class="logo-icon"></span>
+                <span class="logo-name" style="vertical-align: middle;">Care Queue</span>
+            </nav>
+        </header>
+
+        <section class="container">
+
+            <!-- Sidebar -->
+            <aside>
+                <ul>
+                    <li>
+                        <a href="StaffDashboard.html">
+                            <i class="material-icons">bar_chart</i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="Availability.html" class="active">
+                            <i class="material-icons">event_available</i>
+                            My Availability
+                        </a>
+                    </li>
+                    <li>
+                        <a href="Appointments.html">
+                            <i class="material-icons">event</i>
+                            Manage Appointment
+                        </a>
+                    </li>
+                    <li>
+                        <a href="Queues.html">
+                            <i class="material-icons">groups</i>
+                            Queue Management
+                        </a>
+                    </li>
+                    <li>
+                        <a href="Analytics.html">
+                            <i class="fa-solid fa-chart-line"></i>
+                            Analytics
+                        </a>
+                    </li>
+                    <li>
+                        <a href="WalkIns.html">
+                            <i class="material-icons">directions_walk</i>
+                            Walk-in
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fa-solid fa-bell"></i>
+                            Notifications
+                        </a>
+                    </li>
+                </ul>
+
+                <section class="user-Section">
+                    <i class="fa-solid fa-user" style="padding: 5px;"></i>
+                    <section>
+                        <p class="name-Surname"></p>
+                        <p class="user-Identity" style="padding: 3px">Staff</p>
+                        <button class="sign-out-btn" onclick="signOut()">
+                            <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                        </button>
+                    </section>
+                </section>
+            </aside>
+
+            <!-- Main Content -->
+            <main>
+
+                <!-- Page Header -->
+                <section class="page-header">
+                    <h2>My Availability</h2>
+                    <p>Set the days and hours you are available to see patients.</p>
+                </section>
+
+                <!-- Week Schedule Card -->
+                <div class="week-card">
+                    <div class="week-card-header">
+                        <h3>Weekly Schedule</h3>
+                    </div>
+
+                    <!-- Monday -->
+                    <div class="day-row" id="row-monday">
+                        <div class="day-label-group">
+                            <span class="day-name">Monday</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-monday" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="time-range">
+                            <label>From</label>
+                            <input type="time" class="time-input" id="start-monday" value="08:00">
+                            <span class="time-separator">–</span>
+                            <label>To</label>
+                            <input type="time" class="time-input" id="end-monday" value="17:00">
+                        </div>
+                    </div>
+
+                    <!-- Tuesday -->
+                    <div class="day-row" id="row-tuesday">
+                        <div class="day-label-group">
+                            <span class="day-name">Tuesday</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-tuesday" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="time-range">
+                            <label>From</label>
+                            <input type="time" class="time-input" id="start-tuesday" value="08:00">
+                            <span class="time-separator">–</span>
+                            <label>To</label>
+                            <input type="time" class="time-input" id="end-tuesday" value="17:00">
+                        </div>
+                    </div>
+
+                    <!-- Wednesday -->
+                    <div class="day-row" id="row-wednesday">
+                        <div class="day-label-group">
+                            <span class="day-name">Wednesday</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-wednesday" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="time-range">
+                            <label>From</label>
+                            <input type="time" class="time-input" id="start-wednesday" value="08:00">
+                            <span class="time-separator">–</span>
+                            <label>To</label>
+                            <input type="time" class="time-input" id="end-wednesday" value="17:00">
+                        </div>
+                    </div>
+
+                    <!-- Thursday -->
+                    <div class="day-row" id="row-thursday">
+                        <div class="day-label-group">
+                            <span class="day-name">Thursday</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-thursday" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="time-range">
+                            <label>From</label>
+                            <input type="time" class="time-input" id="start-thursday" value="08:00">
+                            <span class="time-separator">–</span>
+                            <label>To</label>
+                            <input type="time" class="time-input" id="end-thursday" value="17:00">
+                        </div>
+                    </div>
+
+                    <!-- Friday -->
+                    <div class="day-row" id="row-friday">
+                        <div class="day-label-group">
+                            <span class="day-name">Friday</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-friday" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="time-range">
+                            <label>From</label>
+                            <input type="time" class="time-input" id="start-friday" value="08:00">
+                            <span class="time-separator">–</span>
+                            <label>To</label>
+                            <input type="time" class="time-input" id="end-friday" value="17:00">
+                        </div>
+                    </div>
+
+                    <!-- Saturday -->
+                    <div class="day-row day-off" id="row-saturday">
+                        <div class="day-label-group">
+                            <span class="day-name">Saturday</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-saturday">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="time-range">
+                            <label>From</label>
+                            <input type="time" class="time-input" id="start-saturday" value="08:00">
+                            <span class="time-separator">–</span>
+                            <label>To</label>
+                            <input type="time" class="time-input" id="end-saturday" value="13:00">
+                        </div>
+                    </div>
+
+                    <!-- Sunday -->
+                    <div class="day-row day-off" id="row-sunday">
+                        <div class="day-label-group">
+                            <span class="day-name">Sunday</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-sunday">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="time-range">
+                            <label>From</label>
+                            <input type="time" class="time-input" id="start-sunday" value="08:00">
+                            <span class="time-separator">–</span>
+                            <label>To</label>
+                            <input type="time" class="time-input" id="end-sunday" value="13:00">
+                        </div>
+                    </div>
+
+                </div>
+                <!-- end .week-card -->
+
+                <!-- Save Button -->
+                <div class="save-section">
+                    <button class="save-btn" id="saveBtn">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Save Availability
+                    </button>
+                    <span class="save-status" id="saveStatus"></span>
+                </div>
+
+            </main>
+        </section>
+
+        <!-- Toggle logic: enables/disables time inputs based on day toggle state -->
+        <script>
+            const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+
+            days.forEach(day => {
+                const toggle     = document.getElementById(`toggle-${day}`);
+                const startInput = document.getElementById(`start-${day}`);
+                const endInput   = document.getElementById(`end-${day}`);
+                const row        = document.getElementById(`row-${day}`);
+
+                function applyState() {
+                    const isOn       = toggle.checked;
+                    startInput.disabled = !isOn;
+                    endInput.disabled   = !isOn;
+                    row.classList.toggle("day-off", !isOn);
+                }
+
+                // Apply correct state on page load
+                applyState();
+
+                // Update state whenever toggle is clicked
+                toggle.addEventListener("change", applyState);
+            });
+        </script>
+
+        <!-- Availability.js will be added in Commit 2 -->
+        <script type="module" src="Availability.js"></script>
+
+    </body>
+</html>

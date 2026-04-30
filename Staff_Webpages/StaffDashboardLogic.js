@@ -63,7 +63,7 @@ function calculateStats(appointments) {
         totalToday,
         inQueue,
         completed,
-        avgWait: inQueue > 0 ? "15m" : "0m"
+        avgWait: inQueue > 0 ? "30m" : "0m"
     };
 }
 
