@@ -359,9 +359,19 @@ function exportCSV(data) {
     URL.revokeObjectURL(url);
 }
 
-function exportPDF(data) {
+function exportPDF(data, from = null, to = null) {
 
     const win = window.open("", "_blank");
+
+    const formatDate = (d) => {
+        if (!d) return null;
+        return new Date(d).toLocaleDateString();
+    };
+
+    const dateRangeText =
+        (from && to)
+            ? `${formatDate(from)} → ${formatDate(to)}`
+            : "All time";
 
     win.document.write(`
         <html>
@@ -369,7 +379,13 @@ function exportPDF(data) {
             <title>Clinic Analytics Report</title>
             <style>
                 body { font-family: Arial; padding: 20px; }
-                h2 { margin-bottom: 20px; }
+                h2 { margin-bottom: 5px; }
+
+                .date-range {
+                    margin-bottom: 20px;
+                    color: #555;
+                    font-size: 14px;
+                }
 
                 table {
                     width: 100%;
@@ -386,8 +402,13 @@ function exportPDF(data) {
                 }
             </style>
         </head>
+
         <body>
             <h2>Clinic Analytics Report</h2>
+
+            <div class="date-range">
+                <strong>Date Range:</strong> ${dateRangeText}
+            </div>
 
             <table>
                 <thead>
@@ -398,6 +419,7 @@ function exportPDF(data) {
                         <th>No-Show Rate</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     ${data.map(d => `
                         <tr>
