@@ -5,7 +5,6 @@ let appointments = [];
 let queues = [];
 let clinics = [];
 
-// 🔥 track loading state
 let dataLoaded = {
     appointments: false,
     queues: false,
@@ -66,13 +65,6 @@ async function loadClinics() {
     }
 }
 
-// ================= CHECK + RENDER =================
-function checkAndRender() {
-    if (dataLoaded.appointments && dataLoaded.queues && dataLoaded.clinics) {
-        renderDashboard(); // 🔥 only now render everything
-    }
-}
-
 // ================= INIT =================
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -94,13 +86,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+// ================= CHECK + RENDER =================
+function checkAndRender() {
+    if (dataLoaded.appointments && dataLoaded.queues && dataLoaded.clinics) {
+        renderDashboard(); // default load
+    }
+}
 
 // ================= DATE HELPER =================
 function inDateRange(date, from, to) {
     if (!from || !to) return true;
-    return date >= from && date <= to;
-}
 
+    const d = new Date(date);
+    const f = new Date(from);
+    const t = new Date(to);
+
+    return d >= f && d <= t;
+}
 
 // ================= DASHBOARD ENGINE =================
 function buildDashboard(from = null, to = null) {
@@ -135,14 +137,32 @@ function buildDashboard(from = null, to = null) {
     };
 }
 
-
 // ================= KPIs =================
-function renderKPIs(data) {
+function renderKPIs(data, from, to) {
+
     document.getElementById("patientsValue").textContent = data.patientsSeen;
     document.getElementById("waitValue").textContent = data.avgWait + " min";
     document.getElementById("noShowValue").textContent = data.noShows;
-}
 
+    let trend;
+
+    if (from && to) {
+        trend = calculatePatientsTrend(from, to);
+    } else {
+        // DEFAULT: last 30 days comparison
+        const now = new Date();
+        const end = now;
+        const start = new Date();
+        start.setDate(now.getDate() - 30);
+
+        trend = calculatePatientsTrend(
+            start.toISOString(),
+            end.toISOString()
+        );
+    }
+
+    document.getElementById("trendValue").textContent = trend;
+}
 
 // ================= QUEUE ANALYTICS =================
 function getQueueAnalytics(list) {
@@ -175,7 +195,6 @@ function getQueueAnalytics(list) {
     return result;
 }
 
-
 // ================= NO SHOW PER CLINIC =================
 function getNoShowByClinic(list) {
     const result = {};
@@ -195,13 +214,12 @@ function getNoShowByClinic(list) {
     return result;
 }
 
-
 // ================= RENDER DASHBOARD =================
 function renderDashboard(from = null, to = null) {
 
     const data = buildDashboard(from, to);
 
-    renderKPIs(data); // 🔥 always synced
+    renderKPIs(data, from, to);
 
     const queueStats = getQueueAnalytics(data.queues);
     const noShowStats = getNoShowByClinic(data.appointments);
@@ -231,7 +249,6 @@ function renderDashboard(from = null, to = null) {
     tbody.innerHTML = "";
 
     report.forEach(item => {
-
         const row = document.createElement("tr");
 
         row.innerHTML = `
@@ -243,4 +260,42 @@ function renderDashboard(from = null, to = null) {
 
         tbody.appendChild(row);
     });
+}
+
+// ================= TREND =================
+function getPreviousPeriod(from, to) {
+
+    const start = new Date(from);
+    const end = new Date(to);
+
+    const diff = end.getTime() - start.getTime();
+
+    const prevEnd = new Date(start.getTime() - 1);
+    const prevStart = new Date(prevEnd.getTime() - diff);
+
+    return {
+        from: prevStart.toISOString(),
+        to: prevEnd.toISOString()
+    };
+}
+
+function countPatients(list, from, to) {
+    return list.filter(a =>
+        a.status === "completed" &&
+        inDateRange(a.date, from, to)
+    ).length;
+}
+
+function calculatePatientsTrend(from, to) {
+
+    const prev = getPreviousPeriod(from, to);
+
+    const current = countPatients(appointments, from, to);
+    const previous = countPatients(appointments, prev.from, prev.to);
+
+    if (previous === 0) return current > 0 ? "+100%" : "0%";
+
+    const change = ((current - previous) / previous) * 100;
+
+    return `${change.toFixed(1)}%`;
 }
