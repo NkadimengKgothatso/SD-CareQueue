@@ -4,6 +4,7 @@ import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/
 let appointments = [];
 let queues = [];
 let clinics = [];
+let activeRowIndex = 0;
 
 let dataLoaded = {
     appointments: false,
@@ -84,12 +85,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
         renderDashboard(from, to);
     });
+
+
+    document.addEventListener("keydown", (e) => {
+    const rows = document.querySelectorAll("#waitTableBody tr");
+    if (!rows.length) return;
+
+    if (e.key === "ArrowDown") {
+        activeRowIndex = Math.min(activeRowIndex + 1, rows.length - 1);
+        setActiveRow(rows, activeRowIndex);
+        rows[activeRowIndex].scrollIntoView({ block: "center" });
+    }
+
+    if (e.key === "ArrowUp") {
+        activeRowIndex = Math.max(activeRowIndex - 1, 0);
+        setActiveRow(rows, activeRowIndex);
+        rows[activeRowIndex].scrollIntoView({ block: "center" });
+    }
+});
 });
 
 // ================= CHECK + RENDER =================
 function checkAndRender() {
     if (dataLoaded.appointments && dataLoaded.queues && dataLoaded.clinics) {
-        renderDashboard(); // default load
+        renderDashboard();
     }
 }
 
@@ -137,27 +156,37 @@ function buildDashboard(from = null, to = null) {
     };
 }
 
+// ================= GLOBAL NO-SHOW RATE =================
+function getGlobalNoShowRate(list) {
+    const total = list.length;
+    if (!total) return "0.0%";
+
+    const cancelled = list.filter(a => a.status === "cancelled").length;
+
+    return ((cancelled / total) * 100).toFixed(1) + "%";
+}
+
 // ================= KPIs =================
 function renderKPIs(data, from, to) {
 
     document.getElementById("patientsValue").textContent = data.patientsSeen;
     document.getElementById("waitValue").textContent = data.avgWait + " min";
-    document.getElementById("noShowValue").textContent = data.noShows;
+
+    document.getElementById("noShowValue").textContent =
+        getGlobalNoShowRate(data.appointments);
 
     let trend;
 
     if (from && to) {
         trend = calculatePatientsTrend(from, to);
     } else {
-        // DEFAULT: last 30 days comparison
         const now = new Date();
-        const end = now;
         const start = new Date();
         start.setDate(now.getDate() - 30);
 
         trend = calculatePatientsTrend(
             start.toISOString(),
-            end.toISOString()
+            now.toISOString()
         );
     }
 
@@ -195,23 +224,42 @@ function getQueueAnalytics(list) {
     return result;
 }
 
-// ================= NO SHOW PER CLINIC =================
-function getNoShowByClinic(list) {
+// ================= NO SHOW RATE PER CLINIC =================
+function getNoShowRateByClinic(list) {
     const result = {};
 
     list.forEach(a => {
         const clinic = a.clinicID;
 
         if (!result[clinic]) {
-            result[clinic] = { noShow: 0 };
+            result[clinic] = {
+                total: 0,
+                cancelled: 0
+            };
         }
 
+        result[clinic].total += 1;
+
         if (a.status === "cancelled") {
-            result[clinic].noShow += 1;
+            result[clinic].cancelled += 1;
         }
     });
 
+    Object.keys(result).forEach(clinic => {
+        const r = result[clinic];
+        r.rate = r.total ? ((r.cancelled / r.total) * 100).toFixed(1) : "0.0";
+    });
+
     return result;
+}
+
+// ================= COLOR HELPERS =================
+function getRateColor(rate) {
+    const r = parseFloat(rate);
+
+    if (r < 10) return "green";
+    if (r < 20) return "orange";
+    return "red";
 }
 
 // ================= RENDER DASHBOARD =================
@@ -222,9 +270,12 @@ function renderDashboard(from = null, to = null) {
     renderKPIs(data, from, to);
 
     const queueStats = getQueueAnalytics(data.queues);
-    const noShowStats = getNoShowByClinic(data.appointments);
+    const noShowStats = getNoShowRateByClinic(data.appointments);
 
-    const report = clinics.map(clinic => {
+    const tbody = document.getElementById("waitTableBody");
+    tbody.innerHTML = "";
+
+    clinics.forEach(clinic => {
 
         const q = queueStats[clinic.id] || {
             total: 0,
@@ -233,34 +284,38 @@ function renderDashboard(from = null, to = null) {
             maxWait: 0
         };
 
-        const n = noShowStats[clinic.id] || { noShow: 0 };
+        const n = noShowStats[clinic.id] || { rate: "0.0" };
+        const color = getRateColor(n.rate);
 
-        return {
-            clinicName: clinic.name,
-            totalPatients: q.total,
-            waitingNow: q.waiting,
-            averageWait: q.total > 0 ? (q.totalWait / q.total).toFixed(1) : "0.0",
-            maxWait: q.maxWait,
-            noShows: n.noShow
-        };
-    });
-
-    const tbody = document.getElementById("waitTableBody");
-    tbody.innerHTML = "";
-
-    report.forEach(item => {
         const row = document.createElement("tr");
 
         row.innerHTML = `
-            <td>${item.clinicName}</td>
-            <td>${item.averageWait} min</td>
-            <td>${item.totalPatients}</td>
-            <td>${item.noShows}</td>
+            <td>${clinic.name}</td>
+            <td>${q.total > 0 ? (q.totalWait / q.total).toFixed(1) : "0.0"} min</td>
+            <td>${q.total}</td>
+            <td style="color:${color}; font-weight:600;">
+                ${n.rate}%
+            </td>
         `;
 
         tbody.appendChild(row);
     });
+
+    const rows = document.querySelectorAll("#waitTableBody tr");
+
+rows.forEach((row, index) => {
+    row.addEventListener("mouseenter", () => {
+        setActiveRow(rows, index);
+    });
+
+    row.addEventListener("click", () => {
+        setActiveRow(rows, index);
+    });
+});
+
+setActiveRow(rows, 0); // default first row
 }
+
 
 // ================= TREND =================
 function getPreviousPeriod(from, to) {
@@ -298,4 +353,13 @@ function calculatePatientsTrend(from, to) {
     const change = ((current - previous) / previous) * 100;
 
     return `${change.toFixed(1)}%`;
+}
+
+function setActiveRow(rows, index) {
+    rows.forEach(r => r.classList.remove("active-row"));
+
+    if (rows[index]) {
+        rows[index].classList.add("active-row");
+        activeRowIndex = index;
+    }
 }
