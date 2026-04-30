@@ -563,9 +563,9 @@ confirmBtn.addEventListener("click", async () => {
          await addDoc(collection(db, "Notifications"), {
             userID: user.uid,
             clinicID: selectedClinicId,
-            type: reason,
-            title: "We received your booking",
-            message: `Your appointment of ${reason} has been booked for ${appointmentDate} at ${selectedTime}.`,
+            type: "appointment",
+            title: "Appointment Confirmed",
+            message: `Your appointment for ${reason} has been booked for ${date} at ${time}.`,
             read: false,
             createdAt: serverTimestamp()
         });
