@@ -42,36 +42,33 @@ As a clinic staff member, I want to set my weekly availability so that patients 
 <!-- USER STORY 2 -->
 <tr>
 <td>2</td>
-<tr>
-    <td><strong>User Story</strong></td>
-    <td>As a patient, I want to see estimated wait times and my queue position so that I can plan my time better and avoid unnecessary waiting.</td>
-</tr>
+<td>
+As a patient, I want to see estimated wait times and my queue position so that I can plan my time better and avoid unnecessary waiting.
+</td>
 
-<tr>
-    <td><strong>Description</strong></td>
-    <td>Allows patients to view their current queue position and estimated waiting time, including insights based on clinic averages and time of day to improve planning and reduce uncertainty.</td>
-</tr>
+<td>
+<ul>
+<li>The system shows an estimated wait time based on current queue conditions</li>
+<li>Wait time estimates update in real-time (or near real-time)</li>
+<li>The system provides average patient wait times by clinic</li>
+<li>The system provides average patient wait times by time of day</li>
+<li>The system remains accurate and responsive even during peak hours</li>
+<li>(Bonus) The system uses a predictive model based on historical queue data, time of day, and day of the week</li>
+</ul>
+</td>
 
-<tr>
-    <td><strong>Acceptance Criteria</strong></td>
-    <td>
-        The system shows an estimated wait time based on current queue conditions.<br>
-        Wait time estimates update in real-time (or near real-time).<br>
-        The system provides average patient wait times by clinic.<br>
-        The system provides average patient wait times by time of day.<br>
-        The system remains accurate and responsive even during peak hours.<br>
-        (Bonus) The system uses a predictive model to improve wait time estimates based on historical queue data, time of day, and day of the week.
-    </td>
-</tr>
+<td>
+<ul>
+<li>Implement queue position display</li>
+<li>Build wait time calculation logic</li>
+<li>Connect real-time Firestore updates</li>
+<li>Create analytics for average wait times by clinic</li>
+<li>Create analytics for time-of-day trends</li>
+<li>Integrate ML-based prediction model (bonus)</li>
+</ul>
+</td>
 
-<tr>
-    <td><strong>User Acceptance Tests (UATs)</strong></td>
-    <td>
-        Given the patient is in the queue, when they view their status, then an estimated wait time is shown.<br>
-        Given queue conditions change (such as patients being added or removed), when the system updates, then both queue position and wait time adjust accordingly.
-    </td>
-</tr>
-<td align="center"></td>
+<td align="center">9</td>
 </tr>
 
 <!-- USER STORY 3 -->
