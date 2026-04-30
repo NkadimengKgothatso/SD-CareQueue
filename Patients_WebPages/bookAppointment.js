@@ -560,6 +560,17 @@ confirmBtn.addEventListener("click", async () => {
             createdAT: serverTimestamp()
         });
 
+         await addDoc(collection(db, "Notifications"), {
+            userID: user.uid,
+            clinicID: selectedClinicId,
+            type: "appointment",
+            title: "Appointment Confirmed",
+            message: `Your appointment for ${reason} has been booked for ${date} at ${time}.`,
+            read: false,
+            createdAt: serverTimestamp()
+        });
+
+
         alert("Appointment booked successfully!");
 
         document.getElementById("appt-date").value = "";
