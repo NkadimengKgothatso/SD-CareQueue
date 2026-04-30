@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<<<<<<< HEAD
+<coverage generated="1776692629604" clover="3.2.0">
+  <project timestamp="1776692629604" name="All files">
+=======
 <coverage generated="1776674932531" clover="3.2.0">
   <project timestamp="1776674932531" name="All files">
+>>>>>>> 5cf5dca0b9d71c536780dbc9e98bd3ae276ae52e
     <metrics statements="59" coveredstatements="59" conditionals="62" coveredconditionals="56" methods="22" coveredmethods="21" elements="143" coveredelements="136" complexity="0" loc="59" ncloc="59" packages="4" files="4" classes="4"/>
     <package name="Admin_WebPages">
       <metrics statements="16" coveredstatements="16" conditionals="24" coveredconditionals="22" methods="6" coveredmethods="6"/>

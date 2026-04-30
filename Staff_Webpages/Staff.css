@@ -1,5 +1,5 @@
 /* ============================================================
-   Queue Management – Staff View Styles
+   Staff View Styles
    ============================================================ */
 .logo {
     display: flex;
@@ -818,6 +818,10 @@ aside ul li a.active {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
+.container {
+    display: flex;
+    height: calc(100vh - 60px);
+}
 
 
 
