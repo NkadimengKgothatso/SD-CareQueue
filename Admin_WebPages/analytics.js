@@ -118,11 +118,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         pdfBtn?.addEventListener("click", () => {
-            const from = document.getElementById("dateFrom").value;
-            const to = document.getElementById("dateTo").value;
+    const from = document.getElementById("dateFrom").value;
+    const to = document.getElementById("dateTo").value;
 
-            exportPDF(getCurrentExportData(from, to));
-        });
+    exportPDF(getCurrentExportData(from, to), from, to);
+});
 
         // ================= SEARCH =================
         const search = document.getElementById("clinicSearch");
