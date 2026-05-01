@@ -566,9 +566,9 @@ confirmBtn.addEventListener("click", async () => {
             userID: user.uid,
             clinicID: selectedClinicId,
             clinicName: selectedClinicName,
-            type: "appointment",
-            title: "Appointment Confirmed",
-            message: `Your appointment for ${reason} has been booked for ${date} at ${time}.`,
+            type: "Appointment",
+            title: "Appointment Booked",
+            message: `Your ${reason} appointment at ${selectedClinicName} is booked for ${date} at ${time}. Please arrive 10 minutes early.`,
             read: false,
             createdAt: serverTimestamp()
         });
