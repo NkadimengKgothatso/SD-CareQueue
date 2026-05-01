@@ -1,0 +1,149 @@
+/* MAIN CONTAINER — CRITICAL FIX */
+/* push content next to sidebar WITHOUT touching admin.css */
+.analytics-main {
+    margin-left: 260px; /* adjust to match sidebar width */
+    width: calc(100% - 260px);
+}
+
+
+/* PAGE HEADER */
+.page-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.page-subtitle {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* CARD (same feel as Staff page) */
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* CARD HEADER */
+.card-header {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* FILTERS */
+.filters-form {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.8rem;
+}
+
+.filter-group input {
+    height: 34px;
+    padding: 0 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+/* BUTTONS */
+.btn-primary {
+    background: #7C3AED;;
+    color: white;
+    border: none;
+    padding: 0 14px;
+    height: 34px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: #eee;
+    border: none;
+    padding: 0 14px;
+    height: 34px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* KPI GRID */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.kpi-card {
+    background: white;
+    padding: 1rem;
+    border-radius: 10px;
+}
+
+.kpi-card span {
+    font-size: 0.8rem;
+    color: #777;
+}
+
+.kpi-card h3 {
+    font-size: 1.8rem;
+    margin-top: 4px;
+}
+
+/* TABLE */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    border-bottom: 2px solid #eee;
+}
+
+th, td {
+    padding: 0.7rem;
+    text-align: left;
+    font-size: 0.85rem;
+}
+
+/* CHART */
+canvas {
+    width: 100%;
+    max-height: 300px;
+}
+
+.table-wrapper {
+    max-height: 200px; /* roughly 4 rows */
+    overflow-y: auto;
+}
+
+table thead th {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 2;
+}
+
+/* highlights rows */
+tr.active-row {
+    background: rgba(139, 92, 246, 0.12);
+    outline: 2px solid rgba(139, 92, 246, 0.25);
+    transition: 0.15s ease;
+}
+
+tr:hover {
+    background: rgba(139, 92, 246, 0.06);
+    cursor: pointer;
+}

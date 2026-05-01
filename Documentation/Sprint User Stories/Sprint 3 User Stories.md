@@ -74,17 +74,30 @@ As a patient, I want to see estimated wait times  so that I can plan my time bet
 <!-- USER STORY 3 -->
 <tr>
 <td>3</td>
-<td></td>
+<td>
+As an admin,
+I want to view analytics reports on patient flow and appointment performance,
+so that I can understand clinic efficiency and improve operational decisions.
+</td>
+
 <td>
 <ul>
-<li></li>
-<li></li>
+<li> Given the admin is on the Analytics page,When the Wait Time Report section is loaded,
+ Then the system displays the average patient wait time grouped by clinic</li>
+<li>Given that appointment data exists in the system, when the No-Show Rate Report section is displayed on the Analytics page, Then the system shall calculate and present the percentage of missed appointments per clinic.</li>
+<li>Given that multiple clinics and date ranges exist in the system, When the admin applies filters on the Analytics page, Then the system shall update all report sections accordingly to display only data that matches the selected clinic and date range criteria.</li>
 </ul>
 </td>
 <td>
 <ul>
-<li></li>
-<li></li>
+<li>Calculate average patient wait times by clinic and time of day</li>
+<li>Calculate appointment no-show rates per clinic</li>
+<li>Support filtering by clinic and date range</li>
+<li>Display reports</li>
+<li>Ensure layout is responsive and readable</li>
+<li>Design User Interface</li>
+
+
 </ul>
 </td>
 <td align="center"></td>

@@ -115,7 +115,7 @@ window.addStaff = async function () {
     const name       = document.getElementById("staffName").value.trim();
     const email      = document.getElementById("staffEmail").value.trim();
     const select     = document.getElementById("staffClinic");
-    const clinicId   = select.value;
+    const clinicId   = Number(select.value);
     const clinicName = select.options[select.selectedIndex]?.text || "";
 
 
