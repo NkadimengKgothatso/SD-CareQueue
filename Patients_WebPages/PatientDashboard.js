@@ -75,6 +75,28 @@ window.goToAppointments = function () {
     window.location.href = "MyAppointments.html";
 };
 
+// Set avatar initial based on user's name or email
+function setAvatarInitial(name, email) {
+    let initials = "";
+
+    // Name first (best option)
+    if (name && name.trim().length > 0) {
+        const parts = name.trim().split(" ");
+
+        initials += parts[0].charAt(0);
+
+        if (parts.length > 1) {
+            initials += parts[parts.length - 1].charAt(0);
+        }
+    }
+    // Fallback to email
+    else if (email && email.length > 0) {
+        initials = email.charAt(0);
+    }
+
+    document.getElementById("patientAvatar").textContent =
+        initials.toUpperCase();
+}
 
 // ================= LOAD APPOINTMENTS =================
 // Gets user's appointments and displays ONLY the next upcoming one
@@ -390,17 +412,24 @@ window.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+
         try {
             const userSnap = await getDoc(doc(db, "Users", user.uid));
 
             if (userSnap.exists()) {
                 const data = userSnap.data();
 
-                nameEl.textContent = data.displayName || "User";
-                roleEl.textContent = data.role || "Unknown";
-                welcomeEl.textContent = `Welcome, ${data.displayName || "User"}`;
-            }
+                const name = data.displayName || "";
+                const email = user.email || "";
 
+                nameEl.textContent = name || "User";
+                roleEl.textContent = data.role || "Unknown";
+                welcomeEl.textContent = `Welcome, ${name || "User"}`;
+                document.getElementById("userEmail").textContent = email;  
+
+               
+                setAvatarInitial(name, email);
+            }
             dateEl.textContent = new Date().toLocaleDateString("en-ZA", {
                 weekday: "long",
                 year: "numeric",
@@ -410,9 +439,11 @@ window.addEventListener("DOMContentLoaded", () => {
 
             await loadAppointments(user.uid);
 
+
         } catch (error) {
             console.error("Auth error:", error);
         }
+        
     });
 });
 
