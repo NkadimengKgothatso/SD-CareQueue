@@ -143,6 +143,7 @@ const clinicResults = document.getElementById("clinicResults");
 
 let clinics = [];
 let selectedClinicId;
+let selectedClinicName;
 
 
 
@@ -225,6 +226,7 @@ function displayClinics(clinicList) {
         });
 
         selectedClinicId = clinic.id;
+        selectedClinicName = clinic.name;
 
         const btn = clinicCard.querySelector(".open-btn");
         btn.textContent = "Selected";
@@ -563,6 +565,7 @@ confirmBtn.addEventListener("click", async () => {
          await addDoc(collection(db, "Notifications"), {
             userID: user.uid,
             clinicID: selectedClinicId,
+            clinicName: selectedClinicName,
             type: "appointment",
             title: "Appointment Confirmed",
             message: `Your appointment for ${reason} has been booked for ${date} at ${time}.`,
