@@ -1,6 +1,6 @@
 // signup firebse code 
 
-
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
@@ -15,15 +15,19 @@
 
         const app  = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
         // If not signed in, redirect back to login
         onAuthStateChanged(auth, (user) => {
-            if (!user) window.location.href = "/index.html";
+            if (!user) window.location.href = "../index.html";
         });
-
+       
         // Sign out
         window.signOut = async function() {
             await signOut(auth);
             window.location.href = "/index.html";
         };
+
+         //to make them accessable on other filees
+        export { auth, db, signOut, onAuthStateChanged }
    
