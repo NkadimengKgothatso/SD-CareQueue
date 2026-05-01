@@ -7,6 +7,7 @@ import {
   orderBy,
   onSnapshot,
   doc,
+  getDocs,
   updateDoc,
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -21,15 +22,7 @@ let currentFilter = "all";
 const listEl = document.getElementById("notifList");
 const toastEl = document.getElementById("toast");
 
-function showToast(msg) {
-  if (!toastEl) return;
-  toastEl.textContent = msg;
-  toastEl.classList.add("show");
 
-  setTimeout(() => {
-    toastEl.classList.remove("show");
-  }, 2200);
-}
 
 onAuthStateChanged(auth, (user) => {
   if (!user) {
@@ -43,10 +36,9 @@ onAuthStateChanged(auth, (user) => {
 
 function loadNotifications(userID) {
   const q = query(
-    collection(db, "Notifications"),
-    where("userID", "==", userID),
-    orderBy("createdAt", "desc")
-  );
+  collection(db, "Notifications"),
+  where("userID", "==", userID)
+);
 
   onSnapshot(
     q,
@@ -54,30 +46,32 @@ function loadNotifications(userID) {
       notifications = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
 
-        return {
+         return {
           id: docSnap.id,
           type: data.type || "appointment",
           icon: getIcon(data.type),
           unread: data.read === false,
+          name : data.clinicName,
           title: data.title || "Notification",
           msg: data.message || "",
+          createdAt: data.createdAt, // keep raw timestamp
           time: formatTime(data.createdAt),
-
-          // clinicID is an integer, this handles it correctly
-          tags:
-            data.clinicID !== undefined && data.clinicID !== null
-              ? [`Clinic ID: ${data.clinicID}`]
-              : [],
-
+          tags: data.clinicName ? [`Clinic: ${data.clinicName}`] : [],
           urgent: data.type === "queue"
         };
+      });
+
+       notifications.sort((a, b) => {
+        if (!a.createdAt || !b.createdAt) return 0;
+
+        return b.createdAt.seconds - a.createdAt.seconds;
       });
 
       render();
     },
     (error) => {
       console.error("Error loading notifications:", error);
-      showToast("Failed to load notifications");
+      alert("Failed to load notifications");
     }
   );
 }
@@ -129,7 +123,8 @@ function render() {
 
       <div class="body">
         <div class="title">
-          <span>${n.title}</span>
+          <span>${n.title} At ${n.name} </span>
+          
           <span class="time">${n.time}</span>
         </div>
 
@@ -184,13 +179,13 @@ listEl.addEventListener("click", async (e) => {
       read: true
     });
 
-    showToast("Marked as read");
+    alert("Marked as read");
   }
 
   if (btn.dataset.action === "dismiss") {
     await deleteDoc(doc(db, "Notifications", id));
 
-    showToast("Notification dismissed");
+    alert("Notification deleted");
   }
 });
 
@@ -218,7 +213,7 @@ document.getElementById("markAllBtn").addEventListener("click", async () => {
     });
   }
 
-  showToast("All notifications marked as read");
+  alert("All notifications marked as read");
 });
 
 document.getElementById("clearBtn").addEventListener("click", async () => {
@@ -228,5 +223,5 @@ document.getElementById("clearBtn").addEventListener("click", async () => {
     await deleteDoc(doc(db, "Notifications", n.id));
   }
 
-  showToast("All notifications cleared");
+  alert("All notifications cleared");
 });
