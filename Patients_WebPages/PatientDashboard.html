@@ -4,18 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Care Queue — Patient Dashboard</title>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="sidebar.css">
-   
-    
+    <!-- a-sidebar.css MUST load first — defines all CSS variables -->
+    <link rel="stylesheet" href="a-sidebar.css">
+    <link rel="stylesheet" href="patientDashboard.css">
+</head>
+
 <body>
 
-<!-- TOP BAR (optional if you have it) -->
+<!-- TOP BAR -->
 <header class="top-bar">
-    <nav class="logo">
-        <span class="logo-icon">+</span>
+    <section class="logo">
+        <section class="logo-icon"></section>
         <span class="logo-name">Care Queue</span>
-    </nav>
+    </section>
 
     <button class="sign-out-btn" onclick="signOut()">
         <i class="fa-solid fa-right-from-bracket"></i> Sign Out
@@ -23,172 +26,151 @@
 </header>
 
 <!-- MAIN LAYOUT -->
-<main class="container">
+<section class="admin-container">
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
-        <nav>
-            <ul>
-                <li class="active">
-                    <a href="PatientDashboard.html">
-                        <i class="fa-solid fa-chart-bar"></i> Dashboard
-                    </a>
-                </li>
-                <li>
-                    <a href="BookAppointments.html">
-                        <i class="fa-solid fa-calendar-plus"></i> Book Appointment
-                    </a>
-                </li>
-                <li>
-                    <a href="MyAppointments.html">
-                        <i class="fa-solid fa-calendar-check"></i> My Appointments
-                    </a>
-                </li>
-               
-                <li>
-                    <a href="patientNotifications.html" >
-                        <i class="fa-solid fa-bell"></i> Notifications
-                    </a>
-                </li>
-            </ul>
+        <nav class="sidebar-nav">
+
+            <section class="nav-item active" onclick="window.location.href='PatientDashboard.html'">
+                <section class="nav-dot"></section>
+                <span>Dashboard</span>
+            </section>
+
+            <section class="nav-item" onclick="window.location.href='BookAppointments.html'">
+                <section class="nav-dot"></section>
+                <span>Book Appointment</span>
+            </section>
+
+            <section class="nav-item" onclick="window.location.href='MyAppointments.html'">
+                <section class="nav-dot"></section>
+                <span>My Appointments</span>
+            </section>
+
+            <section class="nav-item" onclick="window.location.href='patientNotifications.html'">
+                <section class="nav-dot"></section>
+                <span>Notifications</span>
+            </section>
+
         </nav>
 
-        <section class="user-section">
-            <i class="fa-solid fa-user"></i>
-            <address>
-                <p class="name-surname" id="userName"></p>
-                <p class="user-identity" id="userRole"></p>
-            </address>
+        <!-- USER PANEL -->
+        <section class="sidebar-footer">
+            <section class="user-info">
+                <section class="user-avatar" id="patientAvatar">PT</section>
+                <section class="user-details">
+                    <section class="user-name" id="userName">Patient Name</section>
+                    <!-- userRole: referenced by JS, hidden visually but must exist in DOM -->
+                    <section class="user-email" id="userEmail">patient@email.com</section>
+                    <span id="userRole" style="display:none;"></span>
+                </section>
+            </section>
         </section>
     </aside>
 
+    <!-- MAIN CONTENT -->
+    <section class="main-content">
 
+        <!-- PAGE HEADER -->
+        <header class="section-header">
+            <h1 id="welcomeMessage"></h1>
+            <p id="currentDate"></p>
+        </header>
 
+        <!-- ══ EMPTY STATE ══ -->
+        <section id="emptyStates" style="display:none;">
 
+            <section class="appt-section">
+                <header class="section-header">
+                    <h2 class="section-label">Next Appointment</h2>
+                </header>
 
+                <article class="appointment-card">
+                    <p class="card-clinic">No Upcoming Appointments</p>
+                    <ul class="card-meta">
+                        <li>You currently have no upcoming appointments</li>
+                    </ul>
+                    <nav class="appointment-actions">
+                        <a href="BookAppointments.html">
+                            <button class="primary-btn">
+                                <i class="fa-solid fa-plus"></i> Book Appointment
+                            </button>
+                        </a>
+                    </nav>
+                </article>
+            </section>
 
+            <section class="appt-section">
+                <header class="section-header">
+                    <h2 class="section-label">Current Queue Status</h2>
+                </header>
+                <article class="empty-card">
+                    <p>No active queue</p>
+                </article>
+            </section>
 
-   <!-- MAIN CONTENT -->
-<section class="main-content">
-
-    <!-- HEADER -->
-    <header class="section-header">
-        <h1 id="welcomeMessage"></h1>
-        <p id="currentDate"></p>
-    </header>
-
-    <!-- EMPTY STATE (set to hidden for demo) -->
-    <section id="emptyStates" style="display:none;">
-
-        <!-- NEXT APPOINTMENT -->
-        <section class="appt-section">
-            <header class="section-header">
-                <h2 class="section-label">Next Appointment</h2>
-            </header>
-
-            <article class="appointment-card">
-                <p class="card-clinic">No Upcoming Appointments</p>
-
-                <ul class="card-meta">
-                    <li>You currently have no upcoming appointments</li>
-                </ul>
-
-                <nav class="appointment-actions">
-                    <a href="BookAppointments.html">
-                        <button class="primary-btn">Book Appointment</button>
-                    </a>
-                </nav>
-            </article>
         </section>
+        <!-- ══ END EMPTY STATE ══ -->
 
-        <!-- QUEUE EMPTY -->
-        <section class="appt-section">
-            <header class="section-header">
-                <h2 class="section-label">Current Queue Status</h2>
-            </header>
+        <!-- ══ FILLED STATE ══ -->
+        <section id="filledStates">
 
-            <article class="empty-card">
-                <p>No active queue</p>
-            </article>
-        </section>
+            <!-- NEXT APPOINTMENT — JS writes into appointmentsContainer -->
+            <section class="appt-section">
+                <header class="section-header">
+                    <h2 class="section-label">Next Appointment</h2>
+                </header>
+                <article id="appointmentsContainer"></article>
+            </section>
 
-    </section>
-
-    <!-- FILLED STATE (VISIBLE FOR DEMO) -->
-    <section class="container" id="filledStates">
-
-        <!-- NEXT APPOINTMENT -->
-        <!-- NEXT APPOINTMENT -->
-        <section class="appt-section">
-            <header class="section-header">
-                <h2 class="section-label">Next Appointment</h2>
-            </header>
-
-            <article id="appointmentsContainer">
-                
-            </article>
-        </section>
-
-        
-
-       <!-- QUEUE -->
+            <!-- QUEUE STATUS -->
             <section class="appt-section">
                 <header class="section-header">
                     <h2 class="section-label">Current Queue Status</h2>
                 </header>
 
-                <!-- STATS GRID (COMBINED) -->
+                <!-- STAT CARDS -->
                 <ul class="stats-grid">
-
                     <li class="stat-card green">
                         <h3>Visits This Year</h3>
-                        <p id="visitsCount"></p>
+                        <p id="visitsCount">—</p>
                     </li>
-
                     <li class="stat-card green">
                         <h3>Position in Queue</h3>
-                        <p id="queuePosition"></p>
+                        <p id="queuePosition">—</p>
                     </li>
-
                     <li class="stat-card green">
                         <h3>Est. Wait Time</h3>
-                        <p id="waitTime"></p>
+                        <p id="waitTime">—</p>
                     </li>
-
                 </ul>
 
-    <!-- QUEUE STATUS CARD -->
-    <article class="queue-status-card">
+                <!-- QUEUE CARD -->
+                <article class="queue-status-card">
+                    <header class="queue-top">
+                        <h3 id="queueCount">Loading queue...</h3>
+                        <span class="queue-tag">Live</span>
+                    </header>
 
-        <header class="queue-top">
-            <h3 id="queueCount"></h3>
-            <span class="queue-tag">Live</span>
-        </header>
+                    <p class="queue-sub" id="queueProgressText"></p>
 
-        <p class="queue-sub" id="queueProgressText"></p>
+                    <section class="progress-section">
+                        <header class="progress-header">
+                            <span>Queue Progress</span>
+                            <span id="progressPercent">0%</span>
+                        </header>
+                        <meter id="queueMeter" value="0" min="0" max="100"></meter>
+                    </section>
+                </article>
 
-        <section class="progress-section">
-            <header class="progress-header">
-                <span>Queue Progress</span>
-                <span id="progressPercent"></span>
-            </header>
+            </section>
 
-            <meter
-                id="queueMeter"
-                value="45"
-                min="0"
-                max="100">
-            </meter>
         </section>
+        <!-- ══ END FILLED STATE ══ -->
 
-    </article>
-</section>
+    </section><!-- END MAIN CONTENT -->
 
-    </section>
-
-</section>
-
-</main>
+</section><!-- END LAYOUT -->
 
 <script type="module" src="firebase.js"></script>
 <script type="module" src="PatientDashboard.js"></script>

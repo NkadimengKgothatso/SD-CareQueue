@@ -1,0 +1,562 @@
+/* ══════════════════════════════════════════════════════
+   patientDashboard.css  —  Care Queue  |  Patient Dashboard
+   Page-specific styles: header, appointments, stats, queue
+   Depends on: a-sidebar.css  (must be loaded first)
+══════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════
+   PAGE LOAD ANIMATION
+══════════════════════════════════════════ */
+body {
+    opacity: 0;
+    animation: pageFadeIn 0.45s ease forwards;
+}
+
+@keyframes pageFadeIn {
+    to { opacity: 1; }
+}
+
+/* ══════════════════════════════════════════
+   PAGE HEADER / WELCOME
+══════════════════════════════════════════ */
+.section-header {
+    margin-bottom: 6px;
+}
+
+.section-header h1 {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--color-text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.section-header > p {
+    font-size: 13px;
+    color: var(--color-text-tertiary);
+    margin-top: 5px;
+}
+
+/* Sub-section labels (e.g. "Next Appointment") */
+.section-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-brand-deeper);
+    margin-bottom: 12px;
+}
+
+/* ══════════════════════════════════════════
+   APPOINTMENT SECTIONS
+══════════════════════════════════════════ */
+.appt-section {
+    margin-top: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ══════════════════════════════════════════
+   APPOINTMENT CARD
+══════════════════════════════════════════ */
+.appointment-card {
+    display: flex;
+    gap: 12px;
+    padding: 18px 20px;
+    border-radius: var(--border-radius-lg);
+    background: var(--color-background-primary);
+    border: 1px solid var(--color-border-tertiary);
+    box-shadow: var(--shadow-sm);
+    width: 100%;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    transition: box-shadow var(--transition-base);
+}
+
+/* Accent stripe on left edge */
+.appointment-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(to bottom, var(--color-brand), var(--color-brand-dark));
+    border-radius: 4px 0 0 4px;
+}
+
+.appointment-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* ── Card body (flex column inside card) ── */
+.card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ── Card header row (title + badge) ── */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+/* ── Clinic title (simple variant, no card-body) ── */
+.card-clinic {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    padding-left: 4px;
+    margin-bottom: 10px;
+}
+
+/* ── Meta list ── */
+.card-meta {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.card-meta li {
+    font-size: 13.5px;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+}
+
+/* ── Info stack (icon + text rows) ── */
+.info-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.info-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+}
+
+.info-row i {
+    width: 16px;
+    color: var(--color-text-tertiary);
+    flex-shrink: 0;
+}
+
+/* ── Card footer row ── */
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+/* ── Appointment actions row ── */
+.appointment-actions {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+}
+
+/* ══════════════════════════════════════════
+   STATUS BADGES
+══════════════════════════════════════════ */
+.status-badge {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: capitalize;
+    flex-shrink: 0;
+}
+
+.status-badge.scheduled {
+    background: var(--color-brand-soft);
+    color: var(--color-brand-deeper);
+}
+
+.status-badge.cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-badge.completed {
+    background: #e0f2fe;
+    color: #075985;
+}
+
+/* ══════════════════════════════════════════
+   BUTTONS
+══════════════════════════════════════════ */
+
+/* Primary action button */
+.primary-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+    color: white;
+    border: none;
+    padding: 9px 18px;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    box-shadow: 0 2px 8px rgba(16,185,129,0.30);
+    transition: var(--transition-fast);
+    text-decoration: none;
+}
+
+.primary-btn:hover {
+    background: linear-gradient(135deg, var(--color-brand-dark), var(--color-brand-deeper));
+    box-shadow: 0 4px 14px rgba(16,185,129,0.40);
+    transform: translateY(-1px);
+}
+
+.primary-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(16,185,129,0.25);
+}
+
+/* View / secondary button */
+.view-btn {
+    padding: 6px 14px;
+    border-radius: var(--border-radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    background: var(--color-brand-soft);
+    color: var(--color-brand-deeper);
+    transition: var(--transition-fast);
+    font-family: var(--font-body);
+}
+
+.view-btn:hover {
+    background: var(--color-brand-dark);
+    color: white;
+}
+
+/* ══════════════════════════════════════════
+   EMPTY STATE
+══════════════════════════════════════════ */
+#emptyStates {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.empty-card {
+    background: linear-gradient(135deg, #f9fafb, #ffffff);
+    border: 1.5px dashed var(--color-border-primary);
+    border-radius: var(--border-radius-lg);
+    padding: 32px 20px;
+    text-align: center;
+    color: var(--color-text-tertiary);
+    font-size: 14px;
+    font-weight: 500;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.empty-card::before {
+    content: "📭";
+    display: block;
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.empty-card:hover {
+    border-color: var(--color-brand);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    transform: translateY(-2px);
+}
+
+.empty-card p {
+    margin: 0;
+}
+
+/* ══════════════════════════════════════════
+   STATS GRID
+══════════════════════════════════════════ */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 4px;
+    list-style: none;
+    padding: 0;
+}
+
+.stat-card {
+    background: var(--color-background-primary);
+    border: 1px solid var(--color-border-tertiary);
+    border-left: 4px solid var(--color-brand);
+    border-radius: var(--border-radius-lg);
+    padding: 20px 16px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow var(--transition-base), transform var(--transition-base);
+    box-sizing: border-box;
+}
+
+.stat-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* Brand accent top strip */
+.stat-card.green::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(to right, var(--color-brand), var(--color-brand-dark));
+}
+
+.stat-card h3 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+    margin-bottom: 10px;
+}
+
+.stat-card p {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--color-text-primary);
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+/* ══════════════════════════════════════════
+   QUEUE STATUS CARD
+══════════════════════════════════════════ */
+.queue-status-card {
+    margin-top: 14px;
+    background: var(--color-background-primary);
+    border: 1px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 20px 22px;
+    box-shadow: var(--shadow-sm);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Header row */
+.queue-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.queue-top h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+/* Live badge */
+.queue-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--color-brand-soft);
+    color: var(--color-brand-deeper);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* Pulsing dot */
+.queue-tag::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: var(--color-brand);
+    border-radius: 50%;
+    animation: pulse-dot 1.8s infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* Sub text */
+.queue-sub {
+    margin-top: 10px;
+    color: var(--color-text-secondary);
+    font-size: 13.5px;
+}
+
+/* ── Progress bar ── */
+.progress-section {
+    margin-top: 16px;
+    max-width: 100%;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+/* Native <meter> styling */
+meter {
+    display: block;
+    width: 100%;
+    height: 10px;
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    border-radius: 99px;
+    overflow: hidden;
+    background: var(--color-border-tertiary);
+}
+
+meter::-webkit-meter-bar {
+    background: var(--color-border-tertiary);
+    border: none;
+    border-radius: 99px;
+}
+
+meter::-webkit-meter-optimum-value {
+    background: linear-gradient(to right, var(--color-brand), var(--color-brand-dark));
+    border-radius: 99px;
+}
+
+meter::-moz-meter-bar {
+    background: linear-gradient(to right, var(--color-brand), var(--color-brand-dark));
+    border-radius: 99px;
+}
+
+/* Custom progress track (JS-driven alternative to <meter>) */
+.progress-track {
+    width: 100%;
+    height: 10px;
+    background: var(--color-border-tertiary);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--color-brand), var(--color-brand-dark));
+    border-radius: 99px;
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ══════════════════════════════════════════
+   ACTIVE NAV HIGHLIGHT (page-level override)
+══════════════════════════════════════════ */
+aside nav ul li a.active {
+    background: var(--color-brand-soft);
+    color: var(--color-brand-dark);
+    font-weight: 600;
+}
+
+/* ══════════════════════════════════════════
+   SECTION REVEAL ANIMATIONS
+══════════════════════════════════════════ */
+.appt-section,
+.section-header,
+.stats-grid {
+    animation: fade-up 0.4s ease both;
+}
+
+.appt-section:nth-of-type(2) { animation-delay: 0.08s; }
+.appt-section:nth-of-type(3) { animation-delay: 0.16s; }
+
+@keyframes fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-header h1 {
+        font-size: 22px;
+    }
+
+    .stat-card p {
+        font-size: 24px;
+    }
+
+    .queue-status-card,
+    .appointment-card {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .appointment-actions {
+        flex-direction: column;
+    }
+
+    .primary-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
+
+/* ══════════════════════════════════════════
+   JS-TOGGLED STATE CONTAINERS
+   JS sets display:none / display:flex on these
+══════════════════════════════════════════ */
+#filledStates,
+#emptyStates {
+    width: 100%;
+}
+
+/* Reserve space while JS populates these */
+#welcomeMessage   { min-height: 1.3em; }
+#currentDate      { min-height: 1em; }
+#visitsCount,
+#queuePosition,
+#waitTime         { min-height: 1em; }
