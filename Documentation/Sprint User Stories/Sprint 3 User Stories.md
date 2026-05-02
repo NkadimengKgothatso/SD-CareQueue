@@ -106,20 +106,26 @@ so that I can understand clinic efficiency and improve operational decisions.
 <!-- USER STORY 4 -->
 <tr>
 <td>4</td>
-<td></td>
+<td>As a system, I want to send notifications when a patient is 2nd in the queue, so that they can prepare and not miss their turn.</td>
 <td>
 <ul>
-<li></li>
-<li></li>
+<li>Given that a patient is not logged into the system, when their turn is near, then the notification should be sent via an email alerting the user that their appointment time is near</li>
+<li>Given that a patient is logged into the system, when their turn is near, then the notification should displayed on the notifications page</li>
+<li>Given that a patient is still far from their turn in the queue, when the system updates the queue, then no notification should be sent to that patient, ensuring that notifications are only triggered at the correct time.</li>
+<li>Given that a patient is in the queue , When their position is close to being called, then the system should send a notification to the patient informing them that their turn is near.</li>
+<li>Given that a notification is sent to a patient, when the patient receives the notification, then the message should clearly indicate that their turn is near and that they should be ready, ensuring the information is understandable.</li>
 </ul>
 </td>
 <td>
 <ul>
-<li></li>
-<li></li>
+<li>Create UI for notification page</li>
+<li>Create clear notification message</li>
+<li>Integrate email notification service</li>
+<li>Ensure real-time updates trigger notifications correctly</li>
+<li>Send notification to the correct patient</li>
 </ul>
 </td>
-<td align="center"></td>
+<td align="center">8</td>
 </tr>
 
 <!-- USER STORY 5 -->
