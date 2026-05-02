@@ -131,17 +131,18 @@ so that I can understand clinic efficiency and improve operational decisions.
 <!-- USER STORY 5 -->
 <tr>
 <td>5</td>
-<td></td>
+<td> As a user, I want to filter clinics by province or services, so that I can easily find relevant clinics </td>
 <td>
 <ul>
-<li></li>
-<li></li>
+<li>Update filtering function to include services</li>
+<li>Update filtering function to include province</li>
+<li>Implement the hours button functionality</li>
 </ul>
 </td>
 <td>
 <ul>
-<li></li>
-<li></li>
+<li>Given a user types a province on the search bar, Then the system should filter and display clinics in that province so that the user looks at clinic which are in that province. </li>
+<li>Given a user types a service in the search bar, Then the system should filter and display clinics which offer that particular service, So that the user can look at clinics which offer those services.</li>
 </ul>
 </td>
 <td align="center"></td>
