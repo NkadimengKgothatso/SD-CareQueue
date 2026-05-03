@@ -151,19 +151,24 @@ so that I can understand clinic efficiency and improve operational decisions.
 <!-- USER STORY 6 -->
 <tr>
 <td>6</td>
-<td></td>
+<td>As clinic staff, I want to reschedule and cancel appointments so that I can manage patient bookings efficiently and keep the schedule accurate</td>
+
 <td>
 <ul>
-<li></li>
-<li></li>
+<li><b>Given</b> I am logged in as clinic staff <b>when</b> I reschedule an appointment to an available slot <b>then</b> the appointment is updated and the old slot becomes available</li>
+<li><b>Given</b> a time slot is already booked <b>when</b> I try to reschedule an appointment into that slot <b>then</b> the system prevents the action and shows an error</li>
+<li><b>Given</b> I am viewing an appointment <b>when</b> I choose to cancel it and confirm <b>then</b> the appointment is removed from the schedule</li>
 </ul>
 </td>
+
 <td>
 <ul>
-<li></li>
-<li></li>
+<li>Validate that selected time slots are available before confirming changes</li>
+<li>Release previously booked time slots after rescheduling or cancellation</li>
+<li>Implement confirmation prompts for cancellation actions</li>
 </ul>
 </td>
+
 <td align="center"></td>
 </tr>
 
