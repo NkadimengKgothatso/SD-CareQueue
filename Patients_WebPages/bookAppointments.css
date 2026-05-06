@@ -87,17 +87,7 @@ span.logo-name {
     gap: 15px;
 }
 
-/* Sidebar */
-aside {
-    width: 19%;
-    background-color: var(--brand-dark);
-    padding: 20px;
-    border-radius: var(--radius-md);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-}
+
 
 aside ul {
     list-style: none;

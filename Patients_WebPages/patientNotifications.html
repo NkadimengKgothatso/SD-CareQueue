@@ -5,576 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notifications | Care Queue</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="bookAppointments.css">
-    <link rel="stylesheet" href="patientNotifications.css">   
-    <style>
-        /* ===== RESET ===== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Segoe UI", sans-serif;
-}
-
-body {
-    display: flex;
-    flex-direction: column;
-    background:white;
-    color: #1e1e1e;
-}
-
-/* ===== TOP BAR ===== */
-.top-bar {
-    height: 60px;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 20px;
-    border-bottom: 1px solid #ddd;
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.logo-icon {
-    width: 30px;
-    height: 30px;
-    background: #1f9d7a;
-    border-radius: 8px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: white;
-    font-weight: bold;
-    font-size: 30px;
-    text-align: justify;
-}
-
-.logo-name {
-    font-weight: 600;
-    font-size: 18px;
-}
-
-/* ===== MAIN LAYOUT ===== */
-.container {
-    display: flex;
-    height: calc(100vh - 60px);
-    align-items: flex-start;
-    width: 100%;
-}
-
-/* ===== SIDEBAR ===== */
-.sidebar {
-    width: 240px;
-    height: 100%;
-    background: white;
-    padding: 20px 0;
-    border-right: 1px solid #ddd;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-/* SIDEBAR NAV */
-.sidebar ul {
-    list-style: none;
-}
-
-.sidebar li {
-    margin: 10px 0;
-}
-
-.sidebar a {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 20px;
-    text-decoration: none;
-    color: #333;
-    transition: 0.3s;
-    border-radius: 8px;
-}
-
-
-
-/* USER SECTION */
-.user-section {
-    padding: 15px 20px;
-    border-top: 1px solid #eee;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.name-surname {
-    font-weight: 600;
-}
-
-.user-identity {
-    font-size: 12px;
-    color: gray;
-}
-
-
-
-/* ===== MAIN CONTENT ===== */
-.main-content {
-    flex: 1;
-    padding: 30px;
-    overflow-y: auto;
-    width: 100%;
-    max-width: none; 
-}
-/* ===== HEADER ===== */
-.section-header h1 {
-    font-size: 24px;
-    font-weight: 600;
-
+    <link rel="stylesheet" href="a-sidebar.css">
+    <link rel="stylesheet" href="patientDashboard.css">
     
-}
+    <link rel="stylesheet" href="patientNotifications.css">
 
-.section-header p {
-    color: #6b7280;
-    margin-top: 5px;
-}
-
-
-.sign-out-btn {
-    background: #ef4444;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-}
-
-/* Hover effect */
-.sign-out-btn:hover {
-    background: #dc2626;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
-}
-
-/* Click effect */
-.sign-out-btn:active {
-    transform: translateY(0px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* ===== SECTION ===== */
-.appt-section {
-    margin-top: 30px;
-}
-
-.section-label {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 15px;
-     color:#1f9d7a;
-}
-
-/* ===== APPOINTMENT CARD ===== */
-.appointment-card {
-    display: flex;
-    gap: 12px;
-    padding: 16px;
-    border-radius: 12px;
-    background: #fff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    width: 100%;
-    position: relative;
-    border: 1px solid #e5e7eb;
-    box-sizing: border-box;
-}
-
-/* ===== STATUS BADGE ===== */
-.status-badge {
-    font-size: 12px;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 20px;
-    text-transform: capitalize;
-}
-
-.status-badge.scheduled {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.status-badge.cancelled {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.status-badge.completed {
-    background: #e0f2fe;
-    color: #075985;
-}
-
-
-
-/* ===== BODY ===== */
-.card-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-/* clinic title */
-.card-header h2 {
-    font-size: 15px;
-    font-weight: 600;
-    margin: 0;
-}
-
-/* ===== INFO STACK ===== */
-.info-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.info-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: #6d806b;
-}
-
-.info-row i {
-    width: 16px;
-    color: #6b7280;
-}
-
-/* ===== FOOTER ===== */
-.card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 8px;
-}
-
-
-
-/* ===== VIEW BUTTON ===== */
-.view-btn {
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    border: none;
-    cursor: pointer;
-
-    background: #dcfce7;
-    color: #166534;
-
-    transition: 0.2s ease;
-}
-
-.view-btn:hover {
-    background: #166534;
-}
-
-
-/* ===== EMPTY STATE WRAPPER ===== */
-#emptyStates {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-/* ===== EMPTY CARD (UPGRADED) ===== */
-.empty-card {
-    background: linear-gradient(135deg, #f9fafb, #ffffff);
-    border: 1px dashed #d1d5db;
-    padding: 30px 20px;
-    border-radius: 16px;
-    color: #6b7280;
-    text-align: center;
-    width: 100%;
-    box-sizing: border-box;
-    transition: all 0.3s ease;
-}
-
-/* subtle hover effect */
-.empty-card:hover {
-    border-color: #10b981;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-    transform: translateY(-2px);
-}
-
-/* ===== EMPTY TEXT ===== */
-.empty-card p {
-    font-size: 15px;
-    font-weight: 500;
-    margin: 0;
-}
-
-/* ===== ICON (OPTIONAL BUT RECOMMENDED) ===== */
-.empty-card::before {
-    content: "📭";
-    display: block;
-    font-size: 28px;
-    margin-bottom: 10px;
-}
-
-
-
-/* ===== CLINIC TITLE ===== */
-.card-clinic {
-    font-size: 16px;
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 10px;
-}
-
-/* ===== META TEXT ===== */
-.card-meta {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 15px 0;
-}
-
-.card-meta li {
-    font-size: 14px;
-    color: #6b7280;
-}
-
-/* ===== BUTTON ===== */
-.primary-btn {
-    background: #10b981;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.primary-btn:hover {
-    background: #059669;
-    transform: scale(1.03);
-}
-
-/* ===== SECTION SPACING ===== */
-.appt-section {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-/* ===== STATS GRID ===== */
-.stats-grid {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-/* ===== STAT CARD ===== */
-.stat-card {
-    flex: 1;
-    max-width: 100%;
-    padding: 20px;
-    border-radius: 10px;
-    background: white;
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    box-sizing: border-box;
-}
-
-.stat-card h3 {
-    font-size: 14px;
-    color: #6b7280;
-    margin-bottom: 8px;
-}
-
-.stat-card p {
-    font-size: 22px;
-    font-weight: bold;
-}
-
-/* ===== QUEUE CARD ===== */
-.queue-status-card {
-    background: white;
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 10px;
-    max-width: 100%;
-    width: 100%;
-    box-sizing: border-box;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-
-    
-}
-
-/* QUEUE HEADER */
-.queue-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-
-/* FIX: remove default margin */
-.queue-top h3 {
-    font-size: 18px;
-    margin: 0;
-}
-
-/* LIVE TAG */
-.queue-tag {
-    background: #1f9d7a;
-    color: white;
-    font-size: 12px;
-    padding: 4px 10px;
-    border-radius: 20px;
-}
-
-/* QUEUE TEXT */
-.queue-sub {
-    margin-top: 10px;
-    color: #6b7280;
-    font-size: 14px;
-}
-
-/* ===== PROGRESS ===== */
-.progress-section {
-    margin-top: 15px;
-  max-width: 100%;
-}
-
-.progress-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    margin-bottom: 5px;
-}
-
-
-.stat-card {
-    flex: 1;
-    padding: 20px;
-    border-radius: 12px;
-    background: #fff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-
-    text-align: center;
-    transition: all 0.25s ease;
-}
-
-.stat-card h3 {
-    font-size: 14px;
-    color: #6b7280;
-    margin-bottom: 8px;
-}
-
-.stat-card p {
-    font-size: 22px;
-    font-weight: bold;
-}
-.stat-card.green {
-    border-left: 5px solid #1f9d7a;
-}
-
-
-/* ===== METER ===== */
-meter {
-    width: 100%;
-    height: 10px;             
-    border-radius: 10px;
-    overflow: hidden;         
-}
-
-/* Firefox support */
-meter::-moz-meter-bar {
-    background: #1f9d7a;
-    border-radius: 10px;
-}
-
-/* Chrome / Edge */
-meter::-webkit-meter-bar {
-    background: #e5e7eb;
-    border-radius: 10px;
-}
-
-meter::-webkit-meter-optimum-value {
-    background: #1f9d7a;
-    border-radius: 10px;
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-    .container {
-    display: flex;
-    height: calc(100vh - 60px);
-    align-items: flex-start;
-    width: 100%;
-    }
-
-    .sidebar {
-        width: 100%;
-        height: auto;
-    }
-
-    .main-content {
-        padding: 20px;
-        max-width: 100%;
-    }
-
-    .stats-grid {
-        flex-direction: column;
-        list-style: none;
-    }
-}
-
-/* active page highlight */
-aside nav ul li a.active {
-    background: #dff3ec;
-    color: #1f9d7a;
-    font-weight: bold;
-}
-
-
-ul {
-    list-style: none;
-    padding-left: 0;
-    margin: 0;
-}
-
-body {
-    opacity: 0;
-    animation: pageFadeIn 0.5s ease forwards;
-}
-
-@keyframes pageFadeIn {
-    to {
-        opacity: 1;
-    }
-}
-
-
-
-    </style>
     
 </head>
 <body>
@@ -594,27 +29,47 @@ body {
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
-        <nav>
-            <ul>
-                <li><a href="PatientDashboard.html"><i class="fa-solid fa-chart-bar"></i> Dashboard</a></li>
+        <nav class="sidebar-nav">
 
-                <li><a href="BookAppointments.html"><i class="fa-solid fa-calendar-plus"></i> Book Appointment</a></li>
+            <section class="nav-item active" onclick="window.location.href='PatientDashboard.html'">
+                <section class="nav-dot"></section>
+                <span>Dashboard</span>
+            </section>
 
-                <li><a href="MyAppointments.html"><i class="fa-solid fa-calendar-check"></i> My Appointments</a></li>
+            <section class="nav-item" onclick="window.location.href='BookAppointments.html'">
+                <section class="nav-dot"></section>
+                <span>Book Appointment</span>
+            </section>
 
-               
-                <li><a href="patientNotifications.html"><i class="fa-solid fa-bell"></i> Notifications</a></li>
-            </ul>
+            <section class="nav-item" onclick="window.location.href='MyAppointments.html'">
+                <section class="nav-dot"></section>
+                <span>My Appointments</span>
+            </section>
+
+            <section class="nav-item" onclick="window.location.href='patientNotifications.html'">
+                <section class="nav-dot"></section>
+                <span>Notifications</span>
+                <span id="sidebarUnreadCount" class="sidebar-badge">0</span>
+            </section>
+
         </nav>
 
-        <section class="user-section">
-            <i class="fa-solid fa-user"></i>
-            <address>
-                <p class="name-surname" id="userName"></p>
-                <p class="user-identity" id="userRole"></p>
-            </address>
+        <!-- USER PANEL -->
+        <section class="sidebar-footer">
+            <section class="user-info">
+                <section class="user-avatar" id="patientAvatar">PT</section>
+                <section class="user-details">
+                    <section class="user-name" id="userName">Patient Name</section>
+                    <!-- userRole: referenced by JS, hidden visually but must exist in DOM -->
+                    <section class="user-email" id="userEmail">patient@email.com</section>
+                    <span id="userRole" style="display:none;"></span>
+                </section>
+            </section>
         </section>
     </aside>
+
+
+
         <main class="main-content">
 
           <div class="page-head">
@@ -642,9 +97,10 @@ body {
         </main>
 
     </section>
-
-    <script type="module" src="patientNotifications.js"></script>
-    <script type="module" src="firebase.js"></script>
     <script type="module" src="PatientDashboard.js"></script>
+    <script type="module" src="patientNotifications.js"></script>
+    <script type="module" src="sidebarNotifications.js"></script>
+    <script type="module" src="firebase.js"></script>
+    
 </body>
 </html>
