@@ -318,6 +318,24 @@ html, body {
 }
 
 /* ══════════════════════════════════════════
+   NOTIFICATION TAB
+══════════════════════════════════════════ */
+
+.sidebar-badge {
+  background: #0b8f6a;
+  color: white;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+.sidebar-badge.hidden {
+  display: none;
+}
+
+/* ══════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════ */
 @media (max-width: 768px) {
