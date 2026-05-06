@@ -22,17 +22,22 @@ let currentFilter = "all";
 const listEl = document.getElementById("notifList");
 const toastEl = document.getElementById("toast");
 
-
+const nameSurnameEl = document.getElementById("userName");
+const emailEl =  document.getElementById("userEmail");
 
 onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "../index.html";
-    return;
-  }
-
-  console.log("Logged in user UID:", user.uid);
-  loadNotifications(user.uid);
+    if (user) {
+        nameSurnameEl.textContent = user.displayName;
+        emailEl.textContent = user.email;
+        loadNotifications(user.uid);
+    } else {
+        nameSurnameEl.textContent = "Guest";
+        window.location.href = "../index.html";
+        return;
+    }
 });
+
+
 
 function loadNotifications(userID) {
   const q = query(
