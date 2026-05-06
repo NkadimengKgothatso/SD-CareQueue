@@ -25,11 +25,18 @@ const db = getFirestore(app);
 // DOM state containers
 let emptyStates, filledStates;
 
+//Email sender
+emailjs.init("jWEiS_k1FnVa1Zz5S");
+
 // Store clinics locally for fast lookup
 const clinicsMap = new Map();
 
 // Store unsubscribe function for real-time queue listener
 let queueUnsubscribe = null;
+
+//Name and email of patient 
+let patientName = "";
+let patientEmail = "";
 
 
 // ================= LOAD CLINICS =================
@@ -207,7 +214,8 @@ async function loadAppointments(userId) {
         `;
 
         // Load queue for this appointment
-        loadQueueStatus(userId, next.id, Number(next.clinicID));
+        
+        loadQueueStatus(userId, next.id, Number(next.clinicID), next, clinicName);
 
     } catch (error) {
         console.error("Firestore error:", error);
@@ -219,7 +227,7 @@ async function loadAppointments(userId) {
 // ================= LOAD QUEUE STATUS =================
 // Listens in real-time to the user's position in the clinic queue for their upcoming appointment and updates the dashboard accordingly
 // ================= LOAD QUEUE STATUS (FIXED) =================
-function loadQueueStatus(userId, appointmentId, clinicID) {
+function loadQueueStatus(userId, appointmentId, clinicID, appointment, clinicName) {
 
     if (queueUnsubscribe) queueUnsubscribe();
 
@@ -278,7 +286,7 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
             where("clinicID", "==", clinicID)
         );
 
-        clinicUnsubscribe = onSnapshot(clinicQ, (clinicSnapshot) => {
+        clinicUnsubscribe = onSnapshot(clinicQ, async (clinicSnapshot) => {
 
             // STEP 1: build sorted queue
             const sorted = clinicSnapshot.docs
@@ -297,6 +305,28 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
             );
 
             const position = userIndex !== -1 ? userIndex + 1 : total;
+
+            if (position === 2 && !queueData.secondPositionEmailSent) {
+                try {
+                    await emailjs.send("service_j8zb3jh", "template_neu0ubc", {
+                        email: patientEmail,
+                        name: patientName || "Patient",
+                        clinic_name: clinicName,
+                        appointment_reason: appointment.reason || "General Appointment",
+                        appointment_date: appointment.date,
+                        appointment_time: appointment.time
+                    });
+
+                    console.log("Email sent: patient is position 2");
+
+                } catch (error) {
+                    console.error("EmailJS failed:", error);
+                }
+            }
+
+
+
+
 
             // ================= UI: POSITION =================
             document.getElementById("queueCount").textContent =
@@ -421,6 +451,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
                 const name = data.displayName || "";
                 const email = user.email || "";
+
+                patientName = name;
+                patientEmail = email;
 
                 nameEl.textContent = name || "User";
                 roleEl.textContent = data.role || "Unknown";
