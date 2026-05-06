@@ -1,23 +1,17 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { db, auth } from "./firebase.js";
 
-// Firebase config
-const firebaseConfig = {
-    apiKey: "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
-    authDomain: "carequeue-284bb.firebaseapp.com",
-    projectId: "carequeue-284bb",
-    storageBucket: "carequeue-284bb.app",
-    messagingSenderId: "702048481855",
-    appId: "1:702048481855:web:1bb9675ecadb9e22043e8a"
-};
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
+import {
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 //J: status map for appointments statuses
 const statusMap = {
   Waiting: "waiting",
@@ -33,7 +27,8 @@ let selectedElement = null;
 // nameSurnameEl: element displaying the user's name and surname (selected by class)
 // upcomingList: container for upcoming items (selected by ID "upcoming")
 // pastList: container for past items (selected by ID "past")
-const nameSurnameEl = document.querySelector(".name-Surname");
+const nameSurnameEl = document.querySelector(".user-name");
+const emailEl = document.querySelector(".user-email");
 const upcomingList = document.getElementById("upcoming");
 const pastList = document.getElementById("past");
 
@@ -277,6 +272,7 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
 
         nameSurnameEl.textContent = user.displayName;
+        emailEl.textContent = user.email;
 
         await loadClinics();
 

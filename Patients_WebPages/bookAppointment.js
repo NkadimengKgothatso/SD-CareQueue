@@ -469,11 +469,13 @@ openNowBtn.addEventListener("click", () => {
 loadClinics();
 
 // display patient name on side bar
-const nameSurnameEl = document.getElementById("name-Surname");
+const nameSurnameEl = document.getElementById("userName");
+const emailEl =  document.getElementById("userEmail");
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
         nameSurnameEl.textContent = user.displayName;
+        emailEl.textContent = user.email;
     } else {
         nameSurnameEl.textContent = "Guest";
     }
