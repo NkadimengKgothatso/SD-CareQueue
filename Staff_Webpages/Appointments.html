@@ -3,27 +3,26 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">        
-        <title>Queue Management</title>
+        <title>Manage Appointments</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" >   
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
         <link rel="stylesheet" href="Staff.css">
-        
+        <script type="module" src="Appointments.js"></script>
     </head>
 
     <body>
     <!-- Top navigation bar -->
     <header class="top-bar">
         <nav class="logo">
-        <!-- Logo icon (green square with plus sign created with CSS) -->
-        <span class="logo-icon"></span>
-        <span class="logo-name" style="vertical-align: middle;">Care Queue</span>
+            <span class="logo-icon"></span>
+            <span class="logo-name" style="vertical-align: middle;">Care Queue</span>
         </nav>
     </header>
 
     <section class="container">
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
+        <!-- Sidebar -->
+        <aside class="sidebar">
 
             <nav class="sidebar-nav">
 
@@ -59,7 +58,6 @@
 
                 <section class="nav-item"
                     onclick="window.location.href='WalkIns.html'">
-
                     <section class="nav-dot"></section>
                     <span>Walk-in</span>
                 </section>
@@ -70,31 +68,61 @@
                 </section>
 
             </nav>
+
             <section class="sidebar-footer">
                 <section class="user-info">
-        
                     <section class="user-avatar" id="staffAvatar">
-                        <!-- initials will be injected by JS -->
+                        <!-- initials injected by JS -->
                     </section>
-
                     <section class="user-details">
                         <section class="user-name" id="staffName"></section>
                         <section class="user-email" id="staffEmail"></section>
                     </section>
-
                 </section>
             </section>
+
         </aside>
-    </aside>
+
         <main>
-            <h2>Manage </h2>
+            <h1>Manage Appointments</h1>
 
-
-                
+            <!-- ── Stats ─────────────────────────────────────────── -->
+            <section class="day-stats">
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-total">—</span>
+                    <span class="stat-label">Total upcoming</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-today">—</span>
+                    <span class="stat-label">Today</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-tomorrow">—</span>
+                    <span class="stat-label">Tomorrow</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stat-walkin">—</span>
+                    <span class="stat-label">Walk-ins</span>
+                </div>
             </section>
-            <button class="confirm-Button">Confirm Appointment</button>
+
+            <!-- ── Filter Bar ─────────────────────────────────────── -->
+            <section class="filter-bar">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="today">Today</button>
+                <button class="filter-btn" data-filter="tomorrow">Tomorrow</button>
+                <button class="filter-btn" data-filter="walkin">Walk-ins</button>
+            </section>
+
+            <h2>Upcoming Appointments</h2>
+
+            <!-- Appointment List -->
+            <section class="appt-section">
+                <ul id="appointmentList"></ul>
+            </section>
 
         </main>
+
     </section>
     </body>
 </html>
