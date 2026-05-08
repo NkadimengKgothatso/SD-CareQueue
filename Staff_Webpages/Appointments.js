@@ -28,9 +28,9 @@ const auth = getAuth(app);
 const db   = getFirestore(app);
 
 // ─── Constants ───────────────────────────────────────────────────────────────
-const SLOT_START    = 8 * 60;
-const SLOT_END      = 17 * 60;
-const SLOT_DURATION = 30;
+const SLOT_START    = 8 * 60;  // 08:00
+const SLOT_END      = 17 * 60; // 17:00
+const SLOT_DURATION = 30;      // minutes
 
 const STATUS_LABELS = {
     "waiting":         "Waiting",
@@ -60,7 +60,7 @@ function getTodayString() {
 }
 
 function getTomorrowString() {
-    const d  = new Date();
+    const d = new Date();
     d.setDate(d.getDate() + 1);
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const dd = String(d.getDate()).padStart(2, "0");
@@ -68,11 +68,10 @@ function getTomorrowString() {
 }
 
 function minutesToTime(m) {
-    const h  = String(Math.floor(m / 60)).padStart(2, "0");
-    const mm = String(m % 60).padStart(2, "0");
-    return `${h}:${mm}`;
+    return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 }
 
+// Generate all possible slots for the day (08:00 – 17:00, every 30 min)
 function getAllSlots() {
     const slots = [];
     for (let t = SLOT_START; t < SLOT_END; t += SLOT_DURATION) {
@@ -85,19 +84,18 @@ function getAllSlots() {
 function updateStats() {
     const today    = getTodayString();
     const tomorrow = getTomorrowString();
+    const el       = (id) => document.getElementById(id);
 
-    const el = (id) => document.getElementById(id);
     if (el("stat-total"))    el("stat-total").textContent    = allAppointments.length;
     if (el("stat-today"))    el("stat-today").textContent    = allAppointments.filter(a => a.date === today).length;
     if (el("stat-tomorrow")) el("stat-tomorrow").textContent = allAppointments.filter(a => a.date === tomorrow).length;
     if (el("stat-walkin"))   el("stat-walkin").textContent   = allAppointments.filter(a => a.isWalkIn).length;
 }
 
-// ─── Filter Appointments ──────────────────────────────────────────────────────
+// ─── Filter ───────────────────────────────────────────────────────────────────
 function getFilteredAppointments() {
     const today    = getTodayString();
     const tomorrow = getTomorrowString();
-
     switch (activeFilter) {
         case "today":    return allAppointments.filter(a => a.date === today);
         case "tomorrow": return allAppointments.filter(a => a.date === tomorrow);
@@ -115,7 +113,7 @@ function renderEmptyState() {
         </li>`;
 }
 
-// ─── Render: Single Appointment Card ─────────────────────────────────────────
+// ─── Render: Single Card ──────────────────────────────────────────────────────
 function buildCard(appt) {
     const status = (appt.status || "scheduled").toLowerCase().trim();
     const label  = STATUS_LABELS[status] || status;
@@ -184,17 +182,13 @@ function buildCard(appt) {
     return li;
 }
 
-// ─── Render Appointment List ──────────────────────────────────────────────────
+// ─── Render Full List ─────────────────────────────────────────────────────────
 function renderAppointments() {
     appointmentList.innerHTML = "";
     updateStats();
 
     const filtered = getFilteredAppointments();
-
-    if (!filtered.length) {
-        renderEmptyState();
-        return;
-    }
+    if (!filtered.length) { renderEmptyState(); return; }
 
     filtered
         .sort((a, b) =>
@@ -204,40 +198,41 @@ function renderAppointments() {
         .forEach(appt => appointmentList.appendChild(buildCard(appt)));
 }
 
-// ─── Get Taken Slots for a Given Date ────────────────────────────────────────
-async function getTakenSlots(date, excludeAppointmentId = null) {
-    const takenSlots = new Set();
+// ─── Get Free Slots for a Date ────────────────────────────────────────────────
+// Fetches ALL appointments for the clinic on the given date (both regular and
+// walk-in), collects their booked times, then returns only the unbooked slots.
+async function getFreeSlots(date, excludeAppointmentId = null) {
+    const bookedTimes = new Set();
 
-    // Regular appointments
+    // Regular appointments (clinicID as number)
     const regSnap = await getDocs(query(
         collection(db, "Appointments"),
-        where("date",     "==", date),
-        where("clinicID", "==", Number(staffClinicID))
+        where("clinicID", "==", Number(staffClinicID)),
+        where("date",     "==", date)
     ));
     regSnap.forEach(docSnap => {
-        if (docSnap.id === excludeAppointmentId) return;
+        if (docSnap.id === excludeAppointmentId) return; // exclude the one being rescheduled
         const d = docSnap.data();
-        if ((d.status || "").toLowerCase() !== "cancelled" && d.time) {
-            takenSlots.add(d.time);
-        }
+        const status = (d.status || "").toLowerCase();
+        if (status !== "cancelled" && d.time) bookedTimes.add(d.time);
     });
 
-    // Walk-in appointments
+    // Walk-in appointments (clinicId as string)
     const walkInSnap = await getDocs(query(
         collection(db, "Appointments"),
-        where("date",     "==", date),
         where("clinicId", "==", staffClinicID),
-        where("isWalkIn", "==", true)
+        where("isWalkIn", "==", true),
+        where("date",     "==", date)
     ));
     walkInSnap.forEach(docSnap => {
         if (docSnap.id === excludeAppointmentId) return;
         const d = docSnap.data();
-        if ((d.status || "").toLowerCase() !== "cancelled" && d.time) {
-            takenSlots.add(d.time);
-        }
+        const status = (d.status || "").toLowerCase();
+        if (status !== "cancelled" && d.time) bookedTimes.add(d.time);
     });
 
-    return takenSlots;
+    // Return all slots that are NOT booked
+    return getAllSlots().filter(slot => !bookedTimes.has(slot));
 }
 
 // ─── Reschedule Modal ─────────────────────────────────────────────────────────
@@ -266,11 +261,12 @@ async function openRescheduleModal(appt) {
                 <div class="form-group">
                     <label for="rescheduleTime">Available Time Slots</label>
                     <select id="rescheduleTime">
-                        <option value="">Loading slots...</option>
+                        <option value="">Loading available slots...</option>
                     </select>
+                    <p class="slot-hint">Only showing unbooked slots for this date.</p>
                 </div>
 
-                <p id="rescheduleError" class="error-msg" style="display:none;color:red;margin-top:8px;"></p>
+                <p id="rescheduleError" class="error-msg" style="display:none;"></p>
             </section>
             <footer class="modal-actions">
                 <button id="rescheduleCancelBtn" class="btn cancel-btn">Cancel</button>
@@ -288,34 +284,40 @@ async function openRescheduleModal(appt) {
     const cancelBtn  = modal.querySelector("#rescheduleCancelBtn");
     const confirmBtn = modal.querySelector("#rescheduleConfirmBtn");
 
-    async function loadSlots(date) {
+    // Load free slots for the given date
+    async function loadFreeSlots(date) {
         timeSelect.innerHTML = `<option value="">Loading...</option>`;
-        const takenSlots = await getTakenSlots(date, appt.id);
-        const freeSlots  = getAllSlots().filter(s => !takenSlots.has(s));
+        timeSelect.disabled  = true;
+
+        const freeSlots = await getFreeSlots(date, appt.id);
 
         if (!freeSlots.length) {
-            timeSelect.innerHTML = `<option value="">No slots available for this date</option>`;
+            timeSelect.innerHTML = `<option value="">No available slots for this date</option>`;
+            timeSelect.disabled  = true;
             return;
         }
-        timeSelect.innerHTML = freeSlots
-            .map(s => `<option value="${s}">${s}</option>`)
-            .join("");
+
+        timeSelect.innerHTML = `<option value="">Select a time slot</option>` +
+            freeSlots.map(s => `<option value="${s}">${s}</option>`).join("");
+        timeSelect.disabled = false;
     }
 
-    await loadSlots(dateInput.value);
-    dateInput.addEventListener("change", () => loadSlots(dateInput.value));
+    // Load slots for the appointment's current date on open
+    await loadFreeSlots(dateInput.value);
 
-    cancelBtn.addEventListener("click", () => {
-        modal.close();
-        modal.remove();
-    });
+    // Reload whenever date changes
+    dateInput.addEventListener("change", () => loadFreeSlots(dateInput.value));
 
+    // Cancel
+    cancelBtn.addEventListener("click", () => { modal.close(); modal.remove(); });
+
+    // Confirm
     confirmBtn.addEventListener("click", async () => {
         const newDate = dateInput.value;
         const newTime = timeSelect.value;
 
         if (!newDate || !newTime) {
-            errorMsg.textContent   = "Please select a date and time slot.";
+            errorMsg.textContent   = "Please select a date and an available time slot.";
             errorMsg.style.display = "block";
             return;
         }
@@ -353,7 +355,7 @@ async function cancelAppointment(appointmentId) {
             updatedAt: serverTimestamp()
         });
     } catch (err) {
-        console.error("Failed to cancel appointment:", err);
+        console.error("Failed to cancel:", err);
         alert("Could not cancel appointment. Please try again.");
     }
 }
@@ -384,12 +386,8 @@ function showConfirmModal(message) {
         document.body.appendChild(modal);
         modal.showModal();
 
-        modal.querySelector("#confirmCancelBtn").onclick = () => {
-            modal.close(); modal.remove(); resolve(false);
-        };
-        modal.querySelector("#confirmOkBtn").onclick = () => {
-            modal.close(); modal.remove(); resolve(true);
-        };
+        modal.querySelector("#confirmCancelBtn").onclick = () => { modal.close(); modal.remove(); resolve(false); };
+        modal.querySelector("#confirmOkBtn").onclick     = () => { modal.close(); modal.remove(); resolve(true);  };
     });
 }
 
@@ -411,11 +409,10 @@ function startAppointmentsListener() {
     );
 
     unsubscribe = onSnapshot(q, async (snapshot) => {
-        console.log("📋 Appointments snapshot:", snapshot.size);
+        console.log("📋 Appointments:", snapshot.size);
 
-        // Resolve patient names in parallel
-        const incoming = [];
-        const namePromises = [];
+        const incoming      = [];
+        const namePromises  = [];
 
         snapshot.forEach(docSnap => {
             const d      = docSnap.data();
@@ -435,14 +432,15 @@ function startAppointmentsListener() {
 
             incoming.push(appt);
 
-            // Resolve name from Users if missing
             if (!appt.patientName && appt.userID) {
                 namePromises.push(
-                    getDoc(doc(db, "Users", appt.userID)).then(userDoc => {
-                        if (userDoc.exists()) {
-                            appt.patientName = userDoc.data().displayName || null;
-                        }
-                    }).catch(() => {})
+                    getDoc(doc(db, "Users", appt.userID))
+                        .then(userDoc => {
+                            if (userDoc.exists()) {
+                                appt.patientName = userDoc.data().displayName || null;
+                            }
+                        })
+                        .catch(() => {})
                 );
             }
         });
@@ -461,7 +459,7 @@ function startAppointmentsListener() {
     });
 }
 
-// ─── Filter Button Listeners ──────────────────────────────────────────────────
+// ─── Filter Buttons ───────────────────────────────────────────────────────────
 filterBtns.forEach(btn => {
     btn.addEventListener("click", () => {
         filterBtns.forEach(b => b.classList.remove("active"));

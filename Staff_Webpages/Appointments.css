@@ -333,6 +333,13 @@ dialog::backdrop {
     margin: 0;
 }
 
+.slot-hint {
+    font-size: 0.78rem;
+    color: var(--clr-muted);
+    margin: 2px 0 0 0;
+    font-style: italic;
+}
+
 /* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 640px) {
     .filter-bar {
