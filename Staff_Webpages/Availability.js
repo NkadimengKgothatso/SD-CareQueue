@@ -1,3 +1,5 @@
+
+//Availability.js
 // ─── Imports ────────────────────────────────────────────────────────────────
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -68,7 +70,7 @@ function convertTo24Hour(timeStr, period) {
 // ─── Parse clinic opening_hours string ───────────────────────────────────────
 // Handles all variations found in the database:
 //   "Mon-Fri: 7am-7pm"
-//   "Mon-Fri : 9am-5pm"   ← space before colon
+//   "Mon-Fri : 9am-5pm"   
 //   "Mon-Fri: 7:30am-5:30pm"
 function parseClinicHours(openingHours) {
     if (!openingHours) return null;
@@ -410,4 +412,24 @@ onAuthStateChanged(auth, async (user) => {
             saveAvailability(user.uid, staffName, clinicID);
         });
     }
+
+
+    // ─── Sidebar footer (STAFF) ─────────────────────────────
+    const staffNameEl = document.getElementById("staffName");
+    const staffEmailEl = document.getElementById("staffEmail");
+    const staffAvatarEl = document.getElementById("staffAvatar");
+
+    if (staffNameEl) staffNameEl.textContent = staffName;
+    if (staffEmailEl) staffEmailEl.textContent = user.email;
+
+// create initials for avatar
+    if (staffAvatarEl) {
+        const initials = (staffName || "S")
+            .split(" ")
+            .map(n => n[0])
+            .join("")
+            .toUpperCase();
+
+        staffAvatarEl.textContent = initials;
+    }  
 });

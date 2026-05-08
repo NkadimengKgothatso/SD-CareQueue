@@ -1,0 +1,189 @@
+/* ============================================================
+   Staff Dashboard Styles 
+   Uses shared staff.css variables where possible
+   ============================================================ */
+
+/* ── Dashboard Layout ───────────────────────────────────── */
+.dashboard-content {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.dashboard-header h2 {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    letter-spacing: -0.4px;
+    color: #1a1a2e;
+}
+
+.dashboard-header p {
+    margin: 0;
+    color: var(--clr-muted);
+    font-size: 14px;
+}
+
+/* ── Stats Grid ─────────────────────────────────────────── */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 28px 0;
+}
+
+.stat {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow-card);
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.stat h2 {
+    margin: 0 0 4px;
+    font-size: 30px;
+    font-weight: 700;
+    color: #1a1a2e;
+    letter-spacing: -0.5px;
+}
+
+.stat p {
+    margin: 0;
+    color: var(--clr-muted);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.stat .improving {
+    display: inline-block;
+    margin-top: 8px;
+    color: var(--clr-success);
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--clr-success-light);
+    padding: 3px 8px;
+    border-radius: 999px;
+}
+
+/* ── Appointments Panel ─────────────────────────────────── */
+.appointments,
+.notifications {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius);
+    padding: 22px;
+    box-shadow: var(--shadow-card);
+}
+
+.appointments h3,
+.notifications h3 {
+    margin: 0 0 16px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: var(--clr-muted);
+    text-transform: uppercase;
+}
+
+/* ── Appointment Item ───────────────────────────────────── */
+.appointment {
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.appointment:hover {
+    background: #fafafa;
+    border-color: var(--clr-border);
+}
+
+.appointment .time {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--clr-success);
+    background: var(--clr-primary-light);
+    padding: 8px 10px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.appointment .details strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    color: #1a1a2e;
+}
+
+.appointment .details p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--clr-muted);
+}
+
+/* ── Notifications ─────────────────────────────────────── */
+.notification {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    transition: background 0.15s ease;
+}
+
+.notification:hover {
+    background: #fafafa;
+}
+
+.notification p {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: #1a1a2e;
+}
+
+.notification small {
+    color: var(--clr-muted);
+    font-size: 12px;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .dashboard-content {
+        grid-template-columns: 1fr;
+    }
+
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .appointment {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .appointment .time {
+        width: fit-content;
+    }
+}
