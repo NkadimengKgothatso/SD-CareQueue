@@ -4,8 +4,6 @@ import {getAuth,signOut as firebaseSignOut,onAuthStateChanged} from "https://www
 import {getFirestore,doc,getDoc,updateDoc,collection,query,where,getDocs,onSnapshot} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
-
-
 // ================= Firebase Config =================
 const firebaseConfig = {
     apiKey: "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
@@ -15,6 +13,7 @@ const firebaseConfig = {
     messagingSenderId: "702048481855",
     appId: "1:702048481855:web:1bb9675ecadb9e22043e8a"
 };
+
 // ================= Initialize Firebase =================
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -28,7 +27,7 @@ let emptyStates, filledStates;
 const clinicsMap = new Map();
 let queueUnsubscribe = null;
 
-//Name and email of patient 
+// Name and email of patient
 let patientName = "";
 let patientEmail = "";
 
@@ -66,6 +65,8 @@ function showFilled() {
 window.goToAppointments = function () {
     window.location.href = "MyAppointments.html";
 };
+
+
 // ================= AVATAR INITIALS =================
 function setAvatarInitial(name, email) {
     let initials = "";
@@ -126,7 +127,6 @@ async function loadAppointments(userId) {
         const clinic = clinicsMap.get(String(next.clinicID));
         const clinicName = clinic ? clinic.name : "Unknown Clinic";
 
-        // DEBUG: log what clinicID looks like from appointments
         console.log("next.clinicID:", next.clinicID, "| type:", typeof next.clinicID);
 
         container.innerHTML = `
@@ -161,7 +161,7 @@ async function loadAppointments(userId) {
         `;
 
         // Load queue for this appointment
-        loadQueueStatus(userId, next.id, Number(next.clinicID));
+        loadQueueStatus(userId, next.id, next.clinicID);
 
     } catch (error) {
         console.error("Firestore error:", error);
@@ -171,64 +171,61 @@ async function loadAppointments(userId) {
 
 
 // ================= LOAD QUEUE STATUS =================
-// Listens in real-time to the user's position in the clinic queue for their upcoming appointment and updates the dashboard accordingly
-// ================= LOAD QUEUE STATUS (FIXED) =================
+// Listens in real-time to the user's position in the clinic queue for their
+// upcoming appointment and updates the dashboard accordingly.
 function loadQueueStatus(userId, appointmentId, clinicID) {
 
-    if (queueUnsubscribe) queueUnsubscribe();
+    // Clean up any existing listeners before starting fresh
+    if (queueUnsubscribe) {
+        queueUnsubscribe();
+        queueUnsubscribe = null;
+    }
 
-    let clinicUnsubscribe = null;
-
-   
+    // Normalise clinicID to both types — Firestore may store it as number or string
     const clinicIDNum = Number(clinicID);
+    const clinicIDStr = String(clinicID);
+
+    const activeStatuses = ["waiting", "scheduled", "active"];
 
     const setEmpty = () => {
-        document.getElementById("queueCount").textContent = "Not in queue";
-        document.getElementById("queueProgressText").textContent = "No active queue entry.";
-        document.getElementById("progressPercent").textContent = "0%";
-        document.getElementById("queueMeter").value = 0;
-        document.getElementById("queuePosition").textContent = "-";
-        document.getElementById("waitTime").textContent = "-";
+        document.getElementById("queueCount").textContent        = "";
+        document.getElementById("queueProgressText").textContent = "";
+        document.getElementById("progressPercent").textContent   = "";
+        document.getElementById("queueMeter").value              = 0;
+        document.getElementById("queuePosition").textContent     = "";
+        document.getElementById("waitTime").textContent          = "";
     };
 
-    const q = query(
+    // Inner clinic listener — kept in closure so we can clean it up reliably
+    let clinicUnsubscribe = null;
+
+    // Step 1: watch only this appointment's queue document
+    const appointmentQ = query(
         collection(db, "Queues"),
         where("appointmentId", "==", appointmentId)
     );
 
-    queueUnsubscribe = onSnapshot(q, (snapshot) => {
+    queueUnsubscribe = onSnapshot(appointmentQ, (snapshot) => {
 
+        // Always tear down the previous clinic listener before deciding what to do next
         if (clinicUnsubscribe) {
             clinicUnsubscribe();
             clinicUnsubscribe = null;
         }
 
-        if (snapshot.empty) {
+        // Find the user's active queue entry for this appointment
+        const activeEntries = snapshot.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .filter(d => activeStatuses.includes((d.status || "").toLowerCase().trim()));
+
+        if (activeEntries.length === 0) {
             setEmpty();
             return;
         }
 
-        let active = [];
-        let queueDocId = null;
-        let queueData = null;
+        const queueData = activeEntries[0]; // The user's own queue document
 
-        snapshot.forEach(docSnap => {
-            const data = docSnap.data();
-            const status = (data.status || "").toLowerCase().trim();
-
-            if (["waiting", "scheduled", "active"].includes(status)) {
-                active.push({ id: docSnap.id, ...data });
-            }
-        });
-
-        if (active.length === 0) {
-            setEmpty();
-            return;
-        }
-
-        queueData = active[0];
-        queueDocId = queueData.id;
-
+        // Step 2: watch ALL active entries for this clinic to determine position
         const clinicQ = query(
             collection(db, "Queues"),
             where("clinicID", "==", clinicIDNum)
@@ -236,71 +233,82 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
 
         clinicUnsubscribe = onSnapshot(clinicQ, (clinicSnapshot) => {
 
-            const sorted = clinicSnapshot.docs
+            let allClinicEntries = clinicSnapshot.docs
                 .map(d => ({ id: d.id, ...d.data() }))
-                .filter(d =>
-                    ["waiting", "scheduled", "active"]
-                    .includes((d.status || "").toLowerCase().trim())
-                )
+                .filter(d => activeStatuses.includes((d.status || "").toLowerCase().trim()))
                 .sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
 
-            const total = sorted.length;
+            // Fallback: if clinicID is stored as a string in some documents,
+            // the numeric query will miss them. Do a client-side string match.
+            if (allClinicEntries.length === 0) {
+                console.warn(
+                    "loadQueueStatus: no results for clinicID as number (" + clinicIDNum + "). " +
+                    "Check that Queues documents store clinicID consistently."
+                );
+                allClinicEntries = clinicSnapshot.docs
+                    .map(d => ({ id: d.id, ...d.data() }))
+                    .filter(d => {
+                        const stored = String(d.clinicID ?? "");
+                        return (
+                            stored === clinicIDStr &&
+                            activeStatuses.includes((d.status || "").toLowerCase().trim())
+                        );
+                    })
+                    .sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
+            }
 
-            const userIndex = sorted.findIndex(entry =>
-                String(entry.appointmentId) === String(appointmentId)
+            const total = allClinicEntries.length;
+
+            // Find where the user sits in the sorted list
+            const userIndex = allClinicEntries.findIndex(
+                entry => String(entry.appointmentId) === String(appointmentId)
             );
 
-            const position = userIndex !== -1 ? userIndex + 1 : total;
+            // If the user's entry isn't in the clinic queue at all, show empty state
+            if (userIndex === -1) {
+                console.warn(
+                    "loadQueueStatus: user's appointmentId not found in clinic queue. " +
+                    "Possible clinicID mismatch or entry was removed."
+                );
+                setEmpty();
+                return;
+            }
 
-            document.getElementById("queueCount").textContent =
-                total > 0 ? `${position} out of ${total}` : "Not in queue";
+            const position = userIndex + 1; // Convert to 1-based display position
 
+            // --- Update UI ---
+
+            document.getElementById("queueCount").textContent    = `${position} out of ${total}`;
+            document.getElementById("queuePosition").textContent = String(position);
+
+            // Progress percentage: 0 % when last, 100 % when first/only
             let percent = 0;
-            if (total > 1) {
-                percent = Math.round(((total - position) / (total - 1)) * 100);
-            } else if (total === 1) {
+            if (total === 1) {
                 percent = 100;
+            } else {
+                percent = Math.round(((total - position) / (total - 1)) * 100);
             }
-
             document.getElementById("progressPercent").textContent = `${percent}%`;
-            document.getElementById("queueMeter").value = percent;
+            document.getElementById("queueMeter").value            = percent;
 
-            let message = "You're in the queue. We'll keep you updated.";
+            document.getElementById("queueProgressText").textContent = "";
 
-            if (total === 0) {
-                message = "No queue data.";
-            } else if (position === 1) {
-                message = "You're next! Please get ready.";
-            } else if (position === total) {
-                message = "You're last in the queue.";
-            } else if (position <= total / 3) {
-                message = "Almost there — you're very close.";
-            } else if (position <= total / 2) {
-                message = "You are moving steadily through the queue.";
-            }
-
-            document.getElementById("queueProgressText").textContent = message;
-
-            const wait =
-                queueData.estimateWait ??
-                (userIndex >= 0 ? userIndex * 30 : "-");
-
-            document.getElementById("waitTime").textContent =
-                wait !== "-" ? `${wait} min` : "-";
-
-            if (queueDocId && typeof wait === "number") {
-                const queueRef = doc(db, "Queues", queueDocId);
-
-                updateDoc(queueRef, {
-                    estimateWait: wait,
-                    updatedAt: new Date()
-                }).catch(err => {
-                    console.error("Failed to update wait time:", err);
-                });
+            // Wait time: prefer a real value set by clinic staff in Firestore.
+            // Only fall back to a position-based estimate when none is available.
+            // We do NOT write back calculated values — that would overwrite staff data.
+            const staffWait = queueData.estimateWait;
+            if (typeof staffWait === "number") {
+                document.getElementById("waitTime").textContent = `${staffWait} min`;
+            } else {
+                // Rough estimate: assume ~15 min per person ahead
+                const estimatedWait = userIndex * 15;
+                document.getElementById("waitTime").textContent = `~${estimatedWait} min (est.)`;
             }
         });
     });
 }
+
+
 // ================= LOAD VISITS COUNT =================
 async function loadVisitsCount(userId, clinicID) {
     try {
@@ -347,7 +355,7 @@ window.addEventListener("DOMContentLoaded", () => {
                 const name  = data.displayName || "";
                 const email = user.email || "";
 
-                patientName = name;
+                patientName  = name;
                 patientEmail = email;
 
                 nameEl.textContent    = name || "User";
@@ -360,9 +368,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
             dateEl.textContent = new Date().toLocaleDateString("en-ZA", {
                 weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric"
+                year:    "numeric",
+                month:   "long",
+                day:     "numeric"
             });
 
             await loadAppointments(user.uid);
@@ -376,7 +384,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
 // ================= SIGN OUT =================
 window.signOut = async function () {
-    if (queueUnsubscribe) queueUnsubscribe();
+    if (queueUnsubscribe) {
+        queueUnsubscribe();
+        queueUnsubscribe = null;
+    }
     await firebaseSignOut(auth);
     window.location.href = "/index.html";
 };
