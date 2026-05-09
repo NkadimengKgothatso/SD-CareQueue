@@ -29,7 +29,7 @@
 /* Body */
 body {
     font-family: var(--font-sans);
-    background-color: var(--color-bg-secondary);
+    background-color: var(--brand-lightest);
     color: var(--color-text-primary);
 }
 
