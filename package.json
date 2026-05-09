@@ -3,22 +3,25 @@
   "name": "sd-carequeue",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "test": "jest",
-    "coverage": "jest --coverage"
+    "coverage": "jest --coverage",
+    "coverage:appointments": "jest Staff_Webpages/Appointments.test.js --coverage --collectCoverageFrom=Staff_Webpages/Appointments.js",
+    "coverage:booking": "jest Patients_WebPages/BookAppointments.test.js --coverage --collectCoverageFrom=Patients_WebPages/BookAppointments.js"
   },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "collectCoverageFrom": [
-      "Login/authLogic.js",
-      "Admin_WebPages/staffLogic.js",
-      "Patients_WebPages/*Logic.js",
-      "Staff_Webpages/WalkinLogic.js",
-      "!**/*.test.js",
-      "!**/node_modules/**"
-    ]
-  },
+"jest": {
+  "testEnvironment": "jsdom",
+  "setupFiles": ["<rootDir>/jest.setup.js"],
+  "collectCoverageFrom": [
+    "Login/authLogic.js",
+    "Admin_WebPages/staffLogic.js",
+    "Patients_WebPages/*Logic.js",
+    "Staff_Webpages/WalkinLogic.js",
+    "Staff_Webpages/Appointments.js",
+    "!**/*.test.js",
+    "!**/node_modules/**"
+  ]
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NkadimengKgothatso/SD-CareQueue.git"
@@ -31,8 +34,11 @@
   },
   "homepage": "https://github.com/NkadimengKgothatso/SD-CareQueue#readme",
   "devDependencies": {
-    "jest": "^30.3.0",
-    "jest-environment-jsdom": "^30.3.0"
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.5",
+    "babel-jest": "^30.4.1",
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1"
   },
   "dependencies": {
     "firebase": "^12.13.0"

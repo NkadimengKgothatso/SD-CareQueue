@@ -1,7 +1,7 @@
 // Import Firebase (MODULAR SDK)
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { initializeApp } from "firebase/app";
+import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { 
     getFirestore, 
     collection, 
@@ -13,7 +13,7 @@ import {
     doc,
     getDoc,
     updateDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+} from "firebase/firestore";
 
 const firebaseConfig = {
     apiKey:            "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
@@ -651,3 +651,13 @@ dateInput.addEventListener("change", () => {
         renderTimeSlots(dateInput.value, selectedClinicId);
     }
 });
+
+export {
+    formatTime,
+    calculateDistance,
+    getUserLocation,
+    isClinicOpenNow,
+    applyFilters,
+    displayClinics,
+    renderTimeSlots
+};
