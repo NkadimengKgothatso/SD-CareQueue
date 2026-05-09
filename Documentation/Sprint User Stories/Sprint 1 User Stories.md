@@ -37,7 +37,7 @@
 
 <tr>
 <td>2</td>
-<td>As a patient, I want to sign in with my Google account so that I land on the correct dashboard for my role.</td>
+<td>As a user, I can sign in using Google authentication and select my role (Patient, Staff, or Admin) so that I can access the appropriate dashboard.</td>
   
 <td>
 <ul>
