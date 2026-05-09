@@ -1,8 +1,8 @@
 
 //Availability.js
 // ─── Imports ────────────────────────────────────────────────────────────────
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { initializeApp } from "firebase/app"
+import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import {
     getFirestore,
     doc,
@@ -13,7 +13,7 @@ import {
     where,
     getDocs,
     serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+} from "firebase/firestore";
 
 // ─── Firebase Config ─────────────────────────────────────────────────────────
 const firebaseConfig = {
@@ -433,3 +433,13 @@ onAuthStateChanged(auth, async (user) => {
         staffAvatarEl.textContent = initials;
     }  
 });
+
+export {
+    convertTo24Hour,
+    parseClinicHours,
+    readScheduleFromPage,
+    applyScheduleToPage,
+    capitalise,
+    showStatus,
+    applyClinicConstraints
+};
