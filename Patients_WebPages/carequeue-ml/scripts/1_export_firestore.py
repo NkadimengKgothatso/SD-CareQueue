@@ -1,36 +1,26 @@
 """
-STEP 1 — Export Firestore QueueHistory to CSV (FIXED VERSION)
-============================================================
-Exports QueueHistory from Firestore into CSV for ML training.
-
-Matches your actual database structure:
-- createdAT (timestamp)
-- appointmentTime (timestamp)
-- queuePosition
-- queuelength
-- clinicID
-
-Requirements:
-    pip install firebase-admin pandas
+STEP 1 — Export Firestore QueueHistory to CSV
+=============================================
+Reads actualWaitTime directly from Firestore — does NOT recalculate it.
 """
 
 import firebase_admin
 from firebase_admin import credentials, firestore
 import pandas as pd
 
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 # INIT FIREBASE
-# ─────────────────────────────────────────────────────────────
-cred = credentials.Certificate("serviceAccountKey.json")
-firebase_admin.initialize_app(cred)
+# ─────────────────────────────────────────────
+if not firebase_admin._apps:
+    cred = credentials.Certificate("serviceAccountKey.json")
+    firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
 print("🚀 Fetching QueueHistory from Firestore...")
-
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 # FETCH DATA
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
 docs = db.collection("QueueHistory").stream()
 
 data = []
@@ -38,108 +28,63 @@ data = []
 for doc in docs:
     d = doc.to_dict()
 
-    # ─────────────────────────────────────────────────────────
-    # FIX: queue length field (typo-safe)
-    # ─────────────────────────────────────────────────────────
-    queue_length = (
-        d.get("queuelength")
-        or d.get("queueLength")
-        or 0
-    )
+    # Queue length — handle both spellings
+    queue_length = d.get("queueLength") or d.get("queuelength") or 0
 
-    # ─────────────────────────────────────────────────────────
-    # TIMESTAMPS (Firestore Timestamp → Python datetime)
-    # ─────────────────────────────────────────────────────────
-    created_at = d.get("createdAT")
-    appointment_time = d.get("appointmentTime")
+    # ── READ actualWaitTime directly from Firestore ──────────────────
+    # Never recalculate — the value was already computed correctly
+    # when the record was written by the logger/generator.
+    actual_wait_time = d.get("actualWaitTime")
 
-    actual_wait_time = None
+    # Skip records with missing or non-positive wait times
+    if actual_wait_time is None or actual_wait_time <= 0:
+        continue
 
-    try:
-        if created_at and appointment_time:
+    # ── Features ─────────────────────────────────────────────────────
+    hour        = d.get("hour")
+    day_of_week = d.get("dayOfWeek")
 
-            # Convert Firestore Timestamp → datetime
-            if hasattr(created_at, "to_datetime"):
-                created_at = created_at.to_datetime()
+    # Fallback: derive from createdAT if hour/dayOfWeek missing
+    if hour is None or day_of_week is None:
+        created_at = d.get("createdAT")
+        try:
+            if hasattr(created_at, "timestamp"):
+                from datetime import datetime
+                created_at = datetime.utcfromtimestamp(created_at.timestamp())
+            if created_at:
+                hour        = created_at.hour
+                day_of_week = created_at.weekday()
+        except Exception:
+            pass
 
-            if hasattr(appointment_time, "to_datetime"):
-                appointment_time = appointment_time.to_datetime()
-
-            # ───────────────────────────────────────────────
-            # TARGET VARIABLE: actual wait time (MINUTES)
-            # actual = createdAT - appointmentTime
-            # ───────────────────────────────────────────────
-            actual_wait_time = round(
-                (created_at - appointment_time).total_seconds() / 60
-            )
-
-    except Exception as e:
-        print(f"⚠ Error computing wait time for {doc.id}: {e}")
-
-    # ─────────────────────────────────────────────────────────
-    # FEATURE ENGINEERING
-    # ─────────────────────────────────────────────────────────
-    hour = None
-    day_of_week = None
-
-    try:
-        if created_at and hasattr(created_at, "hour"):
-            hour = created_at.hour
-            day_of_week = created_at.weekday()
-
-    except Exception:
-        pass
-
-    # ─────────────────────────────────────────────────────────
-    # BUILD CLEAN ROW
-    # ─────────────────────────────────────────────────────────
     row = {
-
-        # IDs
-        "clinicID": d.get("clinicID"),
-        "appointmentId": d.get("appointmentId"),
-        "userID": d.get("userID"),
-
-        # Queue info
-        "queuePosition": d.get("queuePosition"),
-        "queueLength": queue_length,
-
-        # Timing
-        "createdAT": created_at,
-        "appointmentTime": appointment_time,
-
-        # Features
-        "hour": hour,
-        "dayOfWeek": day_of_week,
-        "isWalkIn": d.get("isWalkIn", False),
-
-        # TARGET (ML LABEL)
-        "actualWaitTime": actual_wait_time
+        "clinicID":       d.get("clinicID"),
+        "appointmentId":  d.get("appointmentId"),
+        "userID":         d.get("userID"),
+        "queuePosition":  d.get("queuePosition"),
+        "queueLength":    queue_length,
+        "hour":           hour,
+        "dayOfWeek":      day_of_week,
+        "actualWaitTime": actual_wait_time,   # ← read directly, never recalculated
     }
 
     data.append(row)
 
-# ─────────────────────────────────────────────────────────────
-# CREATE DATAFRAME
-# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────
+# BUILD AND SAVE CSV
+# ─────────────────────────────────────────────
 df = pd.DataFrame(data)
 
 print(f"📦 Total records fetched: {len(df)}")
 
-# ─────────────────────────────────────────────────────────────
-# CLEAN DATA
-# ─────────────────────────────────────────────────────────────
 before = len(df)
-
-df = df.dropna(subset=["actualWaitTime"])
-
+df = df.dropna(subset=["clinicID", "queuePosition", "queueLength",
+                        "hour", "dayOfWeek", "actualWaitTime"])
 print(f"🧹 Removed {before - len(df)} invalid rows")
 
-# ─────────────────────────────────────────────────────────────
-# SAVE CSV
-# ─────────────────────────────────────────────────────────────
-output_file = "queue_data.csv"
-df.to_csv(output_file, index=False)
+df.to_csv("queue_data.csv", index=False)
 
-print(f"✅ Saved ML dataset to {output_file}")
+print(f"✅ Saved ML dataset to queue_data.csv")
+print(f"   Wait time range: {df['actualWaitTime'].min():.0f} – {df['actualWaitTime'].max():.0f} min")
+print(f"   Mean wait: {df['actualWaitTime'].mean():.1f} min")
 print("🎯 Ready for Random Forest training!")

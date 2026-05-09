@@ -1,5 +1,5 @@
 // ============================================================
-// waitTimeML.js — FIXED ML Integration Layer
+// waitTimeML.js — ML Integration Layer
 // ============================================================
 
 import {
@@ -7,9 +7,19 @@ import {
     query,
     where,
     onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const ML_API_URL = "http://127.0.0.1:5000/predict";
+
+
+// ─────────────────────────────────────────────
+// HELPER — convert JS day (0=Sun) to Python day (0=Mon)
+// Model was trained with Python's weekday() so we must match it
+// ─────────────────────────────────────────────
+function pythonDayOfWeek() {
+    const jsDay = new Date().getDay(); // 0=Sun, 1=Mon ... 6=Sat
+    return jsDay === 0 ? 6 : jsDay - 1; // 0=Mon, 1=Tue ... 6=Sun
+}
 
 
 // ─────────────────────────────────────────────
@@ -23,14 +33,8 @@ async function fetchWithTimeout(url, options = {}, timeout = 4000) {
         }, timeout);
 
         fetch(url, options)
-            .then(res => {
-                clearTimeout(timer);
-                resolve(res);
-            })
-            .catch(err => {
-                clearTimeout(timer);
-                reject(err);
-            });
+            .then(res => { clearTimeout(timer); resolve(res); })
+            .catch(err => { clearTimeout(timer); reject(err); });
     });
 }
 
@@ -48,7 +52,7 @@ export async function getWaitTime(data) {
                 queuePosition: Number(data.queuePosition),
                 queueLength:   Number(data.queueLength),
                 hour:          new Date().getHours(),
-                dayOfWeek:     new Date().getDay(),
+                dayOfWeek:     pythonDayOfWeek(),   // ← fixed: matches training data
             }),
         });
 
@@ -82,7 +86,6 @@ function safeSet(id, value) {
 export function loadQueueStatusML(userId, appointmentId, clinicID, db) {
 
     const activeStatuses = ["waiting", "scheduled", "active"];
-
     let clinicUnsubscribe = null;
 
     const appointmentQ = query(
@@ -104,6 +107,7 @@ export function loadQueueStatusML(userId, appointmentId, clinicID, db) {
         if (activeEntries.length === 0) {
             safeSet("queueCount", "");
             safeSet("queueProgressText", "");
+            safeSet("waitTime", "");
             return;
         }
 
@@ -133,8 +137,8 @@ export function loadQueueStatusML(userId, appointmentId, clinicID, db) {
                 ? 100
                 : Math.round(((total - position) / (total - 1)) * 100);
 
-            safeSet("queueCount", `${position} out of ${total}`);
-            safeSet("queuePosition", position);
+            safeSet("queueCount",      `${position} out of ${total}`);
+            safeSet("queuePosition",   position);
             safeSet("progressPercent", `${percent}%`);
 
             const meter = document.getElementById("queueMeter");
@@ -146,13 +150,14 @@ export function loadQueueStatusML(userId, appointmentId, clinicID, db) {
             const predicted = await getWaitTime({
                 clinicID,
                 queuePosition: position,
-                queueLength:   total
+                queueLength:   total,
             });
 
             if (predicted !== null) {
                 safeSet("waitTime", `${predicted} min`);
             } else {
-                // fallback: position-based estimate
+                // Graceful fallback if ML API is down
+                console.warn("ML API unavailable, using fallback estimate.");
                 safeSet("waitTime", `~${position * 10} min (est.)`);
             }
         });
