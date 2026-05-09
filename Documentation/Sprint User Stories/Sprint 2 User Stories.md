@@ -11,7 +11,7 @@
 
 <tr>
 <td>1</td>
-<td>As an admin i want to be able to invite staff members so that they can login.</td>
+<td>As an admin, I want to assign staff to clinics so that each clinic has the correct personnel.</td>
 <td>
 <ul>
 <li><b>Given</b> my email is in the "admins" collection, <b>When</b> I select the "Admin" role <b>Then</b> I am redirected to the Admin Dashboard</li>

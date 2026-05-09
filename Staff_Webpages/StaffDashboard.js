@@ -252,3 +252,8 @@ async function loadStats(clinicID) {
         console.error("Error loading stats:", error);
     }
 }
+
+export {
+  loadAppointments,
+  loadStats
+};

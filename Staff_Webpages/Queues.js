@@ -92,7 +92,7 @@ function buildCard(appointment, positionLabel) {
         : "";
 
     li.innerHTML = `
-        <div class="queue-position ${isDone ? "pos-done" : ""}">${positionLabel}</div>
+        <section class="queue-position ${isDone ? "pos-done" : ""}">${positionLabel}</section>
 
         <article class="card-body">
             <header class="card-clinic-group">
@@ -480,3 +480,11 @@ onAuthStateChanged(auth, async (user) => {
     // ── Start queue system ──
     startQueueListeners();
 });
+
+export {
+  getTodayString,
+  renderEmptyState,
+  buildCard,
+  updateStats,
+  renderQueue
+};

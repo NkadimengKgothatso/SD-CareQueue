@@ -21,7 +21,7 @@
 
   <tr>
     <td>3</td>
-    <td>As clinic staff, I can manage patient queues and update statuses so that I can control patient flow.</td>
+    <td>As a Clinic staff, I want to see the upcoming appointments so that I can prepare in advance and manage my schedule.</td>
     <td>10</td>
   </tr>
 
@@ -99,7 +99,7 @@
 
   <tr>
     <td>16</td>
-    <td>As an admin, I want to manage clinic details (hours, services, staff) so that clinic information stays accurate and up to date.</td>
+    <td>As an admin, I can manage clinic details(operating hours, services, clinic name, clinic location ) so that information is accurate and up to date.</td>
     <td>8</td>
   </tr>
 
@@ -123,7 +123,7 @@
 
   <tr>
     <td>20</td>
-    <td>As clinic staff, I want to set my availability so that admins can assign me at the correct times.</td>
+    <td>As a clinic staff member, I want to set my weekly availability so that patients can only book appointments during the days and hours I am actually working.</td>
     <td>7</td>
   </tr>
 

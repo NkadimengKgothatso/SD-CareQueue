@@ -651,3 +651,13 @@ dateInput.addEventListener("change", () => {
         renderTimeSlots(dateInput.value, selectedClinicId);
     }
 });
+
+export {
+    formatTime,
+    calculateDistance,
+    getUserLocation,
+    isClinicOpenNow,
+    applyFilters,
+    displayClinics,
+    renderTimeSlots
+};

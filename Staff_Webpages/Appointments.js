@@ -251,20 +251,20 @@ async function openRescheduleModal(appt) {
                 <p>Rescheduling: <strong>${appt.patientName || "Patient"}</strong></p>
                 <p class="current-slot">Current slot: <strong>${appt.date} at ${appt.time || "—"}</strong></p>
 
-                <div class="form-group">
+                <section class="form-group">
                     <label for="rescheduleDate">New Date</label>
                     <input type="date" id="rescheduleDate"
                         min="${getTodayString()}"
                         value="${appt.date || getTodayString()}" />
-                </div>
+                </section>
 
-                <div class="form-group">
+                <section class="form-group">
                     <label for="rescheduleTime">Available Time Slots</label>
                     <select id="rescheduleTime">
                         <option value="">Loading available slots...</option>
                     </select>
                     <p class="slot-hint">Only showing unbooked slots for this date.</p>
-                </div>
+                </section>
 
                 <p id="rescheduleError" class="error-msg" style="display:none;"></p>
             </section>
@@ -518,3 +518,20 @@ onAuthStateChanged(auth, async (user) => {
 
     startAppointmentsListener();
 });
+
+export {
+  getTodayString,
+  getTomorrowString,
+  minutesToTime,
+  getAllSlots,
+  updateStats,
+  getFilteredAppointments,
+  renderEmptyState,
+  buildCard,
+  renderAppointments,
+  getFreeSlots,
+  openRescheduleModal,
+  cancelAppointment,
+  showConfirmModal,
+  startAppointmentsListener
+};
