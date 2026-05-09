@@ -48,7 +48,7 @@ header.top-bar {
     gap: 10px;
 }
 
-span.logo-icon {
+section.logo-icon {
     width: 28px;
     height: 28px;
     background: var(--color-brand);
@@ -57,7 +57,7 @@ span.logo-icon {
     display: inline-block;
 }
 
-span.logo-icon::before {
+section.logo-icon::before {
     content: '';
     position: absolute;
     background: white;
@@ -66,7 +66,7 @@ span.logo-icon::before {
     border-radius: 1px;
 }
 
-span.logo-icon::after {
+section.logo-icon::after {
     content: '';
     position: absolute;
     background: white;
@@ -75,7 +75,7 @@ span.logo-icon::after {
     border-radius: 1px;
 }
 
-span.logo-name {
+section.logo-name {
     font-size: 18px;
     font-weight: 600;
     color: var(--color-text-primary);

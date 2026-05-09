@@ -88,7 +88,7 @@ function buildCard(appointment, positionLabel) {
     li.dataset.appointmentId = appointment.id;
 
     const walkInBadge = appointment.isWalkIn
-        ? `<span class="badge badge-walkin" title="Walk-in patient">Walk-in</span>`
+        ? `<section class="badge badge-walkin" title="Walk-in patient">Walk-in</section>`
         : "";
 
     li.innerHTML = `
@@ -101,9 +101,9 @@ function buildCard(appointment, positionLabel) {
                     ${appointment.patientName || "Unknown Patient"}
                     ${walkInBadge}
                 </p>
-                <span class="badge badge-${status.replace(/ /g, "-")}">
+                <section class="badge badge-${status.replace(/ /g, "-")}">
                     ${label}
-                </span>
+                </section>
             </header>
 
             <ul class="card-meta">
@@ -133,9 +133,9 @@ function buildCard(appointment, positionLabel) {
                     <i class="fa-solid fa-xmark"></i>
                     Cancel
                 </button>` : `
-                <span class="completed-tag">
+                <section class="completed-tag">
                     <i class="fa-solid fa-circle-check"></i> ${label}
-                </span>`}
+                </section>`}
             </footer>
         </article>
     `;
@@ -194,7 +194,7 @@ function renderQueue() {
     if (done.length) {
         const divider = document.createElement("li");
         divider.className = "section-divider";
-        divider.innerHTML = `<span>Completed &amp; Cancelled</span>`;
+        divider.innerHTML = `<section>Completed &amp; Cancelled</section>`;
         queueList.appendChild(divider);
         done.forEach(appt => queueList.appendChild(buildCard(appt, "—")));
     }

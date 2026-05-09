@@ -158,7 +158,7 @@ function renderAppointment(appointment) {
  //past appointments section
     if (isPast) {
         li.innerHTML = `
-            <span class="card-accent accent-past"></span>
+            <section class="card-accent accent-past"></section>
 
             <article class="card-body">
 
@@ -183,9 +183,9 @@ function renderAppointment(appointment) {
                 </ul>
 
                 <footer class="card-footer">
-                    <span class="badge badge-${status}">
+                    <section class="badge badge-${status}">
                         ${status}
-                    </span>
+                    </section>
                 </footer>
 
             </article>
@@ -197,7 +197,7 @@ function renderAppointment(appointment) {
 
    //upcoming appointments section
     li.innerHTML = `
-        <span class="card-accent accent-upcoming"></span>
+        <section class="card-accent accent-upcoming"></section>
 
         <article class="card-body">
 
@@ -228,9 +228,9 @@ function renderAppointment(appointment) {
             </ul>
 
             <footer class="card-footer">
-                <span class="badge badge-${status}">
+                <section class="badge badge-${status}">
                     ${status}
-                </span>
+                </section>
             </footer>
 
         </article>
