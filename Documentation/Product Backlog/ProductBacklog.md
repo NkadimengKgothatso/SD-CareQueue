@@ -123,7 +123,7 @@
 
   <tr>
     <td>20</td>
-    <td>As clinic staff, I want to set my availability so that admins can assign me at the correct times.</td>
+    <td>As a clinic staff member, I want to set my weekly availability so that patients can only book appointments during the days and hours I am actually working.</td>
     <td>7</td>
   </tr>
 
