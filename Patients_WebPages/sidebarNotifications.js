@@ -5,11 +5,11 @@ import {
   query,
   where,
   onSnapshot
-} from "firebase/firestore";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
   onAuthStateChanged
-} from "firebase/auth";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const badge = document.getElementById("sidebarUnreadCount");
 

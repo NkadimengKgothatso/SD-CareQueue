@@ -7,7 +7,7 @@ import {
     doc,
     updateDoc,
     deleteDoc
-} from "firebase/firestore";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 initAdminPage();
 

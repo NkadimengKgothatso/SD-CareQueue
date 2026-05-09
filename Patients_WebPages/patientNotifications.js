@@ -10,11 +10,11 @@ import {
   getDocs,
   updateDoc,
   deleteDoc
-} from "firebase/firestore";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
   onAuthStateChanged
-} from "firebase/auth";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 let notifications = [];
 let currentFilter = "all";

@@ -7,11 +7,11 @@ import {
   getDocs,
   doc,
   updateDoc
-} from "firebase/firestore";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
   onAuthStateChanged
-} from "firebase/auth";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 //J: status map for appointments statuses
 const statusMap = {
   Waiting: "waiting",

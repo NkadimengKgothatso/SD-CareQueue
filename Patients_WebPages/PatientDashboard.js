@@ -1,7 +1,7 @@
 // ================= Firebase Setup =================
-import {initializeApp} from "firebase/app";
-import {getAuth,signOut as firebaseSignOut,onAuthStateChanged} from "firebase/auth";
-import {getFirestore,doc,getDoc,updateDoc,collection,query,where,getDocs,onSnapshot} from "firebase/firestore";
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,signOut as firebaseSignOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,doc,getDoc,updateDoc,collection,query,where,getDocs,onSnapshot} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
 // ================= Firebase Config =================

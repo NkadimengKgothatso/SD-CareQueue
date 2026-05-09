@@ -1,5 +1,5 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
     getFirestore,
     collection,
@@ -13,7 +13,7 @@ import {
     updateDoc,
     deleteDoc,
     serverTimestamp
-} from "firebase/firestore";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ─── Firebase Config ────────────────────────────────────────────────────────
 const firebaseConfig = {
