@@ -202,7 +202,7 @@ function renderAppointment(appointment) {
         <article class="card-body">
 
             <header class="card-clinic-group">
-                <p class="card-clinic">${clinicName}</p>
+                <p class="card-clinic">${appointment.clinicName}</p>
 
                 <nav class="appointment-actions">
                     <button class="track-btn">Track</button>
