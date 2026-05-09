@@ -558,6 +558,7 @@ confirmBtn.addEventListener("click", async () => {
             clinicID: selectedClinicId,
             userID: user.uid,
             date: date,
+            clinicName: selectedClinicName,
             time: time,
             reason: reason,
             status: "scheduled",
