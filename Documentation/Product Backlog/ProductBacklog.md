@@ -21,7 +21,7 @@
 
   <tr>
     <td>3</td>
-    <td>As clinic staff, I can manage patient queues and update statuses so that I can control patient flow.</td>
+    <td>As a Clinic staff, I want to see the upcoming appointments so that I can prepare in advance and manage my schedule.</td>
     <td>10</td>
   </tr>
 
