@@ -154,6 +154,7 @@ window.signInWithGoogle = async function () {
 
   } catch (err) {
     isRedirecting = false;
+    console.error("Authentication error:", err);
     showError(
       err.code === "auth/popup-closed-by-user"
         ? "Sign-in was cancelled. Please try again."
