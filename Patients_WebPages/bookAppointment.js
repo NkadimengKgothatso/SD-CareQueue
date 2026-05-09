@@ -246,11 +246,17 @@ function displayClinics(clinicList) {
 clinicSearchInput.addEventListener("input", () => {
     const searchValue = clinicSearchInput.value.toLowerCase().trim();
 
-    const filteredClinics = clinics.filter(clinic =>
-        clinic.name && clinic.name.toLowerCase().includes(searchValue) && clinic.address.toLowerCase().includes(searchValue)
+    const filtered = clinics.filter(c =>
+        (c.name    || "").toLowerCase().includes(searchValue) ||
+        (c.address || "").toLowerCase().includes(searchValue) ||
+        (c.status  || "").toLowerCase().includes(searchValue) ||
+        (c.province || "").toLowerCase().includes(searchValue) ||
+        (c.service ? (Array.isArray(c.service) 
+            ? c.service.join(" ").toLowerCase() 
+            : c.service.toLowerCase()) : "").includes(searchValue)
     );
 
-    displayClinics(filteredClinics);
+    displayClinics(filtered);
 });
 
 
