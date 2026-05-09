@@ -405,3 +405,16 @@ function setActiveRow(rows, index) {
         activeRowIndex = index;
     }
 }
+
+export {
+  inDateRange,
+  buildDashboard,
+  getGlobalNoShowRate,
+  getQueueAnalytics,
+  getNoShowRateByClinic,
+  getRateColor,
+  getPreviousPeriod,
+  countPatients,
+  calculatePatientsTrend,
+  setActiveRow
+};
