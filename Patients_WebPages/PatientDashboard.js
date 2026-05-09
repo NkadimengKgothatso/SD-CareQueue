@@ -23,8 +23,14 @@ const db = getFirestore(app);
 
 // ================= Global Variables =================
 let emptyStates, filledStates;
+
+// Store clinics locally for fast lookup
 const clinicsMap = new Map();
 let queueUnsubscribe = null;
+
+//Name and email of patient 
+let patientName = "";
+let patientEmail = "";
 
 
 // ================= LOAD CLINICS =================
@@ -154,8 +160,8 @@ async function loadAppointments(userId) {
             </li>
         `;
 
-        // Pass clinicID as both number and string so we can try both
-        loadQueueStatus(userId, next.id, next.clinicID);
+        // Load queue for this appointment
+        loadQueueStatus(userId, next.id, Number(next.clinicID));
 
     } catch (error) {
         console.error("Firestore error:", error);
@@ -165,7 +171,9 @@ async function loadAppointments(userId) {
 
 
 // ================= LOAD QUEUE STATUS =================
-function loadQueueStatus(userId, appointmentId, rawClinicID) {
+// Listens in real-time to the user's position in the clinic queue for their upcoming appointment and updates the dashboard accordingly
+// ================= LOAD QUEUE STATUS (FIXED) =================
+function loadQueueStatus(userId, appointmentId, clinicID) {
 
     if (queueUnsubscribe) queueUnsubscribe();
 
@@ -226,7 +234,8 @@ function loadQueueStatus(userId, appointmentId, rawClinicID) {
         );
 
         clinicUnsubscribe = onSnapshot(clinicQ, (clinicSnapshot) => {
-            
+
+            // STEP 1: build sorted queue
             const sorted = clinicSnapshot.docs
                 .map(d => ({ id: d.id, ...d.data() })) 
                 .filter(d =>
@@ -241,10 +250,7 @@ function loadQueueStatus(userId, appointmentId, rawClinicID) {
                 String(entry.appointmentId) === String(appointmentId)
             );
 
-            const position = userIndex !== -1 ? userIndex + 1 : "-";
-
-            // ================= UI =================
-            document.getElementById("queuePosition").textContent = position;
+            const position = userIndex !== -1 ? userIndex + 1 : total;
 
             document.getElementById("queueCount").textContent =
                 total > 0 ? `${position} out of ${total}` : "Not in queue";
@@ -347,6 +353,9 @@ window.addEventListener("DOMContentLoaded", () => {
                 const data  = userSnap.data();
                 const name  = data.displayName || "";
                 const email = user.email || "";
+
+                patientName = name;
+                patientEmail = email;
 
                 nameEl.textContent    = name || "User";
                 roleEl.textContent    = data.role || "Unknown";

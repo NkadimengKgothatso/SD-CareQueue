@@ -7,7 +7,7 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap');
 
 /* ══════════════════════════════════════════
-   CSS VARIABLES  (single source of truth)
+   CSS VARIABLES for Patient pages  (single source of truth)
 ══════════════════════════════════════════ */
 :root {
     /* Brand */
@@ -315,6 +315,24 @@ html, body {
     overflow: hidden;
     clip: rect(0,0,0,0);
     white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════
+   NOTIFICATION TAB
+══════════════════════════════════════════ */
+
+.sidebar-badge {
+  background: #0b8f6a;
+  color: white;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+.sidebar-badge.hidden {
+  display: none;
 }
 
 /* ══════════════════════════════════════════
