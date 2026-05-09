@@ -300,6 +300,7 @@ onAuthStateChanged(auth, async (user) => {
             const appointment = {
                 id: docSnap.id,
                 clinicID: data.clinicID,
+                clinicName : data.clinicName,
                 date: data.date,
                 time: data.time,
                 status: data.status,
