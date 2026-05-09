@@ -9,49 +9,52 @@ import {
     deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// initAdminPage handles auth guard, admin check, and sidebar population.
 initAdminPage();
 
 // =========================
-// MODAL LOGIC
+// DOM REFERENCES
 // =========================
-const addBtn      = document.querySelector(".addBtn");
-const modal       = document.getElementById("clinicModal");
-const manageModal = document.getElementById("ManageClinicModal");
-const closeBtns   = document.querySelectorAll(".close-btn");
-const addForm     = document.querySelector("#clinicModal form");
-const manageForm  = document.querySelector("#ManageClinicModal form");
-const hoursForm   = document.querySelector("#clinicHoursModal form");
-const clinicHoursModal = document.querySelector("#clinicHoursModal");
+const addBtn           = document.querySelector(".addBtn");
+const modal            = document.getElementById("clinicModal");
+const manageModal      = document.getElementById("ManageClinicModal");
+const clinicHoursModal = document.getElementById("clinicHoursModal");
+const closeBtns        = document.querySelectorAll(".close-btn");
+const addForm          = document.querySelector("#clinicModal form");
+const manageForm       = document.querySelector("#ManageClinicModal form");
+const hoursForm        = document.querySelector("#clinicHoursModal form");
+const searchInput      = document.getElementById("clinicSearch");
 
-let editingClinicId = null;
+let editingClinicId      = null;
+let editingHoursClinicId = null;
+let clinics              = [];
 
-closeBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-        modal.style.display       = "none";
-        manageModal.style.display = "none";
-        clinicHoursModal.style.display = "none"; 
-    });
-});
-
+// =========================
+// MODAL CONTROLS
+// =========================
 addBtn.addEventListener("click", () => {
     modal.style.display = "flex";
 });
 
-let editingHoursClinicId = null;
+closeBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+        modal.style.display            = "none";
+        manageModal.style.display      = "none";
+        clinicHoursModal.style.display = "none";
+    });
+});
 
 window.addEventListener("click", (e) => {
-    if (e.target === modal)       modal.style.display       = "none";
-    if (e.target === manageModal) manageModal.style.display = "none";
+    if (e.target === modal)            modal.style.display            = "none";
+    if (e.target === manageModal)      manageModal.style.display      = "none";
     if (e.target === clinicHoursModal) clinicHoursModal.style.display = "none";
 });
 
-let clinics = [];
-
+// =========================
+// LOAD & RENDER CLINICS
+// =========================
 async function loadClinics() {
     const container = document.querySelector(".clinics");
     container.innerHTML = "";
-
     clinics = [];
 
     try {
@@ -59,17 +62,15 @@ async function loadClinics() {
 
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
-
-            const clinicObj = {
+            clinics.push({
                 id:             docSnap.id,
                 name:           data.name,
                 address:        data.address,
-                status:         data.status,
-                service:        data.service,
-                operatingHours: data.opening_hours
-            };
-
-            clinics.push(clinicObj);
+                province:       data.province ?? "",
+                status:         data.status ?? "Active",
+                service:        data.service ?? ["General"],
+                operatingHours: data.opening_hours ?? "Hours not specified"
+            });
         });
 
         renderClinics(clinics);
@@ -79,42 +80,29 @@ async function loadClinics() {
     }
 }
 
+function renderClinics(list) {
+    const container = document.querySelector(".clinics");
+    container.innerHTML = "";
+    list.forEach(c => addClinicToUI(
+        c.id,
+        c.name,
+        c.address,
+        c.status,
+        c.service,
+        c.operatingHours,
+        c.province
+    ));
+}
+
 loadClinics();
 
-function addClinicToUI(id, name, location, status = "Active", service, operatingHours) {
+// =========================
+// BUILD CLINIC CARD
+// =========================
+function addClinicToUI(id, name, location, status = "Active", service, operatingHours, province) {
     const container = document.querySelector(".clinics");
     const clinic    = document.createElement("section");
     clinic.classList.add("clinic");
-
-    clinic.innerHTML = `
-        <section class="clinicHeader">
-            <i class="fa-solid fa-house-chimney-medical"></i>
-            <section class="clinicNameStatus">
-                <p class="clinicName">${name}</p>
-                <p class="Location">${location}</p>
-            </section>
-            <p id="status">${status}</p>
-        </section>                      
-        <section class="clinicContainer">
-            <section class="OpenTimes">
-                <i class="fa-regular fa-clock"></i>
-                <p>${operatingHours}</p>
-            </section>
-            <section class="clinicServices">
-                ${Array.isArray(service) 
-                    ? service.map(s => `<section class="services">${s}</section>`).join("") 
-                    : `<section class="services">${service || "General"}</section>`
-                }
-            </section>
-            <section class="clinic-Btns">
-                <button class="manage-btn">Manage</button>
-                <button class="hours-btn">Hours</button>
-                <button class="delete-btn" id="deleteBtn">Delete</button>
-            </section>
-        </section>
-    `;
-
-    container.appendChild(clinic);
 
     const statusColors = {
         Active: { background: "#DCFCE7", color: "#166534" },
@@ -122,17 +110,50 @@ function addClinicToUI(id, name, location, status = "Active", service, operating
         Busy:   { background: "#E5E7EB", color: "#374151" }
     };
 
-    const statusEl = clinic.querySelector("#status");
-    const colors   = statusColors[status] || statusColors["Active"];
-    statusEl.style.background = colors.background;
-    statusEl.style.color      = colors.color;
+    const colors = statusColors[status] || statusColors["Active"];
 
-    const deleteBtn = clinic.querySelector(".delete-btn");
+    clinic.innerHTML = `
+        <section class="clinicHeader">
+            <i class="fa-solid fa-house-chimney-medical"></i>
+            <section class="clinicNameStatus">
+                <p class="clinicName">${name}</p>
+            <p class="Location">
+                ${location}${
+                    province &&
+                    province.trim().toLowerCase() !== "unknown"
+                        ? `, ${province}`
+                        : ""
+                }
+            </p>
+            </section>
+            <p id="status" style="background: ${colors.background}; color: ${colors.color};">${status}</p>
+        </section>
+        <section class="clinicContainer">
+            <section class="OpenTimes">
+                <i class="fa-regular fa-clock"></i>
+                <p>${operatingHours && operatingHours !== "Hours not available"
+                    ? operatingHours
+                    : "Hours not specified"}</p>
+            </section>
+            <section class="clinicServices">
+                ${Array.isArray(service)
+                    ? service.map(s => `<section class="services">${s}</section>`).join("")
+                    : `<section class="services">${service || "General"}</section>`
+                }
+            </section>
+            <section class="clinic-Btns">
+                <button class="manage-btn">Manage</button>
+                <button class="hours-btn">Hours</button>
+                <button class="delete-btn">Delete</button>
+            </section>
+        </section>
+    `;
 
-    deleteBtn.addEventListener("click", async () => {
-        const confirmDelete = confirm("Delete this clinic?");
-        if (!confirmDelete) return;
+    container.appendChild(clinic);
 
+    // Delete
+    clinic.querySelector(".delete-btn").addEventListener("click", async () => {
+        if (!confirm("Delete this clinic?")) return;
         try {
             await deleteDoc(doc(db, "clinicsObjects", id));
             clinic.remove();
@@ -141,14 +162,15 @@ function addClinicToUI(id, name, location, status = "Active", service, operating
         }
     });
 
+    // Manage
     clinic.querySelector(".manage-btn").addEventListener("click", () => {
-        openEditModal(id, name, location, status, service);
+        openEditModal(id, name, location, status, service, province);
     });
 
+    // Hours
     clinic.querySelector(".hours-btn").addEventListener("click", () => {
         editingHoursClinicId = id;
 
-        // Parses "Mon-Fri: 7am-7pm"
         const match = (operatingHours || "").match(
             /^(\w+)-(\w+):\s*([\w]+)\s*-\s*([\w]+)$/
         );
@@ -169,47 +191,84 @@ function addClinicToUI(id, name, location, status = "Active", service, operating
     });
 }
 
+// =========================
+// ADD CLINIC FORM
+// =========================
 addForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const name     = document.getElementById("clinicName").value.trim();
     const address  = document.getElementById("Location").value.trim();
     const status   = document.getElementById("clinicStatus").value;
-    const hours    = document.getElementById("clinicHours").value.trim();
-    const services = document.getElementById("clinicServices").value
-        .split(",")
-        .map(s => s.trim())
-        .filter(s => s.length > 0);
+    const services = getSelectedServices("clinicServicesDropdown");
+    const province = document.getElementById("province").value;
 
-    await addDoc(collection(db, "clinicsObjects"), {
-        name,
-        address,
-        status,
-        opening_hours: hours || "Mon-Fri: 8am - 5pm",
-        service:       services.length > 0 ? services : ["General"],
-        createdAt:     serverTimestamp()
-    });
+    try {
+        await addDoc(collection(db, "clinicsObjects"), {
+            name,
+            address,
+            status,
+            province,
+            opening_hours: "Hours not specified",
+            service:       services.length > 0 ? services : ["General"],
+            createdAt:     serverTimestamp()
+        });
 
-    loadClinics();
-    addForm.reset();
-    modal.style.display = "none";
+        loadClinics();
+        addForm.reset();
+        clearServices("clinicServicesDropdown");
+        modal.style.display = "none";
+    } catch (error) {
+        console.error("Error adding clinic:", error);
+    }
 });
 
-hoursForm.addEventListener("submit", async (e) => {
+// =========================
+// UPDATE CLINIC FORM
+// =========================
+manageForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const startDay  = document.getElementById("startDay").value;
-    const endDay    = document.getElementById("endDay").value;
-    const startTime = document.getElementById("startTime").value;
-    const endTime   = document.getElementById("endTime").value;
+    const name     = document.getElementById("ManageClinicName").value.trim();
+    const address  = document.getElementById("ManageLocation").value.trim();
+    const status   = document.getElementById("ManageClinicStatus").value;
+    const services = getSelectedServices("manageClinicServicesDropdown");
+    const province = document.getElementById("manageProvince").value;
 
-    // Saves as "Mon-Fri: 7am-7pm" — matches DB format exactly
-    const hoursStr = `${startDay}-${endDay}: ${startTime}-${endTime}`;
+    try {
+        await updateDoc(doc(db, "clinicsObjects", editingClinicId), {
+            name,
+            address,
+            status,
+            service: services.length > 0 ? services : ["General"],
+            province
+        });
+
+        loadClinics();
+        manageForm.reset();
+        clearServices("manageClinicServicesDropdown");
+        manageModal.style.display = "none";
+    } catch (error) {
+        console.error("Error updating clinic:", error);
+    }
+});
+
+// =========================
+// UPDATE HOURS FORM
+// =========================
+hoursForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
     if (!editingHoursClinicId) {
         alert("No clinic selected.");
         return;
     }
+
+    const startDay  = document.getElementById("startDay").value;
+    const endDay    = document.getElementById("endDay").value;
+    const startTime = document.getElementById("startTime").value;
+    const endTime   = document.getElementById("endTime").value;
+    const hoursStr  = `${startDay}-${endDay}: ${startTime}-${endTime}`;
 
     try {
         await updateDoc(doc(db, "clinicsObjects", editingHoursClinicId), {
@@ -225,32 +284,24 @@ hoursForm.addEventListener("submit", async (e) => {
     }
 });
 
-manageForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+// =========================
+// OPEN EDIT MODAL
+// =========================
+function openEditModal(id, name, address, status, services, province) {
+    editingClinicId = id;
+    manageModal.style.display = "flex";
 
-    const name     = document.getElementById("ManageClinicName").value.trim();
-    const address  = document.getElementById("ManageLocation").value.trim();
-    const status   = document.getElementById("ManageClinicStatus").value;
-    // const hours    = document.getElementById("ManageClinicHours").value.trim();
-    const services = document.getElementById("ManageClinicServices").value
-        .split(",")
-        .map(s => s.trim())
-        .filter(s => s.length > 0);
+    document.getElementById("ManageClinicName").value   = name;
+    document.getElementById("ManageLocation").value     = address;
+    document.getElementById("ManageClinicStatus").value = status;
+    document.getElementById("manageProvince").value = province || "";
 
-    await updateDoc(doc(db, "clinicsObjects", editingClinicId), {
-        name,
-        address,
-        status,
-        service: services.length > 0 ? services : ["General"]
-    });
+    preselectServices("manageClinicServicesDropdown", services);
+}
 
-    loadClinics();
-    manageForm.reset();
-    manageModal.style.display = "none";
-});
-
-const searchInput = document.getElementById("clinicSearch");
-
+// =========================
+// SEARCH
+// =========================
 searchInput.addEventListener("input", (e) => {
     const value = e.target.value.toLowerCase().trim();
 
@@ -258,40 +309,76 @@ searchInput.addEventListener("input", (e) => {
         (c.name    || "").toLowerCase().includes(value) ||
         (c.address || "").toLowerCase().includes(value) ||
         (c.status  || "").toLowerCase().includes(value) ||
-        (c.service ? (Array.isArray(c.service) 
-            ? c.service.join(" ").toLowerCase() 
-            : c.service.toLowerCase()) : "").includes(value)
+        (c.province || "").toLowerCase().includes(value) ||
+        (Array.isArray(c.service)
+            ? c.service.join(" ").toLowerCase()
+            : (c.service || "").toLowerCase()
+        ).includes(value)
     );
 
     renderClinics(filtered);
 });
 
-function renderClinics(list) {
-    const container = document.querySelector(".clinics");
-    container.innerHTML = "";
+// =========================
+// CUSTOM CHECKBOX DROPDOWN
+// =========================
+document.addEventListener("DOMContentLoaded", () => {
 
-    list.forEach(c => {
-        addClinicToUI(
-            c.id,
-            c.name,
-            c.address,
-            c.status,
-            c.service,
-            c.operatingHours
-        );
+    document.querySelectorAll(".custom-select .select-trigger").forEach(trigger => {
+        trigger.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const parent = trigger.closest(".custom-select");
+            document.querySelectorAll(".custom-select").forEach(s => {
+                if (s !== parent) s.classList.remove("open");
+            });
+            parent.classList.toggle("open");
+        });
     });
+
+    document.querySelectorAll(".custom-select .select-options").forEach(options => {
+        options.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
+    });
+
+    document.addEventListener("click", () => {
+        document.querySelectorAll(".custom-select").forEach(s => s.classList.remove("open"));
+    });
+
+    document.querySelectorAll(".custom-select input[type='checkbox']").forEach(cb => {
+        cb.addEventListener("change", (e) => {
+            e.stopPropagation();
+            updateTriggerLabel(cb.closest(".custom-select"));
+        });
+    });
+});
+
+function updateTriggerLabel(dropdown) {
+    const checked = Array.from(dropdown.querySelectorAll("input[type='checkbox']:checked"))
+        .map(cb => cb.value);
+    const trigger = dropdown.querySelector(".select-trigger");
+    trigger.innerHTML = checked.length > 0
+        ? `${checked.join(", ")} <i class="fa-solid fa-chevron-down"></i>`
+        : `Select Services <i class="fa-solid fa-chevron-down"></i>`;
 }
 
-function openEditModal(id, name, address, status, services) {
-    editingClinicId = id;
-    manageModal.style.display = "flex";
+function getSelectedServices(dropdownId) {
+    return Array.from(
+        document.querySelectorAll(`#${dropdownId} input[type='checkbox']:checked`)
+    ).map(cb => cb.value);
+}
 
-    document.querySelector("#ManageClinicModal #ManageClinicName").value = name;
-    document.querySelector("#ManageClinicModal #ManageLocation").value = address;
-    document.querySelector("#ManageClinicModal #ManageClinicStatus").value = status;
-    // document.querySelector("#ManageClinicModal #ManageClinicHours").value = hours || "";
-    document.querySelector("#ManageClinicModal #ManageClinicServices").value = 
-        Array.isArray(services) ? services.join(", ") : (services || "");
+function clearServices(dropdownId) {
+    document.querySelectorAll(`#${dropdownId} input[type='checkbox']`).forEach(cb => {
+        cb.checked = false;
+    });
+    updateTriggerLabel(document.getElementById(dropdownId));
+}
 
-    document.querySelector("#ManageClinicModal button[type='submit']").textContent = "Update Clinic";
+function preselectServices(dropdownId, services) {
+    const existing = Array.isArray(services) ? services : (services ? [services] : []);
+    document.querySelectorAll(`#${dropdownId} input[type='checkbox']`).forEach(cb => {
+        cb.checked = existing.includes(cb.value);
+    });
+    updateTriggerLabel(document.getElementById(dropdownId));
 }
