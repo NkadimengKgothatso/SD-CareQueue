@@ -7,7 +7,7 @@ The analytics activity diagram shows how an admin accesses analytics reports, ap
 ---
 
 ### 2. Staff Availability
-![Staff Availability](../../images/Staff_Availability.jpeg)  
+![Staff Availability](../../images/StaffAvailabilty.jpeg)  
 The staff availability activity diagram illustrates how staff members manage and save their working availability by setting active days and working hours.
 
 ---
