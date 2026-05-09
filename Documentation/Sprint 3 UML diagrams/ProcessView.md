@@ -14,5 +14,27 @@ The staff availability activity diagram illustrates how staff members manage and
 
 ### 3. Clinic Filtering
 ![Clinic Filtering](../../images/Filtering.png)  
+The clinic search activity diagram shows how an admin or patient searches for clinics by selecting filters such as province or services, after which the system processes and displays the filtered clinic results
+
+---
+
+### 4. Notifications
+![Notifications](../../images/Notifications.png)  
+The queue notification activity diagram shows how the system monitors patient positions and sends an alert when a patient reaches second in the queue.
+
+
+
+---
+
+### 5. PatientWaitTimes
+![PatientWaitTimes](../../images/PatientWaitTimes.png)  
+The queue tracking activity diagram shows how the system allows a patient to view their current position in the queue and the estimated waiting time.
+
+
+---
+
+### 6. AppointmentStatuses
+![AppointmentStatuses](../../images/AppointmentStatuses.png)  
 The clinic search activity diagram shows how an admin or patient searches for clinics by selecting filters such as province or services, after which the system processes and displays the filtered clinic results.
+
 
