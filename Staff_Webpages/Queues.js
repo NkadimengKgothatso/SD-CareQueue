@@ -311,6 +311,7 @@ async function syncAppointmentsToQueues(appointments) {
             patientName:   appt.patientName || null,
             status:        appt.status      || "waiting",
             time:          appt.time        || "",
+            emailSent:     false,
             // Only active patients get a position and estimateWait
             position:      isActive ? appt.queuePosition : null,
             estimateWait:  isActive ? (appt.queuePosition - 1) * 15 : null,

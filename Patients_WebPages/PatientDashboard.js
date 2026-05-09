@@ -1,8 +1,19 @@
 // ================= Firebase Setup =================
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,signOut as firebaseSignOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,doc,getDoc,updateDoc,collection,query,where,getDocs,onSnapshot} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    updateDoc,
+    collection,
+    query,
+    where,
+    getDocs,
+    onSnapshot,
+    addDoc,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ================= Firebase Config =================
 const firebaseConfig = {
@@ -231,7 +242,7 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
             where("clinicID", "==", clinicIDNum)
         );
 
-        clinicUnsubscribe = onSnapshot(clinicQ, (clinicSnapshot) => {
+        clinicUnsubscribe = onSnapshot(clinicQ, async (clinicSnapshot) => {
 
             let allClinicEntries = clinicSnapshot.docs
                 .map(d => ({ id: d.id, ...d.data() }))
@@ -275,6 +286,39 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
             }
 
             const position = userIndex + 1; // Convert to 1-based display position
+
+            if (position === 2 && !queueData.emailSent) {
+            emailjs.init("jWEiS_k1FnVa1Zz5S");
+
+            await emailjs.send("service_j8zb3jh", "template_neu0ubc", {
+                email: patientEmail,
+                name: patientName || "Patient",
+                clinic_name: clinicName,
+                appointment_reason: queueData.reason || "Appointment",
+                appointment_date: queueData.date || "",
+                appointment_time: queueData.time || ""
+            });
+
+            await updateDoc(doc(db, "Queues", queueData.id), {
+                emailSent: true
+            });
+
+
+            await addDoc(collection(db, "Notifications"), {
+                userID: userId,
+                clinicID: clinicIDNum,
+                clinicName: clinicName,
+                type: "Appointment",
+                title: "Appointment In An Hour!",
+                message: `Your ${queueData.reason || "appointment"} at ${clinicName} is in an hour (you are position 2) for ${queueData.date} at ${queueData.time}. Please make your way to the clinic.`,
+                read: false,
+                createdAt: serverTimestamp()
+            });
+
+
+        }
+
+
 
             // --- Update UI ---
 
