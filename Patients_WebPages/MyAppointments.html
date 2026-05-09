@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Appointments</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="a-sidebar.css">
+    <link rel="stylesheet" href="patientDashboard.css">
     <link rel="stylesheet" href="myappointments.css">
-    <link rel="stylesheet" href="bookAppointments.css">
-    <link rel="stylesheet" href="a-sidebar.css>">
+    
+    
     
 </head>
 <body>
@@ -21,42 +23,46 @@
 
     <main class="container">
 
-       <aside class="sidebar">
-        <nav>
-            <ul>
-                <li class="active">
-                    <a href="PatientDashboard.html">
-                        <i class="fa-solid fa-chart-bar"></i> Dashboard
-                    </a>
-                </li>
-                <li>
-                    <a href="BookAppointments.html">
-                        <i class="fa-solid fa-calendar-plus"></i> Book Appointment
-                    </a>
-                </li>
-                <li>
-                    <a href="MyAppointments.html">
-                        <i class="fa-solid fa-calendar-check"></i> My Appointments
-                    </a>
-                </li>
-                
-                <li>
-                    <a href="patientNotifications.html" >
-                        <i class="fa-solid fa-bell"></i> Notifications
-                    </a>
-                </li>
-            </ul>
+       <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <nav class="sidebar-nav">
+
+            <section class="nav-item active" onclick="window.location.href='PatientDashboard.html'">
+                <section class="nav-dot"></section>
+                <span>Dashboard</span>
+            </section>
+
+            <section class="nav-item" onclick="window.location.href='BookAppointments.html'">
+                <section class="nav-dot"></section>
+                <span>Book Appointment</span>
+            </section>
+
+            <section class="nav-item" onclick="window.location.href='MyAppointments.html'">
+                <section class="nav-dot"></section>
+                <span>My Appointments</span>
+            </section>
+
+            <section class="nav-item" onclick="window.location.href='patientNotifications.html'">
+                <section class="nav-dot"></section>
+                <span>Notifications</span>
+                <span id="sidebarUnreadCount" class="sidebar-badge">0</span>
+            </section>
+
         </nav>
 
-
-            <section class="user-Section">
-                <i class="fa-solid fa-user" style="padding: 5px;"></i>
-                <address>
-                    <p class="name-Surname">Name Surname</p>
-                    <p class="user-Identity">Patient</p>
-                </address>
+        <!-- USER PANEL -->
+        <section class="sidebar-footer">
+            <section class="user-info">
+                <section class="user-avatar" id="patientAvatar">PT</section>
+                <section class="user-details">
+                    <section class="user-name" id="userName">Patient Name</section>
+                    <!-- userRole: referenced by JS, hidden visually but must exist in DOM -->
+                    <section class="user-email" id="userEmail">patient@email.com</section>
+                    <span id="userRole" style="display:none;"></span>
+                </section>
             </section>
-        </aside>
+        </section>
+    </aside>
 
         <section class="main-content">
             <h1>My Appointments</h1>
@@ -93,9 +99,13 @@
     </main>
 
     
-
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
    
+  
     <script type="module" src="MyAppointments.js"></script>
-    <script type="module" src="firebase.js"></script>
+
+    
+    <script type="module" src="sidebarNotifications.js"></script>
+   
 </body>
 </html>

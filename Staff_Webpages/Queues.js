@@ -399,37 +399,76 @@ function startQueueListeners() {
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
         if (nameSurnameEl) nameSurnameEl.textContent = "Staff";
-        if (unsubscribeReg)    { unsubscribeReg();    unsubscribeReg    = null; }
-        if (unsubscribeWalkIn) { unsubscribeWalkIn(); unsubscribeWalkIn = null; }
+
+        if (unsubscribeReg) {
+            unsubscribeReg();
+            unsubscribeReg = null;
+        }
+
+        if (unsubscribeWalkIn) {
+            unsubscribeWalkIn();
+            unsubscribeWalkIn = null;
+        }
+
         staffClinicID = null;
         renderEmptyState();
         return;
     }
 
-    if (nameSurnameEl) nameSurnameEl.textContent = user.displayName || "Staff";
+    // ── Basic UI (sidebar header/footer) ──
+    const staffName = user.displayName || "Staff";
 
-    // Query ApprovedStaff by email
+    if (nameSurnameEl) {
+        nameSurnameEl.textContent = staffName;
+    }
+
+    const staffEmailEl = document.getElementById("staffEmail");
+    const staffAvatarEl = document.getElementById("staffAvatar");
+    const staffNameFooterEl = document.getElementById("staffName");
+
+    if (staffEmailEl) {
+        staffEmailEl.textContent = user.email;
+    }
+
+    if (staffNameFooterEl) {
+        staffNameFooterEl.textContent = staffName;
+    }
+
+    if (staffAvatarEl) {
+        const initials = staffName
+            .split(" ")
+            .map(n => n[0])
+            .join("")
+            .toUpperCase();
+
+        staffAvatarEl.textContent = initials;
+    }
+
+    // ── Get staff clinic ──
     try {
         const staffQuery = query(
             collection(db, "ApprovedStaff"),
             where("email", "==", user.email)
         );
-        console.log("🔎 Searching ApprovedStaff for email:", user.email);
+
         const snapshot = await getDocs(staffQuery);
+
         console.log("📄 Snapshot empty?", snapshot.empty);
 
         if (!snapshot.empty) {
             const data = snapshot.docs[0].data();
-            console.log("📄 Staff data:", JSON.stringify(data));
+
             staffClinicID = data.clinicId || null;
+
             console.log("🏥 staffClinicID:", staffClinicID);
         }
+
     } catch (err) {
         console.error("Failed to fetch staff clinic:", err);
     }
 
+    // ── Safety check ──
     if (!staffClinicID) {
-        console.warn("No clinicID found for this staff member.");
         queueList.innerHTML = `
             <li class="empty-state error-state">
                 <i class="fa-solid fa-circle-exclamation"></i>
@@ -438,5 +477,6 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
+    // ── Start queue system ──
     startQueueListeners();
 });

@@ -63,7 +63,7 @@
 
   <tr>
     <td>10</td>
-    <td>As a system, I want to send notifications when a patient’s turn is near so that patients are ready and do not miss their turn.</td>
+    <td>As a system, I want to send notifications when a patient is 2nd in the queue, so that they can prepare and not miss their turn.</td>
     <td>9</td>
   </tr>
 

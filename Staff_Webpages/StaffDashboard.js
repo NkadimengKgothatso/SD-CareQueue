@@ -53,31 +53,53 @@ onAuthStateChanged(auth, async (user) => {
         }
 
         let clinicID = null;
+        let staffName = "Staff";
+        let staffEmail = user.email;
 
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
 
-            
             clinicID = Number(data.clinicId);
+            staffName = data.displayName || "Staff";
 
+            // top bar name
             document.querySelectorAll(".name-Surname").forEach(el => {
-                el.textContent = data.displayName;
+                el.textContent = staffName;
             });
 
             const today = new Date().toDateString();
             const clinicTimeEl = document.getElementById("clinicAndTime");
+
             if (clinicTimeEl) {
                 clinicTimeEl.textContent = `${data.assignedClinic} · ${today}`;
             }
         });
 
+        // ─── Sidebar footer (STAFF) ─────────────────────────────
+        const staffNameEl = document.getElementById("staffName");
+        const staffEmailEl = document.getElementById("staffEmail");
+        const staffAvatarEl = document.getElementById("staffAvatar");
+
+        if (staffNameEl) staffNameEl.textContent = staffName;
+        if (staffEmailEl) staffEmailEl.textContent = staffEmail;
+
+        if (staffAvatarEl) {
+            const initials = staffName
+                .split(" ")
+                .map(n => n[0])
+                .join("")
+                .toUpperCase();
+
+            staffAvatarEl.textContent = initials;
+        }
+
+        // ─── Load page data ─────────────────────────────────────
         if (!clinicID) {
             console.log("No clinicID found");
             return;
         }
-        
+
         loadAppointments(clinicID);
-     
         loadStats(clinicID);
 
     } catch (error) {

@@ -143,6 +143,7 @@ const clinicResults = document.getElementById("clinicResults");
 
 let clinics = [];
 let selectedClinicId;
+let selectedClinicName;
 
 
 
@@ -225,6 +226,7 @@ function displayClinics(clinicList) {
         });
 
         selectedClinicId = clinic.id;
+        selectedClinicName = clinic.name;
 
         const btn = clinicCard.querySelector(".open-btn");
         btn.textContent = "Selected";
@@ -467,11 +469,13 @@ openNowBtn.addEventListener("click", () => {
 loadClinics();
 
 // display patient name on side bar
-const nameSurnameEl = document.getElementById("name-Surname");
+const nameSurnameEl = document.getElementById("userName");
+const emailEl =  document.getElementById("userEmail");
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
         nameSurnameEl.textContent = user.displayName;
+        emailEl.textContent = user.email;
     } else {
         nameSurnameEl.textContent = "Guest";
     }
@@ -554,6 +558,7 @@ confirmBtn.addEventListener("click", async () => {
             clinicID: selectedClinicId,
             userID: user.uid,
             date: date,
+            clinicName: selectedClinicName,
             time: time,
             reason: reason,
             status: "scheduled",
@@ -563,14 +568,26 @@ confirmBtn.addEventListener("click", async () => {
          await addDoc(collection(db, "Notifications"), {
             userID: user.uid,
             clinicID: selectedClinicId,
-            type: "appointment",
-            title: "Appointment Confirmed",
-            message: `Your appointment for ${reason} has been booked for ${date} at ${time}.`,
+            clinicName: selectedClinicName,
+            type: "Appointment",
+            title: "Appointment Booked",
+            message: `Your ${reason} appointment at ${selectedClinicName} is booked for ${date} at ${time}. Please arrive 10 minutes early.`,
             read: false,
             createdAt: serverTimestamp()
         });
+/*
+        emailjs.init("jWEiS_k1FnVa1Zz5S");
 
+        await emailjs.send("service_j8zb3jh", "template_4onbz1h", {
+            email: user.email,
+            name: user.displayName || "Patient",
+            clinic_name: selectedClinicName,
+            appointment_reason: reason,
+            appointment_date: date,
+            appointment_time: time
+        });
 
+*/
         alert("Appointment booked successfully!");
 
         document.getElementById("appt-date").value = "";

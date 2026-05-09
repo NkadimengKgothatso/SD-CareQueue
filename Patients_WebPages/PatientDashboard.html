@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,6 +52,7 @@
             <section class="nav-item" onclick="window.location.href='patientNotifications.html'">
                 <section class="nav-dot"></section>
                 <span>Notifications</span>
+                <span id="sidebarUnreadCount" class="sidebar-badge">0</span>
             </section>
 
         </nav>
@@ -172,8 +175,11 @@
 
 </section><!-- END LAYOUT -->
 
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
 <script type="module" src="firebase.js"></script>
 <script type="module" src="PatientDashboard.js"></script>
+<script type="module" src="sidebarNotifications.js"></script>
 
 </body>
 </html>

@@ -23,63 +23,70 @@
     <section class="container">
 
     <!-- Sidebar -->
-    <aside>
-        <ul>
-            <li>
-                <a href="StaffDashboard.html">
-                    <i class="material-icons">bar_chart</i>
-                    Dashboard
-                </a>
-            </li>
-           <li>
-                <a href="Availability.html">
-                    <i class="material-icons">event_available</i>
-                    My Availability
-                </a>
-            </li>
-            <li>    
-                <a href="Appointments.html">
-                    <i class="material-icons">event</i>
-                    Manage Appointment
-                </a>
-            </li>
-            <li>
-                <a href="Queues.html">
-                    <i class="material-icons">groups</i>
-                    Queue Management
-                </a>
-            </li>
-            <li>
-                <a href="Analytics.html" class="active">
-                    <i class="fa-solid fa-chart-line"></i>
-                    Analytics
-                </a>
-            </li>
-            <li>
-                <a href="WalkIns.html">
-                    <i class="material-icons">directions_walk</i>
-                    Walk-in
-                </a>
-            </li>
+    <aside class="sidebar">
 
-            <li>
-                <a href="#">
-                    <i class="fa-solid fa-bell"></i>
-                    Notifications
-                </a>
-            </li>
-        </ul>
+            <nav class="sidebar-nav">
 
-        <section class="user-Section">
-            <i class="fa-solid fa-user" style="padding: 5px;"></i>
-            <section>
-                <p class="name-Surname">Name Surname</p>
-                <p class="user-Identity" style="padding: 3px">Patient</p>
+                <section class="nav-item"
+                    onclick="window.location.href='StaffDashboard.html'">
+                    <section class="nav-dot"></section>
+                    <span>Dashboard</span>
+                </section>
+
+                <section class="nav-item"
+                    onclick="window.location.href='Availability.html'">
+                    <section class="nav-dot"></section>
+                    <span>My Availability</span>
+                </section>
+
+                <section class="nav-item"
+                    onclick="window.location.href='Appointments.html'">
+                    <section class="nav-dot"></section>
+                    <span>Manage Appointment</span>
+                </section>
+
+                <section class="nav-item"
+                    onclick="window.location.href='Queues.html'">
+                    <section class="nav-dot"></section>
+                    <span>Queue Management</span>
+                </section>
+
+                <section class="nav-item active"
+                    onclick="window.location.href='Analytics.html'">
+                    <section class="nav-dot"></section>
+                    <span>Analytics</span>
+                </section>
+
+                <section class="nav-item"
+                    onclick="window.location.href='WalkIns.html'">
+
+                    <section class="nav-dot"></section>
+                    <span>Walk-in</span>
+                </section>
+
+                <section class="nav-item">
+                    <section class="nav-dot"></section>
+                    <span>Notifications</span>
+                </section>
+
+            </nav>
+            <section class="sidebar-footer">
+                <section class="user-info">
+        
+                    <section class="user-avatar" id="staffAvatar">
+                        <!-- initials will be injected by JS -->
+                    </section>
+
+                    <section class="user-details">
+                        <section class="user-name" id="staffName"></section>
+                        <section class="user-email" id="staffEmail"></section>
+                    </section>
+
+                </section>
             </section>
-        </section>
     </aside>
         <main>
-            <h2>Manage </h2>
+            <h2>coming soon </h2>
 
 
                 

@@ -1,3 +1,8 @@
+/* ============================================================
+   Walk-In Page Styles 
+   ============================================================ */
+
+/* ── Base ─────────────────────────────────────────────────── */
 .walkin-main {
     padding: 20px;
     font-family: Arial, sans-serif;
@@ -8,9 +13,51 @@
     color: #666;
 }
 
-/* ===================== */
-/* QUEUE SECTION */
-/* ===================== */
+/* ── Top Bar Logo FIX (IMPORTANT) ─────────────────────────── */
+.top-bar .logo-name {
+    color: var(--clr-primary);
+}
+
+.top-bar .logo-icon {
+    background: var(--clr-primary);
+}
+
+/* Ensure logo icons are not affected by global rules */
+.top-bar .logo i {
+    color: white !important;
+}
+
+/* ── Page Titles ─────────────────────────────────────────── */
+.page-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a2e;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-title i {
+    color: var(--clr-primary);
+}
+
+/* ── Section Titles ──────────────────────────────────────── */
+.section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 10px;
+    letter-spacing: 0.3px;
+}
+
+.section-title i {
+    margin-right: 6px;
+    color: var(--clr-primary);
+}
+
+/* ============================================================
+   QUEUE SECTION
+   ============================================================ */
 
 .queue-title {
     margin-top: 20px;
@@ -18,12 +65,14 @@
     letter-spacing: 0.5px;
 }
 
+/* ── Table ───────────────────────────────────────────────── */
 .queue-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
 }
 
+/* Header */
 .queue-table th {
     text-align: left;
     font-weight: bold;
@@ -31,33 +80,64 @@
     font-size: 13px;
 }
 
+/* ONLY scoped icon styling (no global th i anymore) */
+.queue-table th i {
+    margin-right: 6px;
+    color: var(--clr-primary);
+}
+
+/* Body */
 .queue-table td {
     padding: 12px 10px;
-    vertical-align: top;
     font-size: 13px;
+    vertical-align: top;
 }
 
-.sub-id {
-    font-size: 11px;
-    color: #777;
-}
-
+/* Links */
 .queue-table a {
     color: #00a3a3;
     text-decoration: none;
 }
 
-.more-text {
-    text-align: center;
-    margin-top: 10px;
-    font-size: 12px;
-    color: #555;
+/* Hover row */
+.queue-table tbody tr {
+    transition: background-color 0.2s ease;
 }
 
-/* ===================== */
-/* REGISTER SECTION */
-/* ===================== */
+.queue-table tbody tr:hover {
+    background-color: #e0f7ff;
+    cursor: pointer;
+}
 
+/* Scrollable table body */
+.queue-table tbody {
+    display: block;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.queue-table thead,
+.queue-table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+/* ============================================================
+   BADGE
+   ============================================================ */
+.badge {
+    margin-left: 8px;
+    background: #00bcd4;
+    color: white;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* ============================================================
+   REGISTER SECTION
+   ============================================================ */
 .register-section {
     margin-top: 40px;
 }
@@ -67,15 +147,14 @@
     max-width: 400px;
     display: flex;
     flex-direction: column;
-    gap: 8px; 
+    gap: 8px;
 }
 
 .register-form label {
-    display: block;
-    margin-top: 12px;
     font-size: 13px;
     font-weight: 500;
     color: #333;
+    margin-top: 12px;
 }
 
 .register-form input,
@@ -92,59 +171,31 @@
 .register-form input:focus,
 .register-form select:focus {
     outline: none;
-    border-color: #38bdf8;
-    box-shadow: 0 0 0 2px rgba(31, 191, 117, 0.15);
+    border-color: var(--clr-primary);
+    box-shadow: 0 0 0 2px rgba(69,132,196,0.15);
 }
 
+/* Button */
 .add-btn {
     margin-top: 18px;
-    background: #38bdf8;
+    background: var(--clr-primary);
     color: white;
     border: none;
     padding: 8px 14px;
     cursor: pointer;
     font-weight: 600;
     border-radius: 6px;
-
-    width: fit-content;   /* key fix */
+    width: fit-content;
     display: inline-block;
 }
 
-.register-form .add-btn:hover {
-    background: #0ea5e9 !important;
+.add-btn:hover {
+    background: var(--clr-primary-dark);
 }
 
-.badge {
-    margin-left: 8px;
-    background: #00bcd4;
-    color: white;
-    font-size: 11px;
-    padding: 2px 6px;
-    border-radius: 4px;
-}
-
-.queue-table {
-    display: block;          /* enables scrolling */
-    max-height: 320px;       /* adjust height as needed */
-    overflow-y: auto;
-    width: 100%;
-}
-
-.queue-table thead,
-.queue-table tbody tr {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
-}
-
-.queue-table tbody tr {
-    transition: background-color 0.2s ease;
-}
-
-.queue-table tbody tr:hover {
-    background-color: #e0f7ff;
-    cursor: pointer;
-}
+/* ============================================================
+   MODAL
+   ============================================================ */
 
 dialog {
     border: none;
@@ -199,6 +250,7 @@ dialog {
     gap: 10px;
 }
 
+/* Buttons */
 .btn {
     padding: 8px 12px;
     border-radius: 6px;
@@ -213,125 +265,45 @@ dialog {
 }
 
 .confirm-btn {
-    background: #38bdf8;
+    background: var(--clr-primary);
     color: white;
 }
 
 .confirm-btn:hover {
-    background: #0ea5e9;
+    background: var(--clr-primary-dark);
 }
 
-/* FIXED SCROLL CONTAINER */
-.queue-table {
-    width: 100%;
-    border-collapse: collapse;
-}
+/* ============================================================
+   DIALOG FIX
+   ============================================================ */
 
-/* wrapper scroll ONLY tbody */
-.queue-table tbody {
-    display: block;
-    max-height: calc(5 * 40px); /* 5 rows × row height */
-    overflow-y: auto;
-}
-
-/* keep header aligned */
-.queue-table thead,
-.queue-table tbody tr {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
-}
-
-/* Center the dialog itself */
 #confirmModal {
     border: none;
     border-radius: 12px;
     padding: 0;
-
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
 }
 
-/* Dark overlay background */
 #confirmModal::backdrop {
     background: rgba(0, 0, 0, 0.4);
 }
 
-/* Modal card styling */
-.modal-card {
-    padding: 20px;
-    width: 320px;
-    background: white;
-    border-radius: 12px;
-}
-
-/* Header layout */
-.modal-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.warning-icon {
-    color: #f59e0b;
-    font-size: 18px;
-}
-
-/* Body */
-.modal-body {
-    margin: 15px 0;
-    color: #333;
-}
-
-/* Buttons */
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-.btn {
-    border: none;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.cancel-btn {
-    background: #e5e7eb;
-}
-
-.confirm-btn {
-    background: #38bdf8;
-    color: white;
-}
-
-.confirm-btn:hover {
-    background: #0ea5e9;
-}
-
+/* ============================================================
+   TABLE ICON FIX (IMPORTANT)
+   ============================================================ */
 th i {
-    margin-right: 6px;
-    color: #4a90e2;
+    color: var(--clr-primary);
 }
 
-.section-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 10px;
-    letter-spacing: 0.3px;
-    text-transform: capitalize;
-}
-
-.section-title i {
-    margin-right: 6px;
-    color: #38bdf8;
-}
-
-.page-title i {
-    margin-right: 8px;
-    color: #38bdf8;
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 700px) {
+    .day-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
 }

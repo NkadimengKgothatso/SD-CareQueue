@@ -400,27 +400,71 @@ addBtn?.addEventListener("click", async () => {
 // If no user is logged in, it resets the display to default values
 
 onAuthStateChanged(auth, async (user) => {
-
     if (!user) {
         if (nameSurnameEl) nameSurnameEl.textContent = "Staff";
         if (clinicEl) clinicEl.textContent = "";
+
+        clinicId = null;
+        assignedClinic = null;
+
+        if (unsubscribe) unsubscribe();
+
         return;
     }
 
-    const staff = await getStaffProfile(user.email);   //get staff profile
-
-    if (!staff) return;   //stop execution if staff doesnt exist
-
-   clinicId = Number(staff.clinicId);                       //store staff details
-    assignedClinic = staff.assignedClinic;
+    // ─── STAFF SIDEBAR UI ─────────────────────────────
+    const staffName = user.displayName || "Staff";
 
     if (nameSurnameEl) {
-        nameSurnameEl.textContent = staff.displayName || "Staff";
+        nameSurnameEl.textContent = staffName;
     }
 
     if (clinicEl) {
-        clinicEl.textContent = staff.assignedClinic || "No clinic assigned";
+        clinicEl.textContent = "Loading clinic...";
     }
 
+    const staffEmailEl = document.getElementById("staffEmail");
+    const staffAvatarEl = document.getElementById("staffAvatar");
+    const staffNameFooterEl = document.getElementById("staffName");
+
+    if (staffEmailEl) {
+        staffEmailEl.textContent = user.email;
+    }
+
+    if (staffNameFooterEl) {
+        staffNameFooterEl.textContent = staffName;
+    }
+
+    if (staffAvatarEl) {
+        const initials = staffName
+            .split(" ")
+            .map(n => n[0])
+            .join("")
+            .toUpperCase();
+
+        staffAvatarEl.textContent = initials;
+    }
+
+    // ─── FETCH STAFF PROFILE ─────────────────────────
+    const staff = await getStaffProfile(user.email);
+
+    if (!staff) {
+        console.warn("No staff profile found");
+        return;
+    }
+
+    // ─── SET CLINIC INFO ─────────────────────────────
+    clinicId = Number(staff.clinicId);
+    assignedClinic = staff.assignedClinic;
+
+    if (clinicEl) {
+        clinicEl.textContent =
+            assignedClinic || "No clinic assigned";
+    }
+
+    console.log("🏥 clinicId:", clinicId);
+    console.log("🏥 assignedClinic:", assignedClinic);
+
+    // ─── LOAD WALK-IN APPOINTMENTS ───────────────────
     loadAppointments();
 });
