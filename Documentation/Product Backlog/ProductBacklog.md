@@ -99,7 +99,7 @@
 
   <tr>
     <td>16</td>
-    <td>As an admin, I want to manage clinic details (hours, services, staff) so that clinic information stays accurate and up to date.</td>
+    <td>As an admin, I can manage clinic details(operating hours, services, clinic name, clinic location ) so that information is accurate and up to date.</td>
     <td>8</td>
   </tr>
 
