@@ -1,7 +1,7 @@
 // ================= Firebase Setup =================
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {getAuth,signOut as firebaseSignOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,doc,getDoc,updateDoc,collection,query,where,getDocs,onSnapshot} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {initializeApp} from "firebase/app";
+import {getAuth,signOut as firebaseSignOut,onAuthStateChanged} from "firebase/auth";
+import {getFirestore,doc,getDoc,updateDoc,collection,query,where,getDocs,onSnapshot} from "firebase/firestore";
 
 
 // ================= Firebase Config =================
@@ -399,3 +399,12 @@ const currentPage = window.location.pathname.split("/").pop();
 document.querySelectorAll("aside nav ul li a").forEach(link => {
     if (link.getAttribute("href") === currentPage) link.classList.add("active");
 });
+
+
+export {
+    showEmpty,
+    showFilled,
+    setAvatarInitial,
+    loadVisitsCount,
+    loadQueueStatus
+};

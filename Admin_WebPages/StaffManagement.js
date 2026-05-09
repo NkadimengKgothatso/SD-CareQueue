@@ -17,7 +17,7 @@ import {
     deleteDoc,
     doc,
     serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+} from "firebase/firestore";
 
 const STAFF_COLLECTION = "ApprovedStaff";
 // Holds the signed-in admin user object once the page has loaded.
