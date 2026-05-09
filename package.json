@@ -8,7 +8,8 @@
     "coverage": "jest --coverage",
     "coverage:appointments": "jest Staff_Webpages/Appointments.test.js --coverage --collectCoverageFrom=Staff_Webpages/Appointments.js",
     "coverage:booking": "jest Patients_WebPages/BookAppointments.test.js --coverage --collectCoverageFrom=Patients_WebPages/BookAppointments.js",
-    "coverage:availability": "jest Staff_Webpages/Availability.test.js --coverage --collectCoverageFrom=Staff_Webpages/Availability.js"
+    "coverage:availability": "jest Staff_Webpages/Availability.test.js --coverage --collectCoverageFrom=Staff_Webpages/Availability.js",
+    "coverage:dashboard": "jest Patients_WebPages/Dashboard.test.js --coverage --collectCoverageFrom=Patients_WebPages/Dashboard.js"
   },
 "jest": {
   "testEnvironment": "jsdom",

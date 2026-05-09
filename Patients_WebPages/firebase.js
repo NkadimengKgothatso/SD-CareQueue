@@ -1,8 +1,8 @@
 // signup firebse code 
 
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore } from "firebase/firestore";
+        import { initializeApp } from "firebase/app";
+        import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 
         const firebaseConfig = {
             apiKey:            "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
