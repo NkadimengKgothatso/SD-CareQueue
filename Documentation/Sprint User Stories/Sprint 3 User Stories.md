@@ -75,9 +75,7 @@ As a patient, I want to see estimated wait times and queue positions so that I c
 <tr>
 <td>3</td>
 <td>
-As an admin,
-I want to view analytics reports on patient flow and appointment performance,
-so that I can understand clinic efficiency and improve operational decisions.
+As an admin, I want to view analytics like wait times and no-shows so that I can improve clinic performance and efficiency.
 </td>
 
 <td>
