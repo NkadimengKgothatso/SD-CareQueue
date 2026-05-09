@@ -219,6 +219,7 @@ html, body {
     background: var(--color-brand-subtle);
     color: var(--color-brand-dark);
 }
+/* Active state (for current page)  */
 
 .nav-item.active {
     background:  var(--color-brand-soft);

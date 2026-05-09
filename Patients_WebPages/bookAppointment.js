@@ -246,11 +246,17 @@ function displayClinics(clinicList) {
 clinicSearchInput.addEventListener("input", () => {
     const searchValue = clinicSearchInput.value.toLowerCase().trim();
 
-    const filteredClinics = clinics.filter(clinic =>
-        clinic.name && clinic.name.toLowerCase().includes(searchValue) && clinic.address.toLowerCase().includes(searchValue)
+    const filtered = clinics.filter(c =>
+        (c.name    || "").toLowerCase().includes(searchValue) ||
+        (c.address || "").toLowerCase().includes(searchValue) ||
+        (c.status  || "").toLowerCase().includes(searchValue) ||
+        (c.province || "").toLowerCase().includes(searchValue) ||
+        (c.service ? (Array.isArray(c.service) 
+            ? c.service.join(" ").toLowerCase() 
+            : c.service.toLowerCase()) : "").includes(searchValue)
     );
 
-    displayClinics(filteredClinics);
+    displayClinics(filtered);
 });
 
 
@@ -515,6 +521,8 @@ confirmBtn.addEventListener("click", async () => {
     const tomorrowCheck = new Date(now);
     tomorrowCheck.setDate(now.getDate());
 
+     const clinicIdNum = Number(selectedClinicId);
+
     
     if (!selectedClinicId || !date || !time || reason === "Select reason") {
         alert("Please fill in all fields");
@@ -526,7 +534,7 @@ confirmBtn.addEventListener("click", async () => {
         const ref = doc(db, "Appointments", appointmentId);
 
         await updateDoc(ref, {
-            clinicID: selectedClinicId,
+            clinicID: clinicIdNum,
             date: date,
             time: time,
             reason: reason,
@@ -553,11 +561,15 @@ confirmBtn.addEventListener("click", async () => {
         return;
     }
 
+   
+
+
     try {
         await addDoc(collection(db, "Appointments"), {
-            clinicID: selectedClinicId,
+            clinicID: clinicIdNum,
             userID: user.uid,
             date: date,
+            clinicName: selectedClinicName,
             time: time,
             reason: reason,
             status: "scheduled",
@@ -566,7 +578,7 @@ confirmBtn.addEventListener("click", async () => {
 
          await addDoc(collection(db, "Notifications"), {
             userID: user.uid,
-            clinicID: selectedClinicId,
+            clinicID: clinicIdNum,
             clinicName: selectedClinicName,
             type: "Appointment",
             title: "Appointment Booked",

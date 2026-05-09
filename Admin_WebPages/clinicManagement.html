@@ -83,10 +83,28 @@
                 <input type="text" placeholder="Clinic Name" class="form-control" id="clinicName" required>
                 <input type="text" placeholder="Location" class="form-control" id="Location" required>
 
-                <input type="text" placeholder="Operating Hours (e.g. Mon-Fri: 8am-5pm)" class="form-control" id="clinicHours">
-                <input type="text" placeholder="Services (comma separated, e.g. General, HIV, TB)" class="form-control" id="clinicServices">
+                <section class="custom-select" id="clinicServicesDropdown">
+                    <section class="select-trigger">Select Services <i class="fa-solid fa-chevron-down"></i></section>
+                    <section class="select-options">
+                        <label><input type="checkbox" value="General"> General</label>
+                        <label><input type="checkbox" value="Emergency"> Emergency</label>
+                        <label><input type="checkbox" value="Maternity"> Maternity</label>
+                        <label><input type="checkbox" value="Paediatrics"> Paediatrics</label>
+                        <label><input type="checkbox" value="Dentistry"> Dentistry</label>
+                        <label><input type="checkbox" value="Ophthalmology"> Ophthalmology</label>
+                        <label><input type="checkbox" value="Pharmacy"> Pharmacy</label>
+                        <label><input type="checkbox" value="Radiology"> Radiology</label>
+                        <label><input type="checkbox" value="Physiotherapy"> Physiotherapy</label>
+                        <label><input type="checkbox" value="Mental Health"> Mental Health</label>
+                        <label><input type="checkbox" value="HIV/AIDS"> HIV/AIDS</label>
+                        <label><input type="checkbox" value="TB Treatment"> TB Treatment</label>
+                        <label><input type="checkbox" value="Chronic Disease"> Chronic Disease</label>
+                        <label><input type="checkbox" value="Occupational Health"> Occupational Health</label>
+                        <label><input type="checkbox" value="Laboratory"> Laboratory</label>
+                    </section>
+                </section>
 
-                <select>
+                <select id="province">
                     <option value="" disabled selected>Select Province</option>
                     <option>Gauteng</option>
                     <option>Western Cape</option>
@@ -122,9 +140,28 @@
             <form class="clinicForm">
                 <input type="text" placeholder="Clinic Name" class="form-control" id="ManageClinicName" required>
                 <input type="text" placeholder="Location" class="form-control" id="ManageLocation" required>
-                <input type="text" placeholder="Services (comma separated, e.g. General, HIV, TB)" class="form-control" id="ManageClinicServices">
+                <section class="custom-select" id="manageClinicServicesDropdown">
+                    <section class="select-trigger">Select Services <i class="fa-solid fa-chevron-down"></i></section>
+                    <section class="select-options">
+                        <label><input type="checkbox" value="General"> General</label>
+                        <label><input type="checkbox" value="Emergency"> Emergency</label>
+                        <label><input type="checkbox" value="Maternity"> Maternity</label>
+                        <label><input type="checkbox" value="Paediatrics"> Paediatrics</label>
+                        <label><input type="checkbox" value="Dentistry"> Dentistry</label>
+                        <label><input type="checkbox" value="Ophthalmology"> Ophthalmology</label>
+                        <label><input type="checkbox" value="Pharmacy"> Pharmacy</label>
+                        <label><input type="checkbox" value="Radiology"> Radiology</label>
+                        <label><input type="checkbox" value="Physiotherapy"> Physiotherapy</label>
+                        <label><input type="checkbox" value="Mental Health"> Mental Health</label>
+                        <label><input type="checkbox" value="HIV/AIDS"> HIV/AIDS</label>
+                        <label><input type="checkbox" value="TB Treatment"> TB Treatment</label>
+                        <label><input type="checkbox" value="Chronic Disease"> Chronic Disease</label>
+                        <label><input type="checkbox" value="Occupational Health"> Occupational Health</label>
+                        <label><input type="checkbox" value="Laboratory"> Laboratory</label>
+                    </section>
+                </section>
 
-                <select>
+                <select id="manageProvince">
                     <option value="" disabled selected>Select Province</option>
                     <option>Gauteng</option>
                     <option>Western Cape</option>
@@ -143,7 +180,7 @@
                     <option value="Busy">Busy</option>
                 </select>
 
-                <button type="submit">Add Clinic</button>
+                <button type="submit">Update Clinic</button>
             </form>
 
         </section>
