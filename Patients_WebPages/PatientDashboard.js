@@ -232,6 +232,7 @@ function loadQueueStatus(userId, appointmentId, clinicID, appointment, clinicNam
     if (queueUnsubscribe) queueUnsubscribe();
 
     let clinicUnsubscribe = null;
+    let 
 
     // Reset UI when user is not in queue
     const setEmpty = () => {

@@ -105,6 +105,8 @@ async function loadClinics() {
         snapshot.forEach(docSnap => {
             const clinic = docSnap.data();
 
+            clinic.id = docSnap.id;
+
             if (!clinic.id) {
                 console.warn("Skipping clinic with missing id:", clinic);
                 return;
@@ -145,8 +147,7 @@ function renderAppointment(appointment) {
     const li = document.createElement("li");
     li.classList.add("appointment-card");
 
-    const clinic = clinicsMap.get(appointment.clinicID.toString());
-    const clinicName = clinic ? clinic.name : "Unknown Clinic";
+    
 
     if (isPast) {
         li.classList.add("past-card");
@@ -162,7 +163,7 @@ function renderAppointment(appointment) {
             <article class="card-body">
 
                 <header class="card-clinic-group">
-                    <p class="card-clinic">${clinicName}</p>
+                    <p class="card-clinic">${appointment.clinicName}</p>
                 </header>
 
                 <ul class="card-meta">
