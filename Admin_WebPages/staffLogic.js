@@ -54,7 +54,7 @@ function buildStaffTableHTML(staffList) {
   if (staffList.length === 0) {
     return `
       <tr>
-        <td colspan="4" style="text-align:center; padding:40px; color:var(--color-text-tertiary);">
+        <td colsection="4" style="text-align:center; padding:40px; color:var(--color-text-tertiary);">
           No staff members yet
         </td>
       </tr>

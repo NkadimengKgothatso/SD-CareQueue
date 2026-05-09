@@ -345,7 +345,7 @@ html, body {
     }
 
     .sidebar-footer .user-details,
-    .nav-item span {
+    .nav-item section {
         display: none;
     }
 

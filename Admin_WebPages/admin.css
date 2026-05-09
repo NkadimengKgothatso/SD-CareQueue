@@ -465,7 +465,7 @@ body {
     }
 
     .logo-name,
-    .nav-item span:not(.nav-dot),
+    .nav-item section:not(.nav-dot),
     .user-details {
         display: none;
     }

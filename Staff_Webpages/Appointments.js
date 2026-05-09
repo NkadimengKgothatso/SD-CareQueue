@@ -125,7 +125,7 @@ function buildCard(appt) {
     li.dataset.id = appt.id;
 
     const walkInBadge = appt.isWalkIn
-        ? `<span class="badge badge-walkin">Walk-in</span>`
+        ? `<section class="badge badge-walkin">Walk-in</section>`
         : "";
 
     li.innerHTML = `
@@ -136,9 +136,9 @@ function buildCard(appt) {
                     ${appt.patientName || "Unknown Patient"}
                     ${walkInBadge}
                 </p>
-                <span class="badge badge-${status.replace(/ /g, "-")}">
+                <section class="badge badge-${status.replace(/ /g, "-")}">
                     ${label}
-                </span>
+                </section>
             </header>
 
             <ul class="card-meta">
@@ -169,9 +169,9 @@ function buildCard(appt) {
                 </button>
             </footer>` : `
             <footer class="card-footer">
-                <span class="completed-tag">
+                <section class="completed-tag">
                     <i class="fa-solid fa-circle-check"></i> ${label}
-                </span>
+                </section>
             </footer>`}
         </article>
     `;
