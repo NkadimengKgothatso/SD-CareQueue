@@ -1,26 +1,26 @@
 beforeEach(() => {
   document.body.innerHTML = `
-    <div id="saveStatus"></div>
+    <section id="saveStatus"></section>
 
-    <div class="week-card-header"></div>
+    <section class="week-card-header"></section>
 
-    <div id="row-monday"></div>
+    <section id="row-monday"></section>
     <input type="checkbox" id="toggle-monday" />
     <input id="start-monday" value="08:00" />
     <input id="end-monday" value="17:00" />
 
-    <div id="row-tuesday"></div>
+    <section id="row-tuesday"></section>
     <input type="checkbox" id="toggle-tuesday" />
     <input id="start-tuesday" value="08:00" />
     <input id="end-tuesday" value="17:00" />
 
     <button id="saveBtn"></button>
 
-    <div id="staffName"></div>
-    <div id="staffEmail"></div>
-    <div id="staffAvatar"></div>
+    <section id="staffName"></section>
+    <section id="staffEmail"></section>
+    <section id="staffAvatar"></section>
 
-    <div class="name-Surname"></div>
+    <section class="name-Surname"></section>
   `;
 });
 
