@@ -113,35 +113,35 @@ function render() {
 
   if (filtered.length === 0) {
     listEl.innerHTML = `
-      <div class="empty">
-        <div class="ico">🎉</div>
+      <section class="empty">
+        <section class="ico">🎉</section>
         <h3>You're all caught up</h3>
         <p>No notifications match this filter.</p>
-      </div>
+      </section>
     `;
     return;
   }
 
   listEl.innerHTML = filtered.map((n) => `
-    <div class="notif ${n.unread ? "unread" : ""}" data-id="${n.id}">
-      <div class="icon ${n.type}">${n.icon}</div>
+    <section class="notif ${n.unread ? "unread" : ""}" data-id="${n.id}">
+      <section class="icon ${n.type}">${n.icon}</section>
 
-      <div class="body">
-        <div class="title">
+      <section class="body">
+        <section class="title">
           <section>${n.title} At ${n.name} </section>
           
           <section class="time">${n.time}</section>
-        </div>
+        </section>
 
-        <div class="msg">${n.msg}</div>
+        <section class="msg">${n.msg}</section>
 
-        <div class="meta">
+        <section class="meta">
           ${n.urgent ? `<section class="tag urgent">Urgent</section>` : ""}
           ${n.tags.map((t) => `<section class="tag">${t}</section>`).join("")}
-        </div>
-      </div>
+        </section>
+      </section>
 
-      <div class="row-actions">
+      <section class="row-actions">
         ${
           n.unread
             ? `<button class="icon-btn" title="Mark as read" data-action="read" data-id="${n.id}">✓</button>`
@@ -149,8 +149,8 @@ function render() {
         }
 
         <button class="icon-btn" title="Dismiss" data-action="dismiss" data-id="${n.id}">✕</button>
-      </div>
-    </div>
+      </section>
+    </section>
   `).join("");
 }
 

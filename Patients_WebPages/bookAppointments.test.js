@@ -18,19 +18,19 @@ Object.defineProperty(global.navigator, "geolocation", {
 
 beforeEach(() => {
   document.body.innerHTML = `
-    <div id="pageTitle"></div>
+    <section id="pageTitle"></section>
 
-    <div id="timeSlots"></div>
+    <section id="timeSlots"></section>
     <input id="selectedTime" />
 
     <button id="nearMeBtn"></button>
     <button id="openNowBtn"></button>
 
     <input id="clinicSearch" />
-    <div id="clinicResults"></div>
+    <section id="clinicResults"></section>
 
-    <div id="userName"></div>
-    <div id="userEmail"></div>
+    <section id="userName"></section>
+    <section id="userEmail"></section>
 
     <input id="appt-date" />
 

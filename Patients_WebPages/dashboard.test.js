@@ -1,18 +1,18 @@
 beforeEach(() => {
   document.body.innerHTML = `
-    <div id="emptyStates"></div>
-    <div id="filledStates"></div>
+    <section id="emptyStates"></section>
+    <section id="filledStates"></section>
 
-    <div id="patientAvatar"></div>
+    <section id="patientAvatar"></section>
 
-    <div id="queueCount"></div>
-    <div id="queueProgressText"></div>
-    <div id="progressPercent"></div>
+    <section id="queueCount"></section>
+    <section id="queueProgressText"></section>
+    <section id="progressPercent"></section>
     <progress id="queueMeter"></progress>
-    <div id="queuePosition"></div>
-    <div id="waitTime"></div>
+    <section id="queuePosition"></section>
+    <section id="waitTime"></section>
 
-    <div id="visitsCount"></div>
+    <section id="visitsCount"></section>
 
     <aside>
       <nav>
