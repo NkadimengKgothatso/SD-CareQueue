@@ -153,6 +153,7 @@ window.signInWithGoogle = async function () {
     handleRedirect("patient");
 
   } catch (err) {
+    console.error("Authentication error:", err);
     isRedirecting = false;
     console.error("Authentication error:", err);
     showError(
