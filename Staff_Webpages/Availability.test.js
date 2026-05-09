@@ -1,0 +1,102 @@
+beforeEach(() => {
+  document.body.innerHTML = `
+    <section id="saveStatus"></section>
+
+    <section class="week-card-header"></section>
+
+    <section id="row-monday"></section>
+    <input type="checkbox" id="toggle-monday" />
+    <input id="start-monday" value="08:00" />
+    <input id="end-monday" value="17:00" />
+
+    <section id="row-tuesday"></section>
+    <input type="checkbox" id="toggle-tuesday" />
+    <input id="start-tuesday" value="08:00" />
+    <input id="end-tuesday" value="17:00" />
+
+    <button id="saveBtn"></button>
+
+    <section id="staffName"></section>
+    <section id="staffEmail"></section>
+    <section id="staffAvatar"></section>
+
+    <section class="name-Surname"></section>
+  `;
+});
+
+test("convertTo24Hour converts AM correctly", async () => {
+  const { convertTo24Hour } = await import("./Availability.js");
+
+  expect(convertTo24Hour("7", "am")).toBe("07:00");
+  expect(convertTo24Hour("12", "am")).toBe("00:00");
+});
+
+test("convertTo24Hour converts PM correctly", async () => {
+  const { convertTo24Hour } = await import("./Availability.js");
+
+  expect(convertTo24Hour("5", "pm")).toBe("17:00");
+  expect(convertTo24Hour("12", "pm")).toBe("12:00");
+});
+
+test("parseClinicHours parses clinic hours", async () => {
+  const { parseClinicHours } = await import("./Availability.js");
+
+  const result = parseClinicHours("Mon-Fri: 7am-5pm");
+
+  expect(result.openTime).toBe("07:00");
+  expect(result.closeTime).toBe("17:00");
+  expect(result.workDays).toContain("monday");
+  expect(result.workDays).toContain("friday");
+});
+
+test("parseClinicHours returns null for invalid format", async () => {
+  const { parseClinicHours } = await import("./Availability.js");
+
+  const result = parseClinicHours("INVALID");
+
+  expect(result).toBeNull();
+});
+
+test("capitalise capitalises first letter", async () => {
+  const { capitalise } = await import("./Availability.js");
+
+  expect(capitalise("monday")).toBe("Monday");
+});
+
+test("showStatus updates status element", async () => {
+  const { showStatus } = await import("./Availability.js");
+
+  showStatus("Saved successfully", "success");
+
+  expect(document.getElementById("saveStatus").textContent)
+    .toContain("Saved successfully");
+});
+
+test("readScheduleFromPage reads schedule", async () => {
+  const { readScheduleFromPage } = await import("./Availability.js");
+
+  document.getElementById("toggle-monday").checked = true;
+
+  const result = readScheduleFromPage();
+
+  expect(result.monday.isWorking).toBe(true);
+  expect(result.monday.start).toBe("08:00");
+});
+
+test("applyScheduleToPage applies values", async () => {
+  const { applyScheduleToPage } = await import("./Availability.js");
+
+  applyScheduleToPage({
+    monday: {
+      isWorking: true,
+      start: "09:00",
+      end: "15:00"
+    }
+  });
+
+  expect(document.getElementById("start-monday").value)
+    .toBe("09:00");
+
+  expect(document.getElementById("end-monday").value)
+    .toBe("15:00");
+});

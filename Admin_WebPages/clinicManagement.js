@@ -382,3 +382,13 @@ function preselectServices(dropdownId, services) {
     });
     updateTriggerLabel(document.getElementById(dropdownId));
 }
+
+export {
+  renderClinics,
+  addClinicToUI,
+  openEditModal,
+  updateTriggerLabel,
+  getSelectedServices,
+  clearServices,
+  preselectServices
+};

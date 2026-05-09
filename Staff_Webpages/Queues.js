@@ -92,7 +92,7 @@ function buildCard(appointment, positionLabel) {
         : "";
 
     li.innerHTML = `
-        <div class="queue-position ${isDone ? "pos-done" : ""}">${positionLabel}</div>
+        <section class="queue-position ${isDone ? "pos-done" : ""}">${positionLabel}</section>
 
         <article class="card-body">
             <header class="card-clinic-group">
@@ -299,7 +299,7 @@ async function deleteOldQueueEntries() {
 
 // ─── Copy Today's Appointments into Queues ────────────────────────────────────
 async function syncAppointmentsToQueues(appointments) {
-    //const today = getTodayString();
+    const today = getTodayString();
 
     const writes = appointments.map((appt) => {
         const isActive = ACTIVE_STATUSES.has((appt.status || "").toLowerCase());
@@ -480,3 +480,11 @@ onAuthStateChanged(auth, async (user) => {
     // ── Start queue system ──
     startQueueListeners();
 });
+
+export {
+  getTodayString,
+  renderEmptyState,
+  buildCard,
+  updateStats,
+  renderQueue
+};

@@ -468,3 +468,13 @@ onAuthStateChanged(auth, async (user) => {
     // ─── LOAD WALK-IN APPOINTMENTS ───────────────────
     loadAppointments();
 });
+
+export {
+  getToday,
+  timeToMinutes,
+  minutesToTime,
+  isTaken,
+  roundToNextSlot,
+  getNextAvailableTime,
+  showConfirmModal
+};

@@ -1,7 +1,7 @@
 
 //Availability.js
 // ─── Imports ────────────────────────────────────────────────────────────────
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
     getFirestore,
@@ -433,3 +433,13 @@ onAuthStateChanged(auth, async (user) => {
         staffAvatarEl.textContent = initials;
     }  
 });
+
+export {
+    convertTo24Hour,
+    parseClinicHours,
+    readScheduleFromPage,
+    applyScheduleToPage,
+    capitalise,
+    showStatus,
+    applyClinicConstraints
+};
