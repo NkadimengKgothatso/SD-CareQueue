@@ -515,6 +515,8 @@ confirmBtn.addEventListener("click", async () => {
     const tomorrowCheck = new Date(now);
     tomorrowCheck.setDate(now.getDate());
 
+     const clinicIdNum = Number(selectedClinicId);
+
     
     if (!selectedClinicId || !date || !time || reason === "Select reason") {
         alert("Please fill in all fields");
@@ -526,7 +528,7 @@ confirmBtn.addEventListener("click", async () => {
         const ref = doc(db, "Appointments", appointmentId);
 
         await updateDoc(ref, {
-            clinicID: selectedClinicId,
+            clinicID: clinicIdNum,
             date: date,
             time: time,
             reason: reason,
@@ -553,9 +555,12 @@ confirmBtn.addEventListener("click", async () => {
         return;
     }
 
+   
+
+
     try {
         await addDoc(collection(db, "Appointments"), {
-            clinicID: selectedClinicId,
+            clinicID: clinicIdNum,
             userID: user.uid,
             date: date,
             clinicName: selectedClinicName,
@@ -567,7 +572,7 @@ confirmBtn.addEventListener("click", async () => {
 
          await addDoc(collection(db, "Notifications"), {
             userID: user.uid,
-            clinicID: selectedClinicId,
+            clinicID: clinicIdNum,
             clinicName: selectedClinicName,
             type: "Appointment",
             title: "Appointment Booked",
