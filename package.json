@@ -1,5 +1,5 @@
 {
-  
+  "type": "module",
   "name": "sd-carequeue",
   "version": "1.0.0",
   "description": "",
@@ -11,13 +11,13 @@
   "jest": {
     "testEnvironment": "jsdom",
     "collectCoverageFrom": [
-    "Login/authLogic.js",
-    "Admin_WebPages/staffLogic.js",
-    "Patients_WebPages/*Logic.js",
-    "Staff_Webpages/WalkinLogic.js",
-    "!**/*.test.js",
-    "!**/node_modules/**"
-  ]
+      "Login/authLogic.js",
+      "Admin_WebPages/staffLogic.js",
+      "Patients_WebPages/*Logic.js",
+      "Staff_Webpages/WalkinLogic.js",
+      "!**/*.test.js",
+      "!**/node_modules/**"
+    ]
   },
   "repository": {
     "type": "git",
@@ -33,5 +33,8 @@
   "devDependencies": {
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.3.0"
+  },
+  "dependencies": {
+    "firebase": "^12.13.0"
   }
 }
