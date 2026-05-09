@@ -1,115 +1,160 @@
-const {
-    getStatusColors,
-    formatServices,
-    filterClinics,
-    validateClinicForm,
-    formatClinicHours
-} = require("./clinicManagementLogic");
+beforeEach(() => {
+  document.body.innerHTML = `
+    <button class="addBtn"></button>
 
-describe("getStatusColors", () => {
-    test("returns green for Active", () => {
-        const colors = getStatusColors("Active");
-        expect(colors.background).toBe("#DCFCE7");
-        expect(colors.color).toBe("#166534");
-    });
+    <div id="clinicModal">
+      <form></form>
+    </div>
 
-    test("returns red for Closed", () => {
-        const colors = getStatusColors("Closed");
-        expect(colors.background).toBe("#FEE2E2");
-        expect(colors.color).toBe("#991B1B");
-    });
+    <div id="ManageClinicModal">
+      <form></form>
+    </div>
 
-    test("returns grey for Busy", () => {
-        const colors = getStatusColors("Busy");
-        expect(colors.background).toBe("#E5E7EB");
-        expect(colors.color).toBe("#374151");
-    });
+    <div id="clinicHoursModal">
+      <form></form>
+    </div>
 
-    test("defaults to Active colors for unknown status", () => {
-        const colors = getStatusColors("Unknown");
-        expect(colors.background).toBe("#DCFCE7");
-    });
+    <button class="close-btn"></button>
+
+    <input id="clinicSearch" />
+
+    <div class="clinics"></div>
+
+    <input id="ManageClinicName" />
+    <input id="ManageLocation" />
+    <input id="ManageClinicStatus" />
+    <input id="manageProvince" />
+
+    <div id="manageClinicServicesDropdown" class="custom-select">
+      <div class="select-trigger"></div>
+
+      <div class="select-options">
+        <label>
+          <input type="checkbox" value="General" />
+        </label>
+
+        <label>
+          <input type="checkbox" value="Dental" />
+        </label>
+      </div>
+    </div>
+  `;
+
+  global.alert = jest.fn();
+  global.confirm = jest.fn(() => true);
 });
 
-describe("formatServices", () => {
-    test("returns array as-is if valid", () => {
-        expect(formatServices(["General", "HIV"])).toEqual(["General", "HIV"]);
-    });
+test("getSelectedServices returns checked services", async () => {
+  const { getSelectedServices } =
+    await import("./ClinicManagement.js");
 
-    test("wraps a string in an array", () => {
-        expect(formatServices("General")).toEqual(["General"]);
-    });
+  const boxes = document.querySelectorAll(
+    "#manageClinicServicesDropdown input"
+  );
 
-    test("returns General for empty array", () => {
-        expect(formatServices([])).toEqual(["General"]);
-    });
+  boxes[0].checked = true;
 
-    test("returns General for null", () => {
-        expect(formatServices(null)).toEqual(["General"]);
-    });
+  const result =
+    getSelectedServices("manageClinicServicesDropdown");
+
+  expect(result).toContain("General");
 });
 
-describe("filterClinics", () => {
-    const clinics = [
-        { name: "Soweto Clinic", address: "Johannesburg" },
-        { name: "Cape Town Health", address: "Western Cape" },
-        { name: "Durban Medical", address: "KwaZulu-Natal" }
-    ];
+test("clearServices unchecks all services", async () => {
+  const { clearServices } =
+    await import("./ClinicManagement.js");
 
-    test("filters by name", () => {
-        const result = filterClinics(clinics, "soweto");
-        expect(result.length).toBe(1);
-        expect(result[0].name).toBe("Soweto Clinic");
-    });
+  const boxes = document.querySelectorAll(
+    "#manageClinicServicesDropdown input"
+  );
 
-    test("filters by address", () => {
-        const result = filterClinics(clinics, "western cape");
-        expect(result.length).toBe(1);
-    });
+  boxes[0].checked = true;
+  boxes[1].checked = true;
 
-    test("returns all clinics for empty search", () => {
-        const result = filterClinics(clinics, "");
-        expect(result.length).toBe(3);
-    });
+  clearServices("manageClinicServicesDropdown");
 
-    test("returns empty array for no match", () => {
-        const result = filterClinics(clinics, "zzznomatch");
-        expect(result.length).toBe(0);
-    });
+  expect(boxes[0].checked).toBe(false);
+  expect(boxes[1].checked).toBe(false);
 });
 
-describe("validateClinicForm", () => {
-    test("returns no errors for valid input", () => {
-        const errors = validateClinicForm("Soweto Clinic", "Johannesburg");
-        expect(errors.length).toBe(0);
-    });
+test("preselectServices checks matching services", async () => {
+  const { preselectServices } =
+    await import("./ClinicManagement.js");
 
-    test("returns error for empty name", () => {
-        const errors = validateClinicForm("", "Johannesburg");
-        expect(errors).toContain("Clinic name is required");
-    });
+  preselectServices(
+    "manageClinicServicesDropdown",
+    ["Dental"]
+  );
 
-    test("returns error for empty address", () => {
-        const errors = validateClinicForm("Soweto Clinic", "");
-        expect(errors).toContain("Address is required");
-    });
+  const boxes = document.querySelectorAll(
+    "#manageClinicServicesDropdown input"
+  );
 
-    test("returns two errors for both empty", () => {
-        const errors = validateClinicForm("", "");
-        expect(errors.length).toBe(2);
-    });
+  expect(boxes[0].checked).toBe(false);
+  expect(boxes[1].checked).toBe(true);
 });
 
-describe("formatClinicHours", () => {
-    test("returns default hours for empty string", () => {
-        expect(formatClinicHours("")).toBe("Mon-Fri: 8am - 5pm");
-    });
+test("updateTriggerLabel updates dropdown text", async () => {
+  const { updateTriggerLabel } =
+    await import("./ClinicManagement.js");
 
-    test("returns default hours for null", () => {
-        expect(formatClinicHours(null)).toBe("Mon-Fri: 8am - 5pm");
-    });
+  const dropdown = document.getElementById(
+    "manageClinicServicesDropdown"
+  );
 
-    test("returns trimmed custom hours", () => {
-        expect(formatClinicHours("  Mon-Sat: 7am - 6pm  ")).toBe("Mon-Sat: 7am - 6pm");
-    });
+  const boxes = dropdown.querySelectorAll("input");
+
+  boxes[0].checked = true;
+
+  updateTriggerLabel(dropdown);
+
+  expect(dropdown.querySelector(".select-trigger").textContent)
+    .toContain("General");
+});
+
+test("openEditModal fills form fields", async () => {
+  const { openEditModal } =
+    await import("./ClinicManagement.js");
+
+  openEditModal(
+    "1",
+    "Care Clinic",
+    "123 Main",
+    "Active",
+    ["General"],
+    "Gauteng"
+  );
+
+  expect(document.getElementById("ManageClinicName").value)
+    .toBe("Care Clinic");
+
+  expect(document.getElementById("ManageLocation").value)
+    .toBe("123 Main");
+
+  expect(document.getElementById("manageProvince").value)
+    .toBe("Gauteng");
+});
+
+test("addClinicToUI renders clinic card", async () => {
+  const { addClinicToUI } =
+    await import("./ClinicManagement.js");
+
+  addClinicToUI(
+    "1",
+    "Care Clinic",
+    "123 Main",
+    "Active",
+    ["General"],
+    "08:00-17:00",
+    "Gauteng"
+  );
+
+  expect(document.body.textContent)
+    .toContain("Care Clinic");
+
+  expect(document.body.textContent)
+    .toContain("Gauteng");
+
+  expect(document.body.textContent)
+    .toContain("08:00-17:00");
 });

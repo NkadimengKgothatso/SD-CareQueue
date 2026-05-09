@@ -1,6 +1,6 @@
 beforeEach(() => {
   document.body.innerHTML = `
-    <div class="name-Surname"></div>
+    <section class="name-Surname"></section>
     <ul id="appointmentList"></ul>
 
     <button class="filter-btn active" data-filter="all"></button>
@@ -8,14 +8,14 @@ beforeEach(() => {
     <button class="filter-btn" data-filter="tomorrow"></button>
     <button class="filter-btn" data-filter="walkin"></button>
 
-    <div id="stat-total"></div>
-    <div id="stat-today"></div>
-    <div id="stat-tomorrow"></div>
-    <div id="stat-walkin"></div>
+    <section id="stat-total"></section>
+    <section id="stat-today"></section>
+    <section id="stat-tomorrow"></section>
+    <section id="stat-walkin"></section>
 
-    <div id="staffEmail"></div>
-    <div id="staffAvatar"></div>
-    <div id="staffName"></div>
+    <section id="staffEmail"></section>
+    <section id="staffAvatar"></section>
+    <section id="staffName"></section>
   `;
 
   HTMLDialogElement.prototype.showModal = jest.fn();
@@ -57,7 +57,7 @@ test("renderEmptyState displays empty appointment message", async () => {
 
   document.body.innerHTML = `
     <ul id="appointmentList"></ul>
-    <div class="name-Surname"></div>
+    <section class="name-Surname"></section>
   `;
 
   const { renderEmptyState } = await import("./Appointments.js");

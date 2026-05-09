@@ -137,20 +137,20 @@ async function loadAppointments(userId) {
                         <h2 class="clinic-name">${clinicName}</h2>
                         <button class="view-btn" onclick="goToAppointments()">View</button>
                     </header>
-                    <div class="info-wrap">
-                        <div class="info-row">
+                    <section class="info-wrap">
+                        <section class="info-row">
                             <i class="fa-regular fa-calendar"></i>
                             <section>${next.date}</section>
-                        </div>
-                        <div class="info-row">
+                        </section>
+                        <section class="info-row">
                             <i class="fa-regular fa-clock"></i>
                             <section>${next.time}</section>
-                        </div>
-                        <div class="info-row">
+                        </section>
+                        <section class="info-row">
                             <i class="fa-solid fa-notes-medical"></i>
                             <section>${next.reason || "General Appointment"}</section>
-                        </div>
-                    </div>
+                        </section>
+                    </section>
                     <footer class="card-footer">
                         <section class="status-badge ${(next.status || "scheduled").toLowerCase()}">
                             ${next.status || "Scheduled"}
@@ -399,3 +399,12 @@ const currentPage = window.location.pathname.split("/").pop();
 document.querySelectorAll("aside nav ul li a").forEach(link => {
     if (link.getAttribute("href") === currentPage) link.classList.add("active");
 });
+
+
+export {
+    showEmpty,
+    showFilled,
+    setAvatarInitial,
+    loadVisitsCount,
+    loadQueueStatus
+};

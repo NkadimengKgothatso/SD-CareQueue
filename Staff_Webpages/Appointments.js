@@ -1,5 +1,5 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
     getFirestore,
     collection,
@@ -11,7 +11,7 @@ import {
     getDocs,
     updateDoc,
     serverTimestamp
-} from "firebase/firestore";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ─── Firebase Config ────────────────────────────────────────────────────────
 const firebaseConfig = {
@@ -251,20 +251,20 @@ async function openRescheduleModal(appt) {
                 <p>Rescheduling: <strong>${appt.patientName || "Patient"}</strong></p>
                 <p class="current-slot">Current slot: <strong>${appt.date} at ${appt.time || "—"}</strong></p>
 
-                <div class="form-group">
+                <section class="form-group">
                     <label for="rescheduleDate">New Date</label>
                     <input type="date" id="rescheduleDate"
                         min="${getTodayString()}"
                         value="${appt.date || getTodayString()}" />
-                </div>
+                </section>
 
-                <div class="form-group">
+                <section class="form-group">
                     <label for="rescheduleTime">Available Time Slots</label>
                     <select id="rescheduleTime">
                         <option value="">Loading available slots...</option>
                     </select>
                     <p class="slot-hint">Only showing unbooked slots for this date.</p>
-                </div>
+                </section>
 
                 <p id="rescheduleError" class="error-msg" style="display:none;"></p>
             </section>
