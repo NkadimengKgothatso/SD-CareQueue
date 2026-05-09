@@ -1,25 +1,6 @@
-global.alert = jest.fn();
-
-window.history.pushState({}, "", "/test.html");
-
-Object.defineProperty(global.navigator, "geolocation", {
-  value: {
-    getCurrentPosition: jest.fn((success) =>
-      success({
-        coords: {
-          latitude: -26.2,
-          longitude: 28.0
-        }
-      })
-    )
-  },
-  configurable: true
-});
-
 beforeEach(() => {
   document.body.innerHTML = `
     <section id="pageTitle"></section>
-
     <section id="timeSlots"></section>
     <input id="selectedTime" />
 
@@ -33,7 +14,6 @@ beforeEach(() => {
     <section id="userEmail"></section>
 
     <input id="appt-date" />
-
     <button class="confirm-Button"></button>
     <button class="reschedule-Button"></button>
 
@@ -55,40 +35,38 @@ beforeEach(() => {
 
   window.history.pushState({}, "", "/test.html");
 
-  global.navigator.geolocation = {
-    getCurrentPosition: jest.fn((success) =>
-      success({
-        coords: {
-          latitude: -26.2,
-          longitude: 28.0
-        }
-      })
-    )
-  };
+  Object.defineProperty(navigator, "geolocation", {
+    configurable: true,
+    value: {
+      getCurrentPosition: jest.fn((success) =>
+        success({
+          coords: {
+            latitude: -26.2,
+            longitude: 28.0
+          }
+        })
+      )
+    }
+  });
 });
 
 test("formatTime formats correctly", async () => {
-  const { formatTime } = await import("./BookAppointments.js");
+  const { formatTime } = await import("./bookAppointment.js");
 
   expect(formatTime(8, 0)).toBe("08:00");
   expect(formatTime(14, 30)).toBe("14:30");
 });
 
 test("calculateDistance returns distance", async () => {
-  const { calculateDistance } = await import("./BookAppointments.js");
+  const { calculateDistance } = await import("./bookAppointment.js");
 
-  const result = calculateDistance(
-    -26.2,
-    28.0,
-    -26.1,
-    28.1
-  );
+  const result = calculateDistance(-26.2, 28.0, -26.1, 28.1);
 
   expect(result).toBeGreaterThan(0);
 });
 
 test("isClinicOpenNow returns boolean", async () => {
-  const { isClinicOpenNow } = await import("./BookAppointments.js");
+  const { isClinicOpenNow } = await import("./bookAppointment.js");
 
   const result = isClinicOpenNow("Mo-Fr 08:00-17:00");
 
@@ -96,7 +74,7 @@ test("isClinicOpenNow returns boolean", async () => {
 });
 
 test("displayClinics renders clinic cards", async () => {
-  const { displayClinics } = await import("./BookAppointments.js");
+  const { displayClinics } = await import("./bookAppointment.js");
 
   displayClinics([
     {
@@ -106,12 +84,11 @@ test("displayClinics renders clinic cards", async () => {
     }
   ]);
 
-  expect(document.body.textContent)
-    .toContain("Care Clinic");
+  expect(document.body.textContent).toContain("Care Clinic");
 });
 
 test("getUserLocation resolves coordinates", async () => {
-  const { getUserLocation } = await import("./BookAppointments.js");
+  const { getUserLocation } = await import("./bookAppointment.js");
 
   const result = await getUserLocation();
 

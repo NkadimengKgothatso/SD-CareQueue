@@ -18,7 +18,7 @@ beforeEach(() => {
 });
 
 test("getTodayString returns YYYY-MM-DD", async () => {
-  const { getTodayString } = await import("./QueueManagement.js");
+  const { getTodayString } = await import("./Queues.js");
 
   expect(getTodayString()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 });
@@ -31,7 +31,7 @@ test("renderEmptyState displays queue empty message", async () => {
     <div class="name-Surname"></div>
   `;
 
-  const { renderEmptyState } = await import("./QueueManagement.js");
+  const { renderEmptyState } = await import("./Queues.js");
 
   renderEmptyState();
 
@@ -40,7 +40,7 @@ test("renderEmptyState displays queue empty message", async () => {
 });
 
 test("buildCard creates waiting patient card", async () => {
-  const { buildCard } = await import("./QueueManagement.js");
+  const { buildCard } = await import("./Queues.js");
 
   const card = buildCard({
     id: "appt1",
@@ -59,7 +59,7 @@ test("buildCard creates waiting patient card", async () => {
 });
 
 test("buildCard creates completed patient card", async () => {
-  const { buildCard } = await import("./QueueManagement.js");
+  const { buildCard } = await import("./Queues.js");
 
   const card = buildCard({
     id: "appt2",
@@ -75,7 +75,7 @@ test("buildCard creates completed patient card", async () => {
 });
 
 test("updateStats updates dashboard counts", async () => {
-  const module = await import("./QueueManagement.js");
+  const module = await import("./Queues.js");
 
   module.queueData = [
     { status: "waiting" },
