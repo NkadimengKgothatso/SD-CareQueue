@@ -263,6 +263,18 @@ function renderAppointment(appointment) {
 //shows this everytime page refreshes
 upcomingList.innerHTML = "<p>Loading appointments...</p>";
 
+function setAvatarInitial(name, email) {
+    let initials = "";
+    if (name && name.trim().length > 0) {
+        const parts = name.trim().split(" ");
+        initials += parts[0].charAt(0);
+        if (parts.length > 1) initials += parts[parts.length - 1].charAt(0);
+    } else if (email && email.length > 0) {
+        initials = email.charAt(0);
+    }
+    document.getElementById("patientAvatar").textContent = initials.toUpperCase();
+}
+
 
 // Monitor authentication state and update the UI accordingly.
 // When a user is authenticated, retrieve their appointments from the database,
@@ -274,6 +286,10 @@ onAuthStateChanged(auth, async (user) => {
 
         nameSurnameEl.textContent = user.displayName;
         emailEl.textContent = user.email;
+
+
+
+        setAvatarInitial(user.displayName, user.email);
 
         await loadClinics();
 
@@ -338,3 +354,5 @@ links.forEach(link => {
         link.classList.add("active");
     }
 });
+
+
