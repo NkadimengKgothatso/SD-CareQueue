@@ -12,7 +12,8 @@
     "coverage:dashboard": "jest Patients_WebPages/Dashboard.test.js --coverage --collectCoverageFrom=Patients_WebPages/Dashboard.js",
     "coverage:walkins": "jest Staff_Webpages/walkin.test.js --coverage --collectCoverageFrom=Staff_Webpages/walkin.js",
     "coverage:queue": "jest Staff_Webpages/Queues.test.js --coverage --collectCoverageFrom=Staff_Webpages/Queues.js",
-    "coverage:staffdashboard": "jest Staff_Webpages/StaffDashboard.test.js --coverage --collectCoverageFrom=Staff_Webpages/StaffDashboard.js"
+    "coverage:staffdashboard": "jest Staff_Webpages/StaffDashboard.test.js --coverage --collectCoverageFrom=Staff_Webpages/StaffDashboard.js",
+    "coverage:notifications": "jest Patients_WebPages/patientNotifications.test.js --coverage --collectCoverageFrom=Patients_WebPages/patientNotifications.js"
   },
 "jest": {
   "testEnvironment": "jsdom",
