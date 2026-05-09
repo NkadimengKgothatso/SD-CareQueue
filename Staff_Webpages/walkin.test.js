@@ -11,11 +11,11 @@ beforeEach(() => {
       <option value="Checkup">Checkup</option>
     </select>
 
-    <div class="name-Surname"></div>
-    <div class="clinic-name"></div>
-    <div id="staffEmail"></div>
-    <div id="staffAvatar"></div>
-    <div id="staffName"></div>
+    <section class="name-Surname"></section>
+    <section class="clinic-name"></section>
+    <section id="staffEmail"></section>
+    <section id="staffAvatar"></section>
+    <section id="staffName"></section>
   `;
 
   global.alert = jest.fn();
