@@ -25,7 +25,7 @@ beforeEach(() => {
 });
 
 test("getIcon returns correct icons", async () => {
-  const { getIcon } = await import("./Notifications.js");
+  const { getIcon } = await import("./patientNotifications.js");
 
   expect(getIcon("appointment")).toBe("📅");
   expect(getIcon("queue")).toBe("⏱");
@@ -35,13 +35,13 @@ test("getIcon returns correct icons", async () => {
 });
 
 test("formatTime returns Just now for missing timestamp", async () => {
-  const { formatTime } = await import("./Notifications.js");
+  const { formatTime } = await import("./patientNotifications.js");
 
   expect(formatTime(null)).toBe("Just now");
 });
 
 test("formatTime formats Firebase-like timestamp", async () => {
-  const { formatTime } = await import("./Notifications.js");
+  const { formatTime } = await import("./patientNotifications.js");
 
   const timestamp = {
     toDate: () => new Date("2026-05-09T10:30:00")
