@@ -300,8 +300,8 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
             if (typeof staffWait === "number") {
                 document.getElementById("waitTime").textContent = `${staffWait} min`;
             } else {
-                // Rough estimate: assume ~15 min per person ahead
-                const estimatedWait = userIndex * 15;
+                // Rough estimate: assume ~30 min per person ahead
+                const estimatedWait = userIndex * 30;
                 document.getElementById("waitTime").textContent = `~${estimatedWait} min (est.)`;
             }
         });
