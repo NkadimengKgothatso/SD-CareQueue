@@ -278,7 +278,7 @@ async function updateStatus(appointmentId, newStatus) {
     }
 }
 
-// ─── Delete old Queues entries (not from today) ───────────────────────────────
+/* ─── Delete old Queues entries (not from today) ───────────────────────────────
 async function deleteOldQueueEntries() {
     const today = getTodayString();
     try {
@@ -295,18 +295,18 @@ async function deleteOldQueueEntries() {
     } catch (err) {
         console.error("Failed to delete old queue entries:", err);
     }
-}
+}*/
 
 // ─── Copy Today's Appointments into Queues ────────────────────────────────────
 async function syncAppointmentsToQueues(appointments) {
-    const today = getTodayString();
+    //const today = getTodayString();
 
     const writes = appointments.map((appt) => {
         const isActive = ACTIVE_STATUSES.has((appt.status || "").toLowerCase());
         return setDoc(doc(db, "Queues", appt.id), {
             appointmentId: appt.id,
             clinicID:      Number(staffClinicID),
-            date:          today,
+          //  date:          today,
             userID:        appt.userID      || null,
             patientName:   appt.patientName || null,
             status:        appt.status      || "waiting",
