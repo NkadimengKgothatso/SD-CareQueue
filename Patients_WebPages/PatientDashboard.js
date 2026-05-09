@@ -3,6 +3,9 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import {getAuth,signOut as firebaseSignOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,doc,getDoc,updateDoc,collection,query,where,getDocs,onSnapshot} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// ================= ML Integration =================
+import { getWaitTime } from "./waitTimeML.js";
+
 
 // ================= Firebase Config =================
 const firebaseConfig = {
@@ -131,7 +134,7 @@ async function loadAppointments(userId) {
 
         container.innerHTML = `
             <li class="appointment-card upcoming-card">
-                <section class="card-accent accent-upcoming"></section>
+                <span class="card-accent accent-upcoming"></span>
                 <article class="card-body">
                     <header class="card-header">
                         <h2 class="clinic-name">${clinicName}</h2>
@@ -140,27 +143,27 @@ async function loadAppointments(userId) {
                     <div class="info-wrap">
                         <div class="info-row">
                             <i class="fa-regular fa-calendar"></i>
-                            <section>${next.date}</section>
+                            <span>${next.date}</span>
                         </div>
                         <div class="info-row">
                             <i class="fa-regular fa-clock"></i>
-                            <section>${next.time}</section>
+                            <span>${next.time}</span>
                         </div>
                         <div class="info-row">
                             <i class="fa-solid fa-notes-medical"></i>
-                            <section>${next.reason || "General Appointment"}</section>
+                            <span>${next.reason || "General Appointment"}</span>
                         </div>
                     </div>
                     <footer class="card-footer">
-                        <section class="status-badge ${(next.status || "scheduled").toLowerCase()}">
+                        <span class="status-badge ${(next.status || "scheduled").toLowerCase()}">
                             ${next.status || "Scheduled"}
-                        </section>
+                        </span>
                     </footer>
                 </article>
             </li>
         `;
 
-        // Load queue for this appointment
+        // Load queue for this appointment (now with ML wait time)
         loadQueueStatus(userId, next.id, next.clinicID);
 
     } catch (error) {
@@ -170,18 +173,14 @@ async function loadAppointments(userId) {
 }
 
 
-// ================= LOAD QUEUE STATUS =================
-// Listens in real-time to the user's position in the clinic queue for their
-// upcoming appointment and updates the dashboard accordingly.
+// ================= LOAD QUEUE STATUS (ML-POWERED) =================
 function loadQueueStatus(userId, appointmentId, clinicID) {
 
-    // Clean up any existing listeners before starting fresh
     if (queueUnsubscribe) {
         queueUnsubscribe();
         queueUnsubscribe = null;
     }
 
-    // Normalise clinicID to both types — Firestore may store it as number or string
     const clinicIDNum = Number(clinicID);
     const clinicIDStr = String(clinicID);
 
@@ -196,10 +195,8 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
         document.getElementById("waitTime").textContent          = "";
     };
 
-    // Inner clinic listener — kept in closure so we can clean it up reliably
     let clinicUnsubscribe = null;
 
-    // Step 1: watch only this appointment's queue document
     const appointmentQ = query(
         collection(db, "Queues"),
         where("appointmentId", "==", appointmentId)
@@ -207,13 +204,11 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
 
     queueUnsubscribe = onSnapshot(appointmentQ, (snapshot) => {
 
-        // Always tear down the previous clinic listener before deciding what to do next
         if (clinicUnsubscribe) {
             clinicUnsubscribe();
             clinicUnsubscribe = null;
         }
 
-        // Find the user's active queue entry for this appointment
         const activeEntries = snapshot.docs
             .map(d => ({ id: d.id, ...d.data() }))
             .filter(d => activeStatuses.includes((d.status || "").toLowerCase().trim()));
@@ -223,28 +218,21 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
             return;
         }
 
-        const queueData = activeEntries[0]; // The user's own queue document
-
-        // Step 2: watch ALL active entries for this clinic to determine position
         const clinicQ = query(
             collection(db, "Queues"),
             where("clinicID", "==", clinicIDNum)
         );
 
-        clinicUnsubscribe = onSnapshot(clinicQ, (clinicSnapshot) => {
+        clinicUnsubscribe = onSnapshot(clinicQ, async (clinicSnapshot) => {
 
             let allClinicEntries = clinicSnapshot.docs
                 .map(d => ({ id: d.id, ...d.data() }))
                 .filter(d => activeStatuses.includes((d.status || "").toLowerCase().trim()))
                 .sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
 
-            // Fallback: if clinicID is stored as a string in some documents,
-            // the numeric query will miss them. Do a client-side string match.
+            // Fallback: if clinicID stored as string in some docs
             if (allClinicEntries.length === 0) {
-                console.warn(
-                    "loadQueueStatus: no results for clinicID as number (" + clinicIDNum + "). " +
-                    "Check that Queues documents store clinicID consistently."
-                );
+                console.warn("loadQueueStatus: no results for clinicID as number, trying string fallback.");
                 allClinicEntries = clinicSnapshot.docs
                     .map(d => ({ id: d.id, ...d.data() }))
                     .filter(d => {
@@ -259,29 +247,22 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
 
             const total = allClinicEntries.length;
 
-            // Find where the user sits in the sorted list
             const userIndex = allClinicEntries.findIndex(
                 entry => String(entry.appointmentId) === String(appointmentId)
             );
 
-            // If the user's entry isn't in the clinic queue at all, show empty state
             if (userIndex === -1) {
-                console.warn(
-                    "loadQueueStatus: user's appointmentId not found in clinic queue. " +
-                    "Possible clinicID mismatch or entry was removed."
-                );
+                console.warn("loadQueueStatus: user's appointmentId not found in clinic queue.");
                 setEmpty();
                 return;
             }
 
-            const position = userIndex + 1; // Convert to 1-based display position
+            const position = userIndex + 1;
 
-            // --- Update UI ---
-
+            // --- Update queue UI ---
             document.getElementById("queueCount").textContent    = `${position} out of ${total}`;
             document.getElementById("queuePosition").textContent = String(position);
 
-            // Progress percentage: 0 % when last, 100 % when first/only
             let percent = 0;
             if (total === 1) {
                 percent = 100;
@@ -290,20 +271,24 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
             }
             document.getElementById("progressPercent").textContent = `${percent}%`;
             document.getElementById("queueMeter").value            = percent;
-
             document.getElementById("queueProgressText").textContent = "";
 
-            // Wait time: prefer a real value set by clinic staff in Firestore.
-            // Only fall back to a position-based estimate when none is available.
-            // We do NOT write back calculated values — that would overwrite staff data.
-            const staffWait = queueData.estimateWait;
-            if (typeof staffWait === "number") {
-                const estimatedWait = userIndex * 30;
-                document.getElementById("waitTime").textContent = `${estimatedWait} min`;
+            // --- ML Wait Time ---
+            document.getElementById("waitTime").textContent = "...";
+
+            const predicted = await getWaitTime({
+                clinicID:      clinicIDNum,
+                queuePosition: position,
+                queueLength:   total
+            });
+
+            if (predicted !== null) {
+                // ML prediction succeeded
+                document.getElementById("waitTime").textContent = `${predicted} min`;
             } else {
-                // Rough estimate: assume ~30 min per person ahead
-                const estimatedWait = userIndex * 30;
-                document.getElementById("waitTime").textContent = `~${estimatedWait} min (est.)`;
+                // ML API down — graceful fallback to position-based estimate
+                console.warn("ML API unavailable, using fallback estimate.");
+                document.getElementById("waitTime").textContent = `~${userIndex * 30} min (est.)`;
             }
         });
     });
