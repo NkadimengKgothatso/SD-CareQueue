@@ -131,7 +131,7 @@ async function loadAppointments(userId) {
 
         container.innerHTML = `
             <li class="appointment-card upcoming-card">
-                <span class="card-accent accent-upcoming"></span>
+                <section class="card-accent accent-upcoming"></section>
                 <article class="card-body">
                     <header class="card-header">
                         <h2 class="clinic-name">${clinicName}</h2>
@@ -140,21 +140,21 @@ async function loadAppointments(userId) {
                     <div class="info-wrap">
                         <div class="info-row">
                             <i class="fa-regular fa-calendar"></i>
-                            <span>${next.date}</span>
+                            <section>${next.date}</section>
                         </div>
                         <div class="info-row">
                             <i class="fa-regular fa-clock"></i>
-                            <span>${next.time}</span>
+                            <section>${next.time}</section>
                         </div>
                         <div class="info-row">
                             <i class="fa-solid fa-notes-medical"></i>
-                            <span>${next.reason || "General Appointment"}</span>
+                            <section>${next.reason || "General Appointment"}</section>
                         </div>
                     </div>
                     <footer class="card-footer">
-                        <span class="status-badge ${(next.status || "scheduled").toLowerCase()}">
+                        <section class="status-badge ${(next.status || "scheduled").toLowerCase()}">
                             ${next.status || "Scheduled"}
-                        </span>
+                        </section>
                     </footer>
                 </article>
             </li>

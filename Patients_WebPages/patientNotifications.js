@@ -128,16 +128,16 @@ function render() {
 
       <div class="body">
         <div class="title">
-          <span>${n.title} At ${n.name} </span>
+          <section>${n.title} At ${n.name} </section>
           
-          <span class="time">${n.time}</span>
+          <section class="time">${n.time}</section>
         </div>
 
         <div class="msg">${n.msg}</div>
 
         <div class="meta">
-          ${n.urgent ? `<span class="tag urgent">Urgent</span>` : ""}
-          ${n.tags.map((t) => `<span class="tag">${t}</span>`).join("")}
+          ${n.urgent ? `<section class="tag urgent">Urgent</section>` : ""}
+          ${n.tags.map((t) => `<section class="tag">${t}</section>`).join("")}
         </div>
       </div>
 
