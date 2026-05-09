@@ -179,7 +179,8 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
 
     let clinicUnsubscribe = null;
 
-    const clinicIDNum = Number(rawClinicID);
+   
+    const clinicIDNum = Number(clinicID);
 
     const setEmpty = () => {
         document.getElementById("queueCount").textContent = "Not in queue";
@@ -235,9 +236,8 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
 
         clinicUnsubscribe = onSnapshot(clinicQ, (clinicSnapshot) => {
 
-            // STEP 1: build sorted queue
             const sorted = clinicSnapshot.docs
-                .map(d => ({ id: d.id, ...d.data() })) 
+                .map(d => ({ id: d.id, ...d.data() }))
                 .filter(d =>
                     ["waiting", "scheduled", "active"]
                     .includes((d.status || "").toLowerCase().trim())
@@ -256,9 +256,9 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
                 total > 0 ? `${position} out of ${total}` : "Not in queue";
 
             let percent = 0;
-            if (typeof position === "number" && total > 1) {
+            if (total > 1) {
                 percent = Math.round(((total - position) / (total - 1)) * 100);
-            } else if (total <= 1) {
+            } else if (total === 1) {
                 percent = 100;
             }
 
@@ -281,18 +281,13 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
 
             document.getElementById("queueProgressText").textContent = message;
 
-            // ================= WAIT TIME =================
             const wait =
                 queueData.estimateWait ??
-                (typeof userIndex === "number" && userIndex >= 0
-                    ? userIndex * 30
-                    : "-");
+                (userIndex >= 0 ? userIndex * 30 : "-");
 
             document.getElementById("waitTime").textContent =
                 wait !== "-" ? `${wait} min` : "-";
 
-            // ================= FIRESTORE SYN =================
-            // If we have a valid queue document and a numeric wait time, update Firestore with the latest estimate
             if (queueDocId && typeof wait === "number") {
                 const queueRef = doc(db, "Queues", queueDocId);
 
@@ -304,10 +299,8 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
                 });
             }
         });
-
     });
 }
-
 // ================= LOAD VISITS COUNT =================
 async function loadVisitsCount(userId, clinicID) {
     try {
