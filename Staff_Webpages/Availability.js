@@ -1,8 +1,8 @@
 
 //Availability.js
 // ─── Imports ────────────────────────────────────────────────────────────────
-import { initializeApp } from "firebase/app"
-import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
     getFirestore,
     doc,
@@ -13,7 +13,7 @@ import {
     where,
     getDocs,
     serverTimestamp
-} from "firebase/firestore";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ─── Firebase Config ─────────────────────────────────────────────────────────
 const firebaseConfig = {
