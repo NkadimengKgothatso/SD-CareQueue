@@ -51,7 +51,7 @@
 
   <tr>
     <td>8</td>
-    <td>As clinic staff, I can view daily appointments in a table so that I can manage schedules.</td>
+    <td>As a clinic staff member, I want to manage the patient queue and update patient statuses, so that I can control the flow of patients during the day.</td>
     <td>10</td>
   </tr>
 
