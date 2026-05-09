@@ -480,3 +480,11 @@ onAuthStateChanged(auth, async (user) => {
     // ── Start queue system ──
     startQueueListeners();
 });
+
+export {
+  getTodayString,
+  renderEmptyState,
+  buildCard,
+  updateStats,
+  renderQueue
+};
