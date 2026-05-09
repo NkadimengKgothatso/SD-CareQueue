@@ -299,7 +299,7 @@ async function deleteOldQueueEntries() {
 
 // ─── Copy Today's Appointments into Queues ────────────────────────────────────
 async function syncAppointmentsToQueues(appointments) {
-    const today = getTodayString();
+    //const today = getTodayString();
 
     const writes = appointments.map((appt) => {
         const isActive = ACTIVE_STATUSES.has((appt.status || "").toLowerCase());
