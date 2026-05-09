@@ -480,14 +480,7 @@ meter::-moz-meter-bar {
     transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* ══════════════════════════════════════════
-   ACTIVE NAV HIGHLIGHT (page-level override)
-══════════════════════════════════════════ */
-aside nav ul li a.active {
-    background: var(--color-brand-soft);
-    color: var(--color-brand-dark);
-    font-weight: 600;
-}
+
 
 /* ══════════════════════════════════════════
    SECTION REVEAL ANIMATIONS
