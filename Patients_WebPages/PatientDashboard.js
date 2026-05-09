@@ -298,7 +298,8 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
             // We do NOT write back calculated values — that would overwrite staff data.
             const staffWait = queueData.estimateWait;
             if (typeof staffWait === "number") {
-                document.getElementById("waitTime").textContent = `${staffWait} min`;
+                const estimatedWait = userIndex * 30;
+                document.getElementById("waitTime").textContent = `${estimatedWait} min`;
             } else {
                 // Rough estimate: assume ~30 min per person ahead
                 const estimatedWait = userIndex * 30;
