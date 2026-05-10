@@ -10,6 +10,7 @@ import {
     getDoc,
     getDocs,
     setDoc,
+    addDoc,
     updateDoc,
     deleteDoc,
     serverTimestamp
@@ -52,6 +53,7 @@ let unsubscribeWalkIn  = null;
 let regularAppts       = [];
 let walkInAppts        = [];
 let staffClinicID      = null;
+const sendingPositionTwo = new Set();
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 function getTodayString() {
@@ -69,6 +71,49 @@ function renderEmptyState() {
             <p>No patients in queue for today</p>
         </li>`;
 }
+
+
+
+async function sendPositionTwoNotification(appointment) {
+    try {
+        if (!appointment.userID) return;
+        if (!appointment.patientEmail) return;
+
+        await updateDoc(doc(db, "Queues", appointment.id), {
+            emailSent: true
+        });
+
+        emailjs.init("jWEiS_k1FnVa1Zz5S");
+
+        await emailjs.send("service_j8zb3jh", "template_neu0ubc", {
+            email: appointment.patientEmail,
+            name: appointment.patientName || "Patient",
+            clinic_name: appointment.clinicName || "Clinic",
+            appointment_reason: appointment.reason || "Appointment",
+            appointment_date: appointment.date || "",
+            appointment_time: appointment.time || ""
+        });
+
+        await addDoc(collection(db, "Notifications"), {
+            userID: appointment.userID,
+            clinicID: Number(staffClinicID),
+            clinicName: appointment.clinicName || "Clinic",
+            type: "Appointment",
+            title: "Appointment In An Hour!",
+            message: `Your ${appointment.reason || "appointment"} at ${appointment.clinicName || "the clinic"} is in an hour. You are position 2. Please make your way to the clinic.`,
+            read: false,
+            createdAt: serverTimestamp()
+        });
+
+        console.log("Position 2 email and notification sent");
+
+    } catch (error) {
+        console.error("Failed to send position 2 notification:", error);
+        sendingPositionTwo.delete(appointment.id);
+    }
+}
+
+
 
 // ─── Render: Single Queue Card ───────────────────────────────────────────────
 function buildCard(appointment, positionLabel) {
@@ -145,6 +190,11 @@ function buildCard(appointment, positionLabel) {
 
     if (advBtn) advBtn.addEventListener("click", () => updateStatus(appointment.id, advBtn.dataset.next));
     if (canBtn) canBtn.addEventListener("click", () => updateStatus(appointment.id, "cancelled"));
+
+    if (positionLabel === 2 && !appointment.emailSent && !sendingPositionTwo.has(appointment.id)) {
+        sendingPositionTwo.add(appointment.id);
+        sendPositionTwoNotification(appointment);
+    }
 
     return li;
 }
@@ -306,6 +356,10 @@ async function syncAppointmentsToQueues(appointments) {
         return setDoc(doc(db, "Queues", appt.id), {
         appointmentId: appt.id,
         clinicID: Number(staffClinicID),
+        patientEmail: appt.patientEmail || "",
+        clinicName: appt.clinicName || "",
+        reason: appt.reason || "",
+        emailSent: appt.emailSent || false,
         date: today,
         userID: appt.userID || null,
         patientName: appt.patientName || null,
@@ -359,6 +413,8 @@ function startQueueListeners() {
             regularAppts.push({
                 id:          docSnap.id,
                 time:        d.time        || "",
+                patientEmail: d.patientEmail || "",
+                clinicID: d.clinicID || Number(staffClinicID),
                 status,
                 reason:      d.reason      || "",
                 patientName: d.patientName || d.name || null,
