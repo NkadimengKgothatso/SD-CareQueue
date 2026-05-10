@@ -39,11 +39,11 @@ def log_queue_completion(
     actual_wait = round((served_at - created_at).total_seconds() / 60)
 
     if actual_wait <= 0:
-        print(f"⚠️  Skipping {appointment_id} — invalid wait time ({actual_wait} min)")
+        print(f" Skipping {appointment_id} — invalid wait time ({actual_wait} min)")
         return
 
     if actual_wait > 180:
-        print(f"⚠️  Skipping {appointment_id} — outlier wait time ({actual_wait} min > 180)")
+        print(f"Skipping {appointment_id} — outlier wait time ({actual_wait} min > 180)")
         return
 
     # ── Duplicate guard ─────────────────────────────────────
@@ -55,7 +55,7 @@ def log_queue_completion(
         .stream()
     )
     if any(True for _ in existing):
-        print(f"⚠️  Skipping {appointment_id} — already logged in QueueHistory")
+        print(f"  Skipping {appointment_id} — already logged in QueueHistory")
         return
 
     # ── Derive time features ────────────────────────────────
@@ -76,7 +76,7 @@ def log_queue_completion(
         "hour":          int(hour),
         "dayOfWeek":     int(day_of_week),
         "isWeekend":     bool(is_weekend),
-        "isWalkIn":      bool(is_walk_in),   # ✅ critical for model accuracy
+        "isWalkIn":      bool(is_walk_in),   #  critical for model accuracy
 
         # ── Target variable ──
         "actualWaitTime": int(actual_wait),
@@ -84,7 +84,7 @@ def log_queue_completion(
         # ── Audit timestamps ──
         "createdAT":  created_at,
         "servedAT":   served_at,
-        "loggedAt":   firestore.SERVER_TIMESTAMP,  # ✅ server time, timezone-safe
+        "loggedAt":   firestore.SERVER_TIMESTAMP,  #  server time, timezone-safe
 
         # ── Data provenance ──
         "source": "real",   # distinguishes from synthetic bootstrap data
@@ -93,7 +93,7 @@ def log_queue_completion(
     db.collection("QueueHistory").add(record)
 
     print(
-        f"✅ Logged  | clinic={clinic_id} | appt={appointment_id} | "
+        f" Logged  | clinic={clinic_id} | appt={appointment_id} | "
         f"pos={queue_position}/{queue_length} | "
         f"walkIn={is_walk_in} | wait={actual_wait} min"
     )

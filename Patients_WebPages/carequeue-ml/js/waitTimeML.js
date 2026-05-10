@@ -170,7 +170,7 @@ export function loadQueueStatusML(
                     await emailjs.send("service_j8zb3jh", "template_neu0ubc", {
                         email:              patientEmail,
                         name:               patientName,
-                        clinic_name:        clinicName,        // ✅ now correctly in scope
+                        clinic_name:        clinicName,        // now correctly in scope
                         appointment_reason: myData.reason || "Appointment",
                         appointment_date:   myData.date   || "",
                         appointment_time:   myData.time   || "",
@@ -206,14 +206,14 @@ export function loadQueueStatusML(
 
             if (requestId !== lastRequestId) return;  // stale response, ignore
 
-            // ✅ Fixed: actually use predicted value, not always userIndex * 30
+            //  Fixed: actually use predicted value, not always userIndex * 30
             const displayWait = predicted !== null
                 ? predicted
                 : Math.round(position * 8);           // formula fallback
 
             safeSet("waitTime", `${displayWait} min`);
 
-            // ✅ Write prediction back to Queues.estimateWait
+            //  Write prediction back to Queues.estimateWait
             try {
                 await updateDoc(doc(db, "Queues", myData.id), {
                     estimateWait: displayWait,

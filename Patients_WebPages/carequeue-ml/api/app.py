@@ -15,7 +15,7 @@ if not os.path.exists(MODEL_PATH):
     raise FileNotFoundError(f"Model not found at {MODEL_PATH}")
 
 model = joblib.load(MODEL_PATH)
-print("✅ Model loaded:", MODEL_PATH)
+print(" Model loaded:", MODEL_PATH)
 
 FEATURE_COLS = ["clinicID", "queuePosition", "queueLength", "hour", "dayOfWeek"]
 
@@ -46,7 +46,7 @@ def predict():
         if queuePosition < 1:
             return jsonify({"error": "queuePosition must be >= 1"}), 400
 
-        # ❌ FIX: do NOT silently clamp
+        #  FIX: do NOT silently clamp
         if queuePosition > queueLength:
             return jsonify({
                 "error": "queuePosition cannot exceed queueLength"

@@ -3,16 +3,16 @@ from firebase_admin import credentials, firestore
 import pandas as pd
 from datetime import datetime
 
-# ─────────────────────────────
+# -----------------------------------------
 # INIT FIREBASE
-# ─────────────────────────────
+# -----------------------------------------
 if not firebase_admin._apps:
     cred = credentials.Certificate("serviceAccountKey.json")
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
-print("🚀 Fetching QueueHistory from Firestore...")
+print("Fetching QueueHistory from Firestore...")
 
 docs = db.collection("QueueHistory").stream()
 
@@ -41,7 +41,6 @@ for doc in docs:
             hour = created_at.hour
             day_of_week = created_at.weekday()
 
-    # skip broken rows (IMPORTANT for ML quality)
     if None in [d.get("clinicID"), d.get("queuePosition"), queue_length, hour, day_of_week]:
         continue
 
@@ -58,13 +57,12 @@ for doc in docs:
 
 df = pd.DataFrame(data)
 
-print(f"📦 Total valid records: {len(df)}")
-
-print(f"🧹 Cleaning dataset...")
+print(f"Total valid records: {len(df)}")
+print("Cleaning dataset...")
 
 df.to_csv("queue_data.csv", index=False)
 
-print("✅ Saved ML dataset to queue_data.csv")
-print(f"📊 Wait time range: {df['actualWaitTime'].min():.0f} – {df['actualWaitTime'].max():.0f} min")
-print(f"📊 Mean wait: {df['actualWaitTime'].mean():.1f} min")
-print("🎯 Ready for training!")
+print("Saved ML dataset to queue_data.csv")
+print(f"Wait time range: {df['actualWaitTime'].min():.0f} - {df['actualWaitTime'].max():.0f} min")
+print(f"Mean wait: {df['actualWaitTime'].mean():.1f} min")
+print("Ready for training!")
