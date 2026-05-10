@@ -230,3 +230,8 @@ document.getElementById("clearBtn").addEventListener("click", async () => {
 
   alert("All notifications cleared");
 });
+
+export {
+  getIcon,
+  formatTime
+};

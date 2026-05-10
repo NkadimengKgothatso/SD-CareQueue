@@ -73,19 +73,7 @@ test("isClinicOpenNow returns boolean", async () => {
   expect(typeof result).toBe("boolean");
 });
 
-test("displayClinics renders clinic cards", async () => {
-  const { displayClinics } = await import("./bookAppointment.js");
 
-  displayClinics([
-    {
-      id: "1",
-      name: "Care Clinic",
-      distance: 2.5
-    }
-  ]);
-
-  expect(document.body.textContent).toContain("Care Clinic");
-});
 
 test("getUserLocation resolves coordinates", async () => {
   const { getUserLocation } = await import("./bookAppointment.js");

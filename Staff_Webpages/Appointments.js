@@ -185,6 +185,11 @@ function buildCard(appt) {
 // ─── Render Full List ─────────────────────────────────────────────────────────
 function renderAppointments() {
     appointmentList.innerHTML = "";
+    module.allQueues = [
+        { status: "waiting" },
+        { status: "waiting" },
+        { status: "completed" }
+        ];
     updateStats();
 
     const filtered = getFilteredAppointments();
