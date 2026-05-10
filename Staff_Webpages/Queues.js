@@ -70,6 +70,48 @@ function renderEmptyState() {
         </li>`;
 }
 
+
+
+async function sendPositionTwoNotification(appointment) {
+    try {
+        if (!appointment.userID) return;
+
+        emailjs.init("jWEiS_k1FnVa1Zz5S");
+
+        await emailjs.send("service_j8zb3jh", "template_neu0ubc", {
+            email: appointment.patientEmail || "",
+            name: appointment.patientName || "Patient",
+            clinic_name: appointment.clinicName || "Clinic",
+            appointment_reason: appointment.reason || "Appointment",
+            appointment_date: appointment.date || "",
+            appointment_time: appointment.time || ""
+        });
+
+        await updateDoc(doc(db, "Queues", appointment.id), {
+            emailSent: true
+        });
+
+        await addDoc(collection(db, "Notifications"), {
+            userID: appointment.userID,
+            clinicID: appointment.clinicID,
+            clinicName: appointment.clinicName || "Clinic",
+            type: "Appointment",
+            title: "Appointment In An Hour!",
+            message: `Your ${appointment.reason || "appointment"} at ${appointment.clinicName || "the clinic"} is in an hour. You are position 2. Please make your way to the clinic.`,
+            read: false,
+            createdAt: serverTimestamp()
+        });
+
+        console.log("Position 2 email and notification sent");
+
+    } catch (error) {
+        console.error("Failed to send position 2 notification:", error);
+    }
+}
+
+
+
+
 // ─── Render: Single Queue Card ───────────────────────────────────────────────
 function buildCard(appointment, positionLabel) {
     const status     = (appointment.status || "waiting").toLowerCase().trim();
@@ -145,6 +187,10 @@ function buildCard(appointment, positionLabel) {
 
     if (advBtn) advBtn.addEventListener("click", () => updateStatus(appointment.id, advBtn.dataset.next));
     if (canBtn) canBtn.addEventListener("click", () => updateStatus(appointment.id, "cancelled"));
+
+    if (positionLabel === 2 && !appointment.emailSent) {
+        sendPositionTwoNotification(appointment);
+    }
 
     return li;
 }
@@ -306,8 +352,10 @@ async function syncAppointmentsToQueues(appointments) {
         return setDoc(doc(db, "Queues", appt.id), {
         appointmentId: appt.id,
         clinicID: Number(staffClinicID),
+        patientEmail: appt.patientEmail || "",
+        clinicName: appt.clinicName || "",
+        reason: appt.reason || "",
         date: today,
-        reason: appt.reason || "Appointment",
         userID: appt.userID || null,
         patientName: appt.patientName || null,
         status: appt.status || "waiting",
