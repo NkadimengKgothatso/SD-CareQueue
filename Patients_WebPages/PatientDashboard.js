@@ -5,7 +5,6 @@ import {
     getFirestore,
     doc,
     getDoc,
-    updateDoc,
     collection,
     query,
     where,
@@ -14,6 +13,7 @@ import {
     addDoc,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { loadQueueStatusML } from "./carequeue-ml/js/waitTimeML.js";
 
 // ================= Firebase Config =================
 const firebaseConfig = {
@@ -34,12 +34,10 @@ const db = getFirestore(app);
 // ================= Global Variables =================
 let emptyStates, filledStates;
 
-// Store clinics locally for fast lookup
 const clinicsMap = new Map();
 let queueUnsubscribe = null;
 
-// Name and email of patient
-let patientName = "";
+let patientName  = "";
 let patientEmail = "";
 
 
@@ -135,8 +133,9 @@ async function loadAppointments(userId) {
 
         await loadVisitsCount(userId, next.clinicID);
 
-        const clinic = clinicsMap.get(String(next.clinicID));
-        const clinicName = clinic ? clinic.name : "Unknown Clinic";
+        const clinicIDStr = String(next.clinicID);
+        const clinic      = clinicsMap.get(clinicIDStr);
+        const clinicName  = clinic ? clinic.name : "Unknown Clinic";
 
         console.log("next.clinicID:", next.clinicID, "| type:", typeof next.clinicID);
 
@@ -171,186 +170,22 @@ async function loadAppointments(userId) {
             </li>
         `;
 
-        // Load queue for this appointment
-        loadQueueStatus(userId, next.id, next.clinicID);
+        // ── Load real-time queue status and ML predictions ──
+        if (queueUnsubscribe) { queueUnsubscribe(); }
+        queueUnsubscribe = loadQueueStatusML(
+            userId,
+            next.id,
+            next.clinicID,
+            db,
+            clinicName,
+            patientName,
+            patientEmail
+        );
 
     } catch (error) {
         console.error("Firestore error:", error);
         showEmpty();
     }
-}
-
-
-// ================= LOAD QUEUE STATUS =================
-// Listens in real-time to the user's position in the clinic queue for their
-// upcoming appointment and updates the dashboard accordingly.
-function loadQueueStatus(userId, appointmentId, clinicID) {
-
-    // Clean up any existing listeners before starting fresh
-    if (queueUnsubscribe) {
-        queueUnsubscribe();
-        queueUnsubscribe = null;
-    }
-
-    // Normalise clinicID to both types — Firestore may store it as number or string
-    const clinicIDNum = Number(clinicID);
-    const clinicIDStr = String(clinicID);
-
-    const activeStatuses = ["waiting", "scheduled", "active"];
-
-    const setEmpty = () => {
-        document.getElementById("queueCount").textContent        = "";
-        document.getElementById("queueProgressText").textContent = "";
-        document.getElementById("progressPercent").textContent   = "";
-        document.getElementById("queueMeter").value              = 0;
-        document.getElementById("queuePosition").textContent     = "";
-        document.getElementById("waitTime").textContent          = "";
-    };
-
-    // Inner clinic listener — kept in closure so we can clean it up reliably
-    let clinicUnsubscribe = null;
-
-    // Step 1: watch only this appointment's queue document
-    const appointmentQ = query(
-        collection(db, "Queues"),
-        where("appointmentId", "==", appointmentId)
-    );
-
-    queueUnsubscribe = onSnapshot(appointmentQ, (snapshot) => {
-
-        // Always tear down the previous clinic listener before deciding what to do next
-        if (clinicUnsubscribe) {
-            clinicUnsubscribe();
-            clinicUnsubscribe = null;
-        }
-
-        // Find the user's active queue entry for this appointment
-        const activeEntries = snapshot.docs
-            .map(d => ({ id: d.id, ...d.data() }))
-            .filter(d => activeStatuses.includes((d.status || "").toLowerCase().trim()));
-
-        if (activeEntries.length === 0) {
-            setEmpty();
-            return;
-        }
-
-        const queueData = activeEntries[0]; // The user's own queue document
-
-        // Step 2: watch ALL active entries for this clinic to determine position
-        const clinicQ = query(
-            collection(db, "Queues"),
-            where("clinicID", "==", clinicIDNum)
-        );
-
-        clinicUnsubscribe = onSnapshot(clinicQ, async (clinicSnapshot) => {
-
-            let allClinicEntries = clinicSnapshot.docs
-                .map(d => ({ id: d.id, ...d.data() }))
-                .filter(d => activeStatuses.includes((d.status || "").toLowerCase().trim()))
-                .sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
-
-            // Fallback: if clinicID is stored as a string in some documents,
-            // the numeric query will miss them. Do a client-side string match.
-            if (allClinicEntries.length === 0) {
-                console.warn(
-                    "loadQueueStatus: no results for clinicID as number (" + clinicIDNum + "). " +
-                    "Check that Queues documents store clinicID consistently."
-                );
-                allClinicEntries = clinicSnapshot.docs
-                    .map(d => ({ id: d.id, ...d.data() }))
-                    .filter(d => {
-                        const stored = String(d.clinicID ?? "");
-                        return (
-                            stored === clinicIDStr &&
-                            activeStatuses.includes((d.status || "").toLowerCase().trim())
-                        );
-                    })
-                    .sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
-            }
-
-            const total = allClinicEntries.length;
-
-            // Find where the user sits in the sorted list
-            const userIndex = allClinicEntries.findIndex(
-                entry => String(entry.appointmentId) === String(appointmentId)
-            );
-
-            // If the user's entry isn't in the clinic queue at all, show empty state
-            if (userIndex === -1) {
-                console.warn(
-                    "loadQueueStatus: user's appointmentId not found in clinic queue. " +
-                    "Possible clinicID mismatch or entry was removed."
-                );
-                setEmpty();
-                return;
-            }
-
-            const position = userIndex + 1; // Convert to 1-based display position
-
-            if (position === 2 && !queueData.emailSent) {
-            emailjs.init("jWEiS_k1FnVa1Zz5S");
-
-            await emailjs.send("service_j8zb3jh", "template_neu0ubc", {
-                email: patientEmail,
-                name: patientName || "Patient",
-                clinic_name: clinicName,
-                appointment_reason: queueData.reason || "Appointment",
-                appointment_date: queueData.date || "",
-                appointment_time: queueData.time || ""
-            });
-
-            await updateDoc(doc(db, "Queues", queueData.id), {
-                emailSent: true
-            });
-
-
-            await addDoc(collection(db, "Notifications"), {
-                userID: userId,
-                clinicID: clinicIDNum,
-                clinicName: clinicName,
-                type: "Appointment",
-                title: "Appointment In An Hour!",
-                message: `Your ${queueData.reason || "appointment"} at ${clinicName} is in an hour (you are position 2) for ${queueData.date} at ${queueData.time}. Please make your way to the clinic.`,
-                read: false,
-                createdAt: serverTimestamp()
-            });
-
-
-        }
-
-
-
-            // --- Update UI ---
-
-            document.getElementById("queueCount").textContent    = `${position} out of ${total}`;
-            document.getElementById("queuePosition").textContent = String(position);
-
-            // Progress percentage: 0 % when last, 100 % when first/only
-            let percent = 0;
-            if (total === 1) {
-                percent = 100;
-            } else {
-                percent = Math.round(((total - position) / (total - 1)) * 100);
-            }
-            document.getElementById("progressPercent").textContent = `${percent}%`;
-            document.getElementById("queueMeter").value            = percent;
-
-            document.getElementById("queueProgressText").textContent = "";
-
-            // Wait time: prefer a real value set by clinic staff in Firestore.
-            // Only fall back to a position-based estimate when none is available.
-            // We do NOT write back calculated values — that would overwrite staff data.
-            const staffWait = queueData.estimateWait;
-            if (typeof staffWait === "number") {
-                const estimatedWait = userIndex * 30;
-                document.getElementById("waitTime").textContent = `${estimatedWait} min`;
-            } else {
-                // Rough estimate: assume ~30 min per person ahead
-                const estimatedWait = userIndex * 30;
-                document.getElementById("waitTime").textContent = `~${estimatedWait} min (est.)`;
-            }
-        });
-    });
 }
 
 
@@ -450,5 +285,4 @@ export {
     showFilled,
     setAvatarInitial,
     loadVisitsCount,
-    loadQueueStatus
 };
