@@ -94,7 +94,7 @@ async function sendPositionTwoNotification(appointment) {
 
         await addDoc(collection(db, "Notifications"), {
             userID: appointment.userID,
-            clinicID: appointment.clinicID,
+            clinicID: Number(staffClinicID),
             clinicName: appointment.clinicName || "Clinic",
             type: "Appointment",
             title: "Appointment In An Hour!",
@@ -410,6 +410,7 @@ function startQueueListeners() {
                 id:          docSnap.id,
                 time:        d.time        || "",
                 patientEmail: d.patientEmail || "",
+                clinicID: d.clinicID || Number(staffClinicID),
                 status,
                 reason:      d.reason      || "",
                 patientName: d.patientName || d.name || null,
