@@ -10,6 +10,7 @@ import {
     getDoc,
     getDocs,
     setDoc,
+    addDoc,
     updateDoc,
     deleteDoc,
     serverTimestamp
@@ -408,6 +409,7 @@ function startQueueListeners() {
             regularAppts.push({
                 id:          docSnap.id,
                 time:        d.time        || "",
+                patientEmail: d.patientEmail || "",
                 status,
                 reason:      d.reason      || "",
                 patientName: d.patientName || d.name || null,
