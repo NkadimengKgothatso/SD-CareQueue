@@ -135,8 +135,8 @@ async function loadAppointments(userId) {
 
         await loadVisitsCount(userId, next.clinicID);
 
-        const clinicIDNum = Number(clinicID);
-        const clinicIDStr = String(clinicID);
+        const clinicIDNum = Number(next.clinicID);
+        const clinicIDStr = String(next.clinicID);
 
         const clinic = clinicsMap.get(clinicIDStr);
         const clinicName = clinic ? clinic.name : "Unknown Clinic";
@@ -200,6 +200,9 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
     // Normalise clinicID to both types — Firestore may store it as number or string
     const clinicIDNum = Number(clinicID);
     const clinicIDStr = String(clinicID);
+
+    const clinic = clinicsMap.get(clinicIDStr);
+    const clinicName = clinic ? clinic.name : "Unknown Clinic";
 
     const activeStatuses = ["waiting", "scheduled", "active"];
 
@@ -293,6 +296,7 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
             const position = userIndex + 1; // Convert to 1-based display position
 
             if (position === 2 && !queueData.emailSent) {
+            console.log("SENDING EMAIL", patientEmail, position);
             emailjs.init("jWEiS_k1FnVa1Zz5S");
 
             await emailjs.send("service_j8zb3jh", "template_neu0ubc", {
