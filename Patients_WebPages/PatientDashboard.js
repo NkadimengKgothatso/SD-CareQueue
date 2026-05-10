@@ -297,7 +297,7 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
             document.getElementById("queuePosition").textContent = String(position);
 
             let percent = 0;
-            if (total === 1) {
+            if (total <= 1 || position === 1) {
                 percent = 100;
             } else {
                 percent = Math.round(((total - position) / (total - 1)) * 100);
