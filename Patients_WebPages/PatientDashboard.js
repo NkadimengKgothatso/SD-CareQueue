@@ -5,7 +5,6 @@ import {
     getFirestore,
     doc,
     getDoc,
-    updateDoc,
     collection,
     query,
     where,
@@ -14,6 +13,7 @@ import {
     addDoc,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { loadQueueStatusML } from "./carequeue-ml/js/waitTimeML.js";
 
 // ================= Firebase Config =================
 const firebaseConfig = {
@@ -34,12 +34,10 @@ const db = getFirestore(app);
 // ================= Global Variables =================
 let emptyStates, filledStates;
 
-// Store clinics locally for fast lookup
 const clinicsMap = new Map();
 let queueUnsubscribe = null;
 
-// Name and email of patient
-let patientName = "";
+let patientName  = "";
 let patientEmail = "";
 
 
@@ -135,13 +133,9 @@ async function loadAppointments(userId) {
 
         await loadVisitsCount(userId, next.clinicID);
 
-        const clinicIDNum = Number(next.clinicID);
         const clinicIDStr = String(next.clinicID);
-
-        const clinic = clinicsMap.get(clinicIDStr);
-        const clinicName = clinic ? clinic.name : "Unknown Clinic";
-
-        
+        const clinic      = clinicsMap.get(clinicIDStr);
+        const clinicName  = clinic ? clinic.name : "Unknown Clinic";
 
         console.log("next.clinicID:", next.clinicID, "| type:", typeof next.clinicID);
 
@@ -176,8 +170,17 @@ async function loadAppointments(userId) {
             </li>
         `;
 
-        // Load queue for this appointment
-        loadQueueStatus(userId, next.id, next.clinicID);
+        // ── Load real-time queue status and ML predictions ──
+        if (queueUnsubscribe) { queueUnsubscribe(); }
+        queueUnsubscribe = loadQueueStatusML(
+            userId,
+            next.id,
+            next.clinicID,
+            db,
+            clinicName,
+            patientName,
+            patientEmail
+        );
 
     } catch (error) {
         console.error("Firestore error:", error);
@@ -186,136 +189,6 @@ async function loadAppointments(userId) {
 }
 
 
-// ================= LOAD QUEUE STATUS =================
-// Listens in real-time to the user's position in the clinic queue for their
-// upcoming appointment and updates the dashboard accordingly.
-function loadQueueStatus(userId, appointmentId, clinicID) {
-
-    if (queueUnsubscribe) {
-        queueUnsubscribe();
-        queueUnsubscribe = null;
-    }
-
-    const clinicIDNum = Number(clinicID);
-    const clinicIDStr = String(clinicID);
-
-    const clinic = clinicsMap.get(clinicIDStr);
-    const clinicName = clinic ? clinic.name : "Unknown Clinic";
-
-    const activeStatuses = ["waiting", "scheduled", "active"];
-
-    const setEmpty = () => {
-        document.getElementById("queueCount").textContent        = "";
-        document.getElementById("queueProgressText").textContent = "";
-        document.getElementById("progressPercent").textContent   = "";
-        document.getElementById("queueMeter").value              = 0;
-        document.getElementById("queuePosition").textContent     = "";
-        document.getElementById("waitTime").textContent          = "";
-    };
-
-    let clinicUnsubscribe = null;
-
-    const appointmentQ = query(
-        collection(db, "Queues"),
-        where("appointmentId", "==", appointmentId)
-    );
-
-    queueUnsubscribe = onSnapshot(appointmentQ, (snapshot) => {
-
-        if (clinicUnsubscribe) {
-            clinicUnsubscribe();
-            clinicUnsubscribe = null;
-        }
-
-        const activeEntries = snapshot.docs
-            .map(d => ({ id: d.id, ...d.data() }))
-            .filter(d => activeStatuses.includes((d.status || "").toLowerCase().trim()));
-
-        if (activeEntries.length === 0) {
-            setEmpty();
-            return;
-        }
-
-        const queueData = activeEntries[0];
-
-        const clinicQ = query(
-            collection(db, "Queues"),
-            where("clinicID", "==", clinicIDNum)
-        );
-
-        clinicUnsubscribe = onSnapshot(clinicQ, async (clinicSnapshot) => {
-
-            let allClinicEntries = clinicSnapshot.docs
-                .map(d => ({ id: d.id, ...d.data() }))
-                .filter(d => activeStatuses.includes((d.status || "").toLowerCase().trim()))
-                .sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
-
-            if (allClinicEntries.length === 0) {
-                console.warn("loadQueueStatus: no results for clinicID as number (" + clinicIDNum + ").");
-                allClinicEntries = clinicSnapshot.docs
-                    .map(d => ({ id: d.id, ...d.data() }))
-                    .filter(d => {
-                        const stored = String(d.clinicID ?? "");
-                        return (
-                            stored === clinicIDStr &&
-                            activeStatuses.includes((d.status || "").toLowerCase().trim())
-                        );
-                    })
-                    .sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
-            }
-
-            const total = allClinicEntries.length;
-
-            const userIndex = allClinicEntries.findIndex(
-                entry => String(entry.appointmentId) === String(appointmentId)
-            );
-
-            if (userIndex === -1) {
-                console.warn("loadQueueStatus: user's appointmentId not found in clinic queue.");
-                setEmpty();
-                return;
-            }
-
-            const position = userIndex + 1;
-
-            //  Notification — only send when position is 2
-            if (position === 2) {
-                await addDoc(collection(db, "Notifications"), {
-                    userID:     userId,
-                    clinicID:   clinicIDNum,
-                    clinicName: clinicName,
-                    type:       "Appointment",
-                    title:      "Appointment In An Hour!",
-                    message:    `Your ${queueData.reason || "appointment"} at ${clinicName} is in an hour (you are position 2) for ${queueData.date} at ${queueData.time}. Please make your way to the clinic.`,
-                    read:       false,
-                    createdAt:  serverTimestamp()
-                });
-            }
-
-            //  Update UI
-            document.getElementById("queueCount").textContent    = `${position} out of ${total}`;
-            document.getElementById("queuePosition").textContent = String(position);
-
-            let percent = 0;
-            if (total <= 1 || position === 1) {
-                percent = 100;
-            } else {
-                percent = Math.round(((total - position) / (total - 1)) * 100);
-            }
-            document.getElementById("progressPercent").textContent = `${percent}%`;
-            document.getElementById("queueMeter").value            = percent;
-            document.getElementById("queueProgressText").textContent = "";
-
-            const staffWait = queueData.estimateWait;
-            if (typeof staffWait === "number") {
-                document.getElementById("waitTime").textContent = `${staffWait} min`;
-            } else {
-                const estimatedWait = userIndex * 30;
-                document.getElementById("waitTime").textContent = `~${estimatedWait} min (est.)`;
-            }
-        });
-    });
-}
 // ================= LOAD VISITS COUNT =================
 async function loadVisitsCount(userId, clinicID) {
     try {
@@ -412,5 +285,4 @@ export {
     showFilled,
     setAvatarInitial,
     loadVisitsCount,
-    loadQueueStatus
 };
