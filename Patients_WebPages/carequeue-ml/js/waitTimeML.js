@@ -163,7 +163,7 @@ export function loadQueueStatusML(
             if (meter) meter.value = percent;
             safeSet("queueProgressText", "");
 
-            // ── "You're next" email notification ────────────
+            /* ── "You're next" email notification ────────────
             if (position === 2 && !myData.emailSent && patientEmail) {
                 try {
                     emailjs.init("jWEiS_k1FnVa1Zz5S");
@@ -191,7 +191,7 @@ export function loadQueueStatusML(
                 } catch (e) {
                     console.warn("Email/notification error:", e);
                 }
-            }
+            }*/
 
             // ── ML wait time prediction ──────────────────────
             safeSet("waitTime", "...");
