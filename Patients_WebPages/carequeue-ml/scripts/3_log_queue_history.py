@@ -1,122 +1,119 @@
-"""
-STEP 3 — Log Queue History (FIXED FOR CAREQUEUE ML PIPELINE)
-============================================================
-"""
-
 import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime
 
-# ─────────────────────────────────────────────
-# INIT FIREBASE
-# ─────────────────────────────────────────────
 if not firebase_admin._apps:
     cred = credentials.Certificate("serviceAccountKey.json")
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
+# ─────────────────────────────────────────────────────────────
+# log_queue_completion()
+#
+# Call this ONCE per patient, the moment they are served.
+# It writes one training row to QueueHistory.
+#
+# Parameters:
+#   clinic_id       – int   – e.g. 10002143430
+#   appointment_id  – str   – Firestore doc ID from Queues/Appointments
+#   queue_position  – int   – patient's position when they joined
+#   queue_length    – int   – total queue size at that moment
+#   created_at      – datetime – when patient joined the queue (createdAT)
+#   served_at       – datetime – when patient was called/served
+#   is_walk_in      – bool  – True if walk-in, False if booked appointment
+#   user_id         – str   – userID from Queues doc (can be None for walk-ins)
+# ─────────────────────────────────────────────────────────────
 
-# ─────────────────────────────────────────────
-# MAIN LOGGER
-# ─────────────────────────────────────────────
 def log_queue_completion(
-    clinic_id: int,
+    clinic_id:      int,
     appointment_id: str,
     queue_position: int,
-    queue_length: int,
-    created_at: datetime,
-    appointment_time: datetime,
+    queue_length:   int,
+    created_at:     datetime,
+    served_at:      datetime,
+    is_walk_in:     bool = False,
+    user_id:        str  = None,
 ):
-    """
-    Logs ML training data into Firestore QueueHistory.
+    # ── Validate wait time ──────────────────────────────────
+    actual_wait = round((served_at - created_at).total_seconds() / 60)
 
-    actual wait = appointmentTime - createdAT
-    i.e. how many minutes from when the patient joined the queue
-    until their scheduled appointment time.
-    """
-
-    # ─────────────────────────────────────────
-    # TARGET VARIABLE
-    # appointmentTime - createdAT gives a positive wait
-    # because appointment is always AFTER the patient joins the queue
-    # ─────────────────────────────────────────
-    actual_wait = round(
-        (appointment_time - created_at).total_seconds() / 60
-    )
-
-    # Guard against bad data — skip negative or zero wait times
     if actual_wait <= 0:
-        print(
-            f"⚠️  Skipping record: non-positive wait time ({actual_wait} min). "
-            f"Check that appointmentTime > createdAT."
-        )
+        print(f"⚠️  Skipping {appointment_id} — invalid wait time ({actual_wait} min)")
         return
 
-    # ─────────────────────────────────────────
-    # FEATURE ENGINEERING
-    # ─────────────────────────────────────────
-    hour = created_at.hour
-    day_of_week = created_at.weekday()
-    is_weekend = day_of_week in [5, 6]
+    if actual_wait > 180:
+        print(f"⚠️  Skipping {appointment_id} — outlier wait time ({actual_wait} min > 180)")
+        return
 
-    # ─────────────────────────────────────────
-    # BUILD DOCUMENT
-    # ─────────────────────────────────────────
+    # ── Duplicate guard ─────────────────────────────────────
+    # Prevent the same appointment being logged twice
+    existing = (
+        db.collection("QueueHistory")
+        .where("appointmentId", "==", str(appointment_id))
+        .limit(1)
+        .stream()
+    )
+    if any(True for _ in existing):
+        print(f"⚠️  Skipping {appointment_id} — already logged in QueueHistory")
+        return
+
+    # ── Derive time features ────────────────────────────────
+    hour        = created_at.hour
+    day_of_week = created_at.weekday()   # 0=Mon … 6=Sun
+    is_weekend  = day_of_week in [5, 6]
+
+    # ── Build record ────────────────────────────────────────
     record = {
-
-        # IDs
-        "clinicID": int(clinic_id),
+        # ── Identifiers ──
+        "clinicID":      int(clinic_id),
         "appointmentId": str(appointment_id),
+        "userID":        str(user_id) if user_id else None,
 
-        # Queue state
+        # ── ML features ──
         "queuePosition": int(queue_position),
-        "queueLength": int(queue_length),
+        "queueLength":   int(queue_length),
+        "hour":          int(hour),
+        "dayOfWeek":     int(day_of_week),
+        "isWeekend":     bool(is_weekend),
+        "isWalkIn":      bool(is_walk_in),   # ✅ critical for model accuracy
 
-        # Timing (kept as timestamp for reference)
-        "createdAT": created_at,
-        "appointmentTime": appointment_time,
+        # ── Target variable ──
+        "actualWaitTime": int(actual_wait),
 
-        # Features
-        "hour": hour,
-        "dayOfWeek": day_of_week,
-        "isWeekend": is_weekend,
+        # ── Audit timestamps ──
+        "createdAT":  created_at,
+        "servedAT":   served_at,
+        "loggedAt":   firestore.SERVER_TIMESTAMP,  # ✅ server time, timezone-safe
 
-        # TARGET — always positive now
-        "actualWaitTime": actual_wait,
-
-        # Metadata
-        "loggedAt": datetime.utcnow()
+        # ── Data provenance ──
+        "source": "real",   # distinguishes from synthetic bootstrap data
     }
 
-    # ─────────────────────────────────────────
-    # SAVE TO FIRESTORE
-    # ─────────────────────────────────────────
     db.collection("QueueHistory").add(record)
 
     print(
-        f"✅ Logged QueueHistory | clinic={clinic_id} | "
-        f"pos={queue_position}/{queue_length} | wait={actual_wait} min"
+        f"✅ Logged  | clinic={clinic_id} | appt={appointment_id} | "
+        f"pos={queue_position}/{queue_length} | "
+        f"walkIn={is_walk_in} | wait={actual_wait} min"
     )
 
 
-# ─────────────────────────────────────────────
-# TEST EXAMPLE
-# Patient joins queue at 07:45, appointment is at 08:00 → 15 min wait
-# ─────────────────────────────────────────────
-if __name__ == "__main__":
-
-    log_queue_completion(
-
-        clinic_id=10002143430,
-
-        appointment_id="test-abc-123",
-
-        queue_position=3,
-
-        queue_length=10,
-
-        created_at=datetime(2026, 5, 9, 7, 45, 0),      # joined queue at 07:45
-
-        appointment_time=datetime(2026, 5, 9, 8, 0, 0),  # appointment at 08:00
-    )
+# ─────────────────────────────────────────────────────────────
+# USAGE EXAMPLE
+# Call this from your queue management code when a patient
+# is marked as served in Firestore.
+#
+# from scripts.3_log_queue_history import log_queue_completion
+#
+# log_queue_completion(
+#     clinic_id      = 10002143430,
+#     appointment_id = "15syhAEcth0HMBrnbIZi",
+#     queue_position = 1,
+#     queue_length   = 7,
+#     created_at     = datetime(2026, 5, 9, 13, 0),   # joined queue
+#     served_at      = datetime(2026, 5, 9, 13, 22),  # called by clinic
+#     is_walk_in     = False,
+#     user_id        = "user_abc123",
+# )
+# ─────────────────────────────────────────────────────────────

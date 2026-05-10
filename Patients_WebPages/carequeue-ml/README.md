@@ -1,147 +1,449 @@
 # CareQueue — ML Wait Time Predictor
 
-Random Forest model that predicts patient queue wait times and feeds them
-into your Firebase dashboard in real time.
+CareQueue is a real-time healthcare queue management and machine learning prediction system designed to estimate patient wait times dynamically.
+
+The system uses a Random Forest regression model trained on historical queue activity stored in Firebase Firestore. Predictions are generated in real time and displayed directly in the dashboard as queue conditions change.
 
 ---
 
-## Folder structure
+# Features
 
+- Real-time queue monitoring
+- Machine learning wait time prediction
+- Firebase Authentication integration
+- Firestore real-time synchronization
+- Automatic queue recalculation
+- Random Forest regression model
+- Flask prediction API
+- Cloud deployment ready
+- Multi-clinic support
+- Live dashboard updates
+
+---
+
+# System Architecture
+
+```text
+┌────────────────────────────────────────────────────────────┐
+│                    CLIENT DEVICE                           │
+│ ┌────────────────────────────────────────────────────────┐ │
+│ │ User Browser                                          │ │
+│ │ HTML / CSS / JS                                       │ │
+│ │ Firebase SDK                                          │ │
+│ └────────────────────────────────────────────────────────┘ │
+└────────────────────────────────────────────────────────────┘
+                            │
+                            │ HTTPS
+                            ▼
+┌────────────────────────────────────────────────────────────┐
+│                    VERCEL FRONTEND                         │
+│ ┌────────────────────────────────────────────────────────┐ │
+│ │ Patients_WebPages                                     │ │
+│ │ index.html                                            │ │
+│ │ dashboard.js                                          │ │
+│ │ login.js                                              │ │
+│ │ waitTimeML.js                                         │ │
+│ │ Firebase SDK Config                                   │ │
+│ │ Edge Network / CDN                                    │ │
+│ └────────────────────────────────────────────────────────┘ │
+└────────────────────────────────────────────────────────────┘
+            │                                  │
+            │ Firebase SDK                     │ POST /predict
+            ▼                                  ▼
+┌──────────────────────────────┐   ┌──────────────────────────────┐
+│       FIREBASE CLOUD         │   │        ML API — RENDER       │
+│                              │   │  sd-carequeue.onrender.com   │
+│ ┌──────────────────────────┐ │   │                              │
+│ │ Authentication           │ │   │ ┌──────────────────────────┐ │
+│ │ • OAuth Google           │ │   │ │ app.py (Flask API)      │ │
+│ │ • Email / Password       │ │   │ │ wait_time_model.pkl     │ │
+│ └──────────────────────────┘ │   │ │ Random Forest Predictor  │ │
+│                              │   │ └──────────────────────────┘ │
+│ ┌──────────────────────────┐ │   └──────────────────────────────┘
+│ │ Firestore Database       │ │                  │
+│ │ • Users                  │ │                  │ estimatedWaitTime
+│ │ • Appointments           │ │                  │
+│ │ • Queues                 │ │◄─────────────────┘
+│ │ • QueueHistory ✦         │ │
+│ │ • Notifications          │ │
+│ │ • StaffAvailability      │ │
+│ │ • clinicsObjects         │ │
+│ │ • admins                 │ │
+│ │ • ApprovedStaff          │ │
+│ └──────────────────────────┘ │
+└──────────────────────────────┘
+
+✦ QueueHistory = ML training source
 ```
+
+---
+
+# Real-Time ML Prediction Workflow
+
+```text
+1. Patient books an appointment
+         ↓
+2. A new document is added to the Firestore Queues collection
+
+   {
+     appointmentId,
+     clinicID,
+     position,
+     status: "waiting",
+     estimateWait: 0
+   }
+
+         ↓
+3. dashboard.js initializes and calls:
+
+   loadQueueStatusML()
+
+         ↓
+4. Firestore onSnapshot() listeners monitor queue changes
+   in real time
+
+         ↓
+5. waitTimeML.js calculates:
+   • current queue position
+   • total queue length
+   • clinicID
+   • walk-in status
+
+         ↓
+6. Frontend sends a POST request to:
+
+   https://sd-carequeue.onrender.com/predict
+
+         ↓
+7. Flask API processes the request using the
+   trained Random Forest model
+
+         ↓
+8. API returns a prediction:
+
+   {
+     "estimatedWaitTime": 28
+   }
+
+         ↓
+9. waitTimeML.js updates:
+
+   Queues.estimateWait
+
+         ↓
+10. Dashboard UI displays:
+
+   "28 min"
+
+         ↓
+11. Whenever queue activity changes:
+    • patient served
+    • queue reordered
+    • walk-in added
+    • appointment cancelled
+
+    Firestore triggers another onSnapshot() event,
+    automatically recalculating the prediction.
+```
+
+---
+
+# Folder Structure
+
+```text
 carequeue-ml/
 ├── scripts/
-│   ├── 1_export_firestore.py     # pull Firestore → CSV
-│   ├── 2_train_model.py          # train & save the model
-│   └── 3_log_queue_history.py    # log completed queue entries
+│   ├── 1_export_firestore.py
+│   ├── 2_train_model.py
+│   ├── 3_log_queue_history.py
+│   └── generate_synthetic_data.py
+│
 ├── api/
-│   └── app.py                    # Flask prediction API
+│   ├── app.py
+│   └── wait_time_model.pkl
+│
 ├── js/
-│   └── waitTimeML.js             # drop-in JS integration
+│   └── waitTimeML.js
+│
 ├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## Setup
+# Setup
 
-### 1 — Install Python dependencies
+## 1. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2 — Add your Firebase service account key
+---
 
-Download from:
-**Firebase Console → Project Settings → Service Accounts → Generate new private key**
+## 2. Configure Firebase
 
-Save as `scripts/serviceAccountKey.json`  
-⚠️ Never commit this file to Git — add it to `.gitignore`
+Download a Firebase service account key from:
+
+```text
+Firebase Console
+→ Project Settings
+→ Service Accounts
+→ Generate New Private Key
+```
+
+Save the file as:
+
+```text
+scripts/serviceAccountKey.json
+```
+
+Add the following to `.gitignore`:
+
+```text
+serviceAccountKey.json
+__pycache__/
+*.pkl
+```
 
 ---
 
-## Workflow
+# Machine Learning Pipeline
 
-### Phase 1 — Collect data (ongoing)
+## Phase 1 — Collect Queue Data
 
-Every time a patient is called/served, call `log_queue_completion()` from
-`scripts/3_log_queue_history.py`. This writes to the `QueueHistory` Firestore
-collection which is your training data.
+Completed queue events are stored in:
 
-You need **at least 200 rows** before training is useful. 1 000+ is recommended.
+```text
+QueueHistory
+```
 
-### Phase 2 — Export & train
+This collection becomes the machine learning training dataset.
+
+Recommended dataset size:
+
+| Records | Quality |
+|---|---|
+| < 200 | Too small |
+| 200 – 1000 | Acceptable |
+| 1000+ | Recommended |
+
+---
+
+## Phase 2 — Export & Train
 
 ```bash
 cd scripts
 
-# Pull Firestore data to CSV
 python 1_export_firestore.py
-
-# Train the model (creates wait_time_model.pkl)
 python 2_train_model.py
 ```
 
-Retrain monthly or whenever you have significantly more data.
+Output:
 
-### Phase 3 — Run the API
+```text
+wait_time_model.pkl
+```
+
+Copy the trained model into the API directory:
+
+```bash
+Copy-Item wait_time_model.pkl ..\api\wait_time_model.pkl
+```
+
+---
+
+## Phase 3 — Run the Flask API
 
 ```bash
 cd api
 python app.py
-# → Listening on http://localhost:5000
 ```
 
-Test it:
-```bash
-curl -X POST http://localhost:5000/predict \
-  -H "Content-Type: application/json" \
-  -d '{"clinicID": 1, "queuePosition": 3, "queueLength": 12}'
+API endpoint:
+
+```text
+http://localhost:5000/predict
 ```
 
-Expected response:
-```json
-{
-  "estimatedWaitTime": 34,
-  "unit": "minutes",
-  "inputs": { ... }
-}
+---
+
+## Phase 4 — Frontend Integration
+
+Update the API URL inside:
+
+```text
+js/waitTimeML.js
 ```
-
-### Phase 4 — Connect to your dashboard
-
-In `js/waitTimeML.js` update the API URL at the top:
 
 ```js
-const ML_API_URL = "https://your-deployed-api.com/predict";
+const ML_API_URL = "https://sd-carequeue.onrender.com/predict";
 ```
 
-Then in `dashboard.js`, replace your `loadQueueStatus` call:
+Import the ML loader:
 
 ```js
 import { loadQueueStatusML } from "./waitTimeML.js";
+```
 
-// Inside loadAppointments(), replace:
-// loadQueueStatus(userId, next.id, next.clinicID);
-// with:
-loadQueueStatusML(userId, next.id, next.clinicID, db, (unsub) => {
-    queueUnsubscribe = unsub;
-});
+Replace:
+
+```js
+loadQueueStatus(...)
+```
+
+With:
+
+```js
+loadQueueStatusML(...)
 ```
 
 ---
 
-## Accuracy targets
+# API Example
 
-| MAE (minutes) | Quality |
+## Request
+
+```json
+{
+  "clinicID": 10002143430,
+  "queuePosition": 3,
+  "queueLength": 10
+}
+```
+
+## Response
+
+```json
+{
+  "estimatedWaitTime": 28,
+  "unit": "minutes"
+}
+```
+
+---
+
+# Model Features
+
+The Random Forest model uses the following features:
+
+| Feature | Description |
 |---|---|
-| ≤ 5 min | ✅ Excellent |
-| 5 – 10 min | ⚠ Acceptable |
-| > 10 min | ❌ Needs more data |
+| clinicID | Clinic identifier |
+| queuePosition | Current patient queue position |
+| queueLength | Total active queue size |
+| hour | Current hour |
+| dayOfWeek | Current weekday |
+
+Target variable:
+
+```text
+actualWaitTime
+```
 
 ---
 
-## Deploying the API to production
+# Firebase Collections
 
-Options (cheapest first):
-
-| Platform | Cost | Notes |
-|---|---|---|
-| Railway.app | Free tier | Easy, 1-click deploy |
-| Render.com | Free tier | Sleeps after inactivity |
-| Google Cloud Run | Pay per request | Best for Firebase projects |
-| Firebase Cloud Functions | Pay per call | Needs Node wrapper for Python |
-
-For Railway / Render, add a `Procfile`:
+```text
+Users
+Appointments
+Queues
+QueueHistory
+Notifications
+StaffAvailability
+clinicsObjects
+admins
+ApprovedStaff
 ```
+
+---
+
+# Deployment
+
+| Service | Purpose |
+|---|---|
+| Vercel | Frontend hosting |
+| Render | Flask ML API hosting |
+| Firebase | Authentication + Firestore |
+| Flask | Prediction API |
+| Scikit-learn | ML model training |
+
+---
+
+# Procfile
+
+For Render deployment:
+
+```text
 web: python api/app.py
 ```
 
 ---
 
-## Privacy note
+# Security & Privacy
 
-`QueueHistory` stores appointment IDs and timestamps but no personal data
-(no names, no medical info). This is safe under POPIA as long as your
-Firestore security rules restrict access to authenticated clinic staff.
+The ML system stores queue metadata only.
+
+The system does NOT process:
+- medical records
+- diagnoses
+- patient notes
+- sensitive healthcare information
+
+Recommended security practices:
+
+- Enable Firebase Authentication
+- Restrict Firestore rules to authenticated staff
+- Never commit serviceAccountKey.json
+- Use HTTPS for all API traffic
+
+---
+
+# Scalability
+
+The architecture supports:
+
+- real-time updates
+- multiple clinics
+- concurrent queue monitoring
+- cloud deployment
+- future model retraining
+- additional predictive features
+- production ML scaling
+
+---
+
+# Technologies Used
+
+- Python
+- Flask
+- Firebase Authentication
+- Firestore
+- JavaScript
+- Random Forest Regression
+- Scikit-learn
+- Render
+- Vercel
+
+---
+
+# Future Improvements
+
+Planned enhancements:
+
+- doctor workload prediction
+- queue congestion forecasting
+- patient priority weighting
+- WebSocket-based live updates
+- automated model retraining
+- advanced analytics dashboard
+- multi-model ML experimentation
+
+---
+
+# Authors
+
+CareQueue Development Team
+
+```

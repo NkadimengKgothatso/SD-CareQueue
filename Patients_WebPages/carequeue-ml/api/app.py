@@ -9,83 +9,145 @@ app = Flask(__name__)
 CORS(app)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, "wait_time_model.pkl")
+MODEL_PATH    = os.path.join(BASE_DIR, "wait_time_model.pkl")
+FEATURES_PATH = os.path.join(BASE_DIR, "model_features.pkl")
 
-if not os.path.exists(MODEL_PATH):
-    raise FileNotFoundError(f"Model not found at {MODEL_PATH}")
+# ─────────────────────────────────────────────────────────────
+# MODEL LOADING — graceful fallback if not trained yet
+# ─────────────────────────────────────────────────────────────
 
-model = joblib.load(MODEL_PATH)
-print("✅ Model loaded:", MODEL_PATH)
+model         = None
+FEATURE_COLS  = ["clinicID", "queuePosition", "queueLength", "hour", "dayOfWeek", "isWalkIn"]
+model_loaded_at = None
 
-FEATURE_COLS = ["clinicID", "queuePosition", "queueLength", "hour", "dayOfWeek"]
+if os.path.exists(MODEL_PATH) and os.path.exists(FEATURES_PATH):
+    try:
+        model        = joblib.load(MODEL_PATH)
+        FEATURE_COLS = joblib.load(FEATURES_PATH)   # always use saved feature schema
+        model_loaded_at = datetime.now().isoformat()
+        print(f"✅ Model loaded: {MODEL_PATH}")
+        print(f"   Features: {FEATURE_COLS}")
+    except Exception as e:
+        print(f"⚠️  Model file found but failed to load: {e}")
+        print("   Falling back to formula-based estimates.")
+else:
+    print("⚠️  No trained model found — using formula fallback.")
+    print(f"   Expected: {MODEL_PATH}")
+    print("   Run: cd scripts && python 1_export_firestore.py && python 2_train_model.py")
 
+
+def formula_fallback(queue_position: int, queue_length: int) -> int:
+    """Simple linear estimate used before the model is trained."""
+    avg_service_minutes = 8
+    return max(1, round(queue_position * avg_service_minutes))
+
+
+# ─────────────────────────────────────────────────────────────
+# ROUTES
+# ─────────────────────────────────────────────────────────────
 
 @app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "ok"})
+    return jsonify({
+        "status":      "ok",
+        "modelLoaded": model is not None,
+        "mode":        "ml" if model is not None else "formula_fallback",
+    })
+
+
+@app.route("/model-info", methods=["GET"])
+def model_info():
+    """Quick check of which model is running — useful after retraining."""
+    if model is None:
+        return jsonify({
+            "modelLoaded":  False,
+            "mode":         "formula_fallback",
+            "features":     FEATURE_COLS,
+        })
+    return jsonify({
+        "modelLoaded":     True,
+        "mode":            "ml",
+        "features":        FEATURE_COLS,
+        "loadedAt":        model_loaded_at,
+        "nEstimators":     getattr(model, "n_estimators", "unknown"),
+    })
 
 
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.get_json(force=True)
 
+    # ── Required fields ──────────────────────────────────────
     required = ["clinicID", "queuePosition", "queueLength"]
-    missing = [f for f in required if f not in data]
-
+    missing  = [f for f in required if f not in data]
     if missing:
         return jsonify({"error": f"Missing fields: {missing}"}), 400
 
+    # ── Parse & validate inputs ──────────────────────────────
     try:
-        clinicID = int(data["clinicID"])
-        queuePosition = int(data["queuePosition"])
-        queueLength = int(data["queueLength"])
+        clinic_id      = int(data["clinicID"])
+        queue_position = int(data["queuePosition"])
+        queue_length   = int(data["queueLength"])
+        is_walk_in     = int(bool(data.get("isWalkIn", False)))   # optional, defaults False
 
-        if queueLength <= 0:
+        if queue_length <= 0:
             return jsonify({"error": "queueLength must be > 0"}), 400
-
-        if queuePosition < 1:
+        if queue_position < 1:
             return jsonify({"error": "queuePosition must be >= 1"}), 400
+        if queue_position > queue_length:
+            return jsonify({"error": "queuePosition cannot exceed queueLength"}), 400
 
-        # ❌ FIX: do NOT silently clamp
-        if queuePosition > queueLength:
-            return jsonify({
-                "error": "queuePosition cannot exceed queueLength"
-            }), 400
-
-    except ValueError:
+    except (ValueError, TypeError):
         return jsonify({"error": "Invalid numeric input"}), 400
 
-    # ── FIXED TIME FEATURES (consistent with training) ──
-    now = datetime.now()
-    hour = now.hour
+    # ── Time features (use current real time) ────────────────
+    now         = datetime.now()
+    hour        = now.hour
     day_of_week = now.weekday()
 
-    features_df = pd.DataFrame([{
-        "clinicID": clinicID,
-        "queuePosition": queuePosition,
-        "queueLength": queueLength,
-        "hour": hour,
-        "dayOfWeek": day_of_week,
-    }], columns=FEATURE_COLS)
+    # ── Predict ──────────────────────────────────────────────
+    mode = "ml"
 
-    try:
-        prediction = model.predict(features_df)[0]
-        estimated_wait = max(1, round(float(prediction)))
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    if model is not None:
+        try:
+            # Build input DataFrame using the exact feature schema the model was trained on
+            row = {
+                "clinicID":      clinic_id,
+                "queuePosition": queue_position,
+                "queueLength":   queue_length,
+                "hour":          hour,
+                "dayOfWeek":     day_of_week,
+                "isWalkIn":      is_walk_in,
+            }
+            # Only pass columns the model knows about (handles old models missing isWalkIn)
+            input_df = pd.DataFrame([{k: row[k] for k in FEATURE_COLS if k in row}])
+            prediction    = model.predict(input_df)[0]
+            estimated_wait = max(1, round(float(prediction)))
+
+        except Exception as e:
+            print(f"⚠️  Model prediction failed: {e} — falling back to formula")
+            estimated_wait = formula_fallback(queue_position, queue_length)
+            mode = "formula_fallback"
+    else:
+        estimated_wait = formula_fallback(queue_position, queue_length)
+        mode = "formula_fallback"
 
     return jsonify({
         "estimatedWaitTime": estimated_wait,
-        "unit": "minutes",
+        "unit":              "minutes",
+        "mode":              mode,          # tells the frontend which method was used
         "inputs": {
-            "clinicID": clinicID,
-            "queuePosition": queuePosition,
-            "queueLength": queueLength,
-            "hour": hour,
-            "dayOfWeek": day_of_week,
+            "clinicID":      clinic_id,
+            "queuePosition": queue_position,
+            "queueLength":   queue_length,
+            "hour":          hour,
+            "dayOfWeek":     day_of_week,
+            "isWalkIn":      bool(is_walk_in),
         }
     })
 
 
+# ─────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False, use_reloader=False)
+    
