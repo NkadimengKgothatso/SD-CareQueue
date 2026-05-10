@@ -295,23 +295,6 @@ function loadQueueStatus(userId, appointmentId, clinicID) {
 
             const position = userIndex + 1; // Convert to 1-based display position
 
-            if (position === 2 && !queueData.emailSent) {
-            console.log("SENDING EMAIL", patientEmail, position);
-            emailjs.init("jWEiS_k1FnVa1Zz5S");
-
-            await emailjs.send("service_j8zb3jh", "template_neu0ubc", {
-                email: patientEmail,
-                name: patientName || "Patient",
-                clinic_name: clinicName,
-                appointment_reason: queueData.reason || "Appointment",
-                appointment_date: queueData.date || "",
-                appointment_time: queueData.time || ""
-            });
-
-            await updateDoc(doc(db, "Queues", queueData.id), {
-                emailSent: true
-            });
-
 
             await addDoc(collection(db, "Notifications"), {
                 userID: userId,
