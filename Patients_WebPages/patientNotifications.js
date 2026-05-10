@@ -231,7 +231,18 @@ document.getElementById("clearBtn").addEventListener("click", async () => {
   alert("All notifications cleared");
 });
 
+function __setNotificationsForTest(data) {
+  notifications = data;
+}
+
+function __setCurrentFilterForTest(filter) {
+  currentFilter = filter;
+}
+
 export {
   getIcon,
-  formatTime
+  formatTime,
+  render,
+  __setNotificationsForTest,
+  __setCurrentFilterForTest
 };

@@ -279,10 +279,15 @@ document.querySelectorAll("aside nav ul li a").forEach(link => {
     if (link.getAttribute("href") === currentPage) link.classList.add("active");
 });
 
+function __setDashboardElementsForTest() {
+  emptyStates = document.getElementById("emptyStates");
+  filledStates = document.getElementById("filledStates");
+}
 
 export {
-    showEmpty,
-    showFilled,
-    setAvatarInitial,
-    loadVisitsCount,
+  showEmpty,
+  showFilled,
+  setAvatarInitial,
+  loadVisitsCount,
+  __setDashboardElementsForTest
 };

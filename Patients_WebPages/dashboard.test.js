@@ -42,3 +42,23 @@ test("setAvatarInitial falls back to email", async () => {
 test("queue meter exists", () => {
   expect(document.getElementById("queueMeter")).not.toBeNull();
 });
+
+test("showEmpty displays empty state", async () => {
+  const module = await import("./PatientDashboard.js");
+
+  module.__setDashboardElementsForTest();
+  module.showEmpty();
+
+  expect(document.getElementById("emptyStates").style.display).toBe("block");
+  expect(document.getElementById("filledStates").style.display).toBe("none");
+});
+
+test("showFilled displays filled state", async () => {
+  const module = await import("./PatientDashboard.js");
+
+  module.__setDashboardElementsForTest();
+  module.showFilled();
+
+  expect(document.getElementById("emptyStates").style.display).toBe("none");
+  expect(document.getElementById("filledStates").style.display).toBe("block");
+});
