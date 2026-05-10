@@ -307,6 +307,7 @@ async function syncAppointmentsToQueues(appointments) {
         appointmentId: appt.id,
         clinicID: Number(staffClinicID),
         date: today,
+        reason: appt.reason || "Appointment",
         userID: appt.userID || null,
         patientName: appt.patientName || null,
         status: appt.status || "waiting",
