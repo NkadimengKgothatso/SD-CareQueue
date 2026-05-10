@@ -304,19 +304,21 @@ async function syncAppointmentsToQueues(appointments) {
     const writes = appointments.map((appt) => {
         const isActive = ACTIVE_STATUSES.has((appt.status || "").toLowerCase());
         return setDoc(doc(db, "Queues", appt.id), {
-            appointmentId: appt.id,
-            clinicID:      Number(staffClinicID),
-            date:          today,
-            userID:        appt.userID      || null,
-            patientName:   appt.patientName || null,
-            status:        appt.status      || "waiting",
-            time:          appt.time        || "",
-            // Only active patients get a position and estimateWait
-            position:      isActive ? appt.queuePosition : null,
-            estimateWait:  isActive ? (appt.queuePosition - 1) * 15 : null,
-            isWalkIn:      appt.isWalkIn    || false,
-            updatedAt:     serverTimestamp()
-        });
+        appointmentId: appt.id,
+        clinicID: Number(staffClinicID),
+        date: today,
+        userID: appt.userID || null,
+        patientName: appt.patientName || null,
+        status: appt.status || "waiting",
+        time: appt.time || "",
+        position: isActive ? appt.queuePosition : null,
+        estimateWait: isActive ? (appt.queuePosition - 1) * 15 : null,
+        isWalkIn: appt.isWalkIn || false,
+        updatedAt: serverTimestamp()
+    }, { merge: true });
+
+
+
     });
 
     try {

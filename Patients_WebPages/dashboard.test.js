@@ -25,7 +25,7 @@ beforeEach(() => {
 });
 
 test("showEmpty displays empty state", async () => {
-  const module = await import("./Dashboard.js");
+  const module = await import("./PatientDashboard.js");
 
   module.showEmpty();
 
@@ -37,7 +37,7 @@ test("showEmpty displays empty state", async () => {
 });
 
 test("showFilled displays filled state", async () => {
-  const module = await import("./Dashboard.js");
+  const module = await import("./PatientDashboard.js");
 
   module.showFilled();
 
@@ -49,7 +49,7 @@ test("showFilled displays filled state", async () => {
 });
 
 test("setAvatarInitial uses name initials", async () => {
-  const { setAvatarInitial } = await import("./Dashboard.js");
+  const { setAvatarInitial } = await import("./PatientDashboard.js");
 
   setAvatarInitial("John Doe", "john@test.com");
 
@@ -58,7 +58,7 @@ test("setAvatarInitial uses name initials", async () => {
 });
 
 test("setAvatarInitial falls back to email", async () => {
-  const { setAvatarInitial } = await import("./Dashboard.js");
+  const { setAvatarInitial } = await import("./PatientDashboard.js");
 
   setAvatarInitial("", "john@test.com");
 

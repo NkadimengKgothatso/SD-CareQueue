@@ -1,7 +1,3 @@
-// ============================================================
-// waitTimeML.js — ML Integration Layer
-// ============================================================
-
 import {
     collection,
     query,
@@ -11,119 +7,70 @@ import {
 
 const ML_API_URL = "http://127.0.0.1:5000/predict";
 
-
-// ─────────────────────────────────────────────
-// HELPER — convert JS day (0=Sun) to Python day (0=Mon)
-// Model was trained with Python's weekday() so we must match it
-// ─────────────────────────────────────────────
-function pythonDayOfWeek() {
-    const jsDay = new Date().getDay(); // 0=Sun, 1=Mon ... 6=Sat
-    return jsDay === 0 ? 6 : jsDay - 1; // 0=Mon, 1=Tue ... 6=Sun
-}
+let lastRequestId = 0;
 
 
-// ─────────────────────────────────────────────
-// SAFE FETCH (WITH TIMEOUT)
-// ─────────────────────────────────────────────
-async function fetchWithTimeout(url, options = {}, timeout = 4000) {
+async function fetchWithTimeout(url, options, timeout = 4000) {
     return new Promise((resolve, reject) => {
-
-        const timer = setTimeout(() => {
-            reject(new Error("ML API timeout"));
-        }, timeout);
+        const timer = setTimeout(() => reject(new Error("timeout")), timeout);
 
         fetch(url, options)
-            .then(res => { clearTimeout(timer); resolve(res); })
-            .catch(err => { clearTimeout(timer); reject(err); });
+            .then(r => { clearTimeout(timer); resolve(r); })
+            .catch(e => { clearTimeout(timer); reject(e); });
     });
 }
 
 
-// ─────────────────────────────────────────────
-// CORE ML CALL
-// ─────────────────────────────────────────────
 export async function getWaitTime(data) {
     try {
         const res = await fetchWithTimeout(ML_API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                clinicID:      Number(data.clinicID),
+                clinicID: Number(data.clinicID),
                 queuePosition: Number(data.queuePosition),
-                queueLength:   Number(data.queueLength),
-                hour:          new Date().getHours(),
-                dayOfWeek:     pythonDayOfWeek(),   // ← fixed: matches training data
+                queueLength: Number(data.queueLength)
             }),
         });
 
-        if (!res.ok) {
-            console.error("ML API error:", res.status);
-            return null;
-        }
+        if (!res.ok) return null;
 
         const json = await res.json();
         return json?.estimatedWaitTime ?? null;
 
-    } catch (err) {
-        console.error("ML fetch failed:", err.message);
+    } catch {
         return null;
     }
 }
 
 
-// ─────────────────────────────────────────────
-// SAFE DOM UPDATE
-// ─────────────────────────────────────────────
 function safeSet(id, value) {
     const el = document.getElementById(id);
     if (el) el.textContent = value;
 }
 
 
-// ─────────────────────────────────────────────
-// MAIN REAL-TIME QUEUE + ML INTEGRATION
-// ─────────────────────────────────────────────
 export function loadQueueStatusML(userId, appointmentId, clinicID, db) {
-
-    const activeStatuses = ["waiting", "scheduled", "active"];
-    let clinicUnsubscribe = null;
 
     const appointmentQ = query(
         collection(db, "Queues"),
         where("appointmentId", "==", appointmentId)
     );
 
-    const unsubscribeMain = onSnapshot(appointmentQ, (snapshot) => {
+    onSnapshot(appointmentQ, (snapshot) => {
 
-        if (clinicUnsubscribe) {
-            clinicUnsubscribe();
-            clinicUnsubscribe = null;
-        }
+        const active = snapshot.docs.map(d => d.data());
 
-        const activeEntries = snapshot.docs
-            .map(d => ({ id: d.id, ...d.data() }))
-            .filter(d => activeStatuses.includes((d.status || "").toLowerCase()));
-
-        if (activeEntries.length === 0) {
-            safeSet("queueCount", "");
-            safeSet("queueProgressText", "");
-            safeSet("waitTime", "");
-            return;
-        }
+        if (active.length === 0) return;
 
         const clinicQ = query(
             collection(db, "Queues"),
             where("clinicID", "==", Number(clinicID))
         );
 
-        clinicUnsubscribe = onSnapshot(clinicQ, async (snap) => {
+        onSnapshot(clinicQ, async (snap) => {
 
-            const all = snap.docs
-                .map(d => ({ id: d.id, ...d.data() }))
-                .filter(d => activeStatuses.includes((d.status || "").toLowerCase()))
-                .sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
-
-            const total = all.length;
+            const all = snap.docs.map(d => d.data());
 
             const userIndex = all.findIndex(
                 e => String(e.appointmentId) === String(appointmentId)
@@ -131,37 +78,28 @@ export function loadQueueStatusML(userId, appointmentId, clinicID, db) {
 
             if (userIndex === -1) return;
 
-            const position = userIndex + 1;
+            const position = (all[userIndex]?.position) ?? (userIndex + 1);
+            const total = all.length;
 
-            const percent = total <= 1
-                ? 100
-                : Math.round(((total - position) / (total - 1)) * 100);
+            safeSet("queueCount", `${position} out of ${total}`);
 
-            safeSet("queueCount",      `${position} out of ${total}`);
-            safeSet("queuePosition",   position);
-            safeSet("progressPercent", `${percent}%`);
+            const requestId = ++lastRequestId;
 
-            const meter = document.getElementById("queueMeter");
-            if (meter) meter.value = percent;
-
-            // ── ML PREDICTION ─────────────────────────────
             safeSet("waitTime", "...");
 
             const predicted = await getWaitTime({
                 clinicID,
                 queuePosition: position,
-                queueLength:   total,
+                queueLength: total
             });
+
+            if (requestId !== lastRequestId) return;
 
             if (predicted !== null) {
                 safeSet("waitTime", `${predicted} min`);
             } else {
-                // Graceful fallback if ML API is down
-                console.warn("ML API unavailable, using fallback estimate.");
-                safeSet("waitTime", `~${position * 10} min (est.)`);
+                safeSet("waitTime", `~${Math.round(position * 8)} min`);
             }
         });
     });
-
-    return unsubscribeMain;
 }
