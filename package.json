@@ -7,7 +7,7 @@
     "test": "jest",
     "coverage": "jest --coverage",
     "coverage:appointments": "jest Staff_Webpages/Appointments.test.js --coverage --collectCoverageFrom=Staff_Webpages/Appointments.js",
-    "coverage:booking": "jest Patients_WebPages/BookAppointments.test.js --coverage --collectCoverageFrom=Patients_WebPages/BookAppointments.js",
+    "coverage:booking": "jest Patients_WebPages/bookAppointments.test.js --coverage --collectCoverageFrom=Patients_WebPages/bookAppointments.js",
     "coverage:availability": "jest Staff_Webpages/Availability.test.js --coverage --collectCoverageFrom=Staff_Webpages/Availability.js",
     "coverage:dashboard": "jest Patients_WebPages/Dashboard.test.js --coverage --collectCoverageFrom=Patients_WebPages/Dashboard.js",
     "coverage:walkins": "jest Staff_Webpages/walkin.test.js --coverage --collectCoverageFrom=Staff_Webpages/walkin.js",
@@ -15,21 +15,10 @@
     "coverage:staffdashboard": "jest Staff_Webpages/StaffDashboard.test.js --coverage --collectCoverageFrom=Staff_Webpages/StaffDashboard.js",
     "coverage:notifications": "jest Patients_WebPages/patientNotifications.test.js --coverage --collectCoverageFrom=Patients_WebPages/patientNotifications.js",
     "coverage:analytics": "jest Admin_WebPages/Analytics.test.js --coverage --collectCoverageFrom=Admin_WebPages/Analytics.js",
-    "coverage:clinicmanagement": "jest Admin_WebPages/ClinicManagement.test.js --coverage --collectCoverageFrom=Admin_WebPages/ClinicManagement.js"
+    "coverage:clinicmanagement": "jest Admin_WebPages/ClinicManagement.test.js --coverage --collectCoverageFrom=Admin_WebPages/ClinicManagement.js",
+    "coverage:staffmanagement": "jest Admin_WebPages/staff.test.js --coverage --collectCoverageFrom=Admin_WebPages/StaffManagement.js"
   },
-"jest": {
-  "testEnvironment": "jsdom",
-  "setupFiles": ["<rootDir>/jest.setup.js"],
-  "collectCoverageFrom": [
-    "Login/authLogic.js",
-    "Admin_WebPages/staffLogic.js",
-    "Patients_WebPages/*Logic.js",
-    "Staff_Webpages/WalkinLogic.js",
-    "Staff_Webpages/Appointments.js",
-    "!**/*.test.js",
-    "!**/node_modules/**"
-  ]
-},
+
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NkadimengKgothatso/SD-CareQueue.git"

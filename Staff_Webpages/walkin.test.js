@@ -25,13 +25,13 @@ beforeEach(() => {
 });
 
 test("getToday returns YYYY-MM-DD format", async () => {
-  const { getToday } = await import("./Walkins.js");
+  const { getToday } = await import("./walkin.js");
 
   expect(getToday()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 });
 
 test("timeToMinutes converts time correctly", async () => {
-  const { timeToMinutes } = await import("./Walkins.js");
+  const { timeToMinutes } = await import("./walkin.js");
 
   expect(timeToMinutes("08:00")).toBe(480);
   expect(timeToMinutes("08:30")).toBe(510);
@@ -39,7 +39,7 @@ test("timeToMinutes converts time correctly", async () => {
 });
 
 test("minutesToTime converts minutes correctly", async () => {
-  const { minutesToTime } = await import("./Walkins.js");
+  const { minutesToTime } = await import("./walkin.js");
 
   expect(minutesToTime(480)).toBe("08:00");
   expect(minutesToTime(510)).toBe("08:30");
@@ -47,14 +47,14 @@ test("minutesToTime converts minutes correctly", async () => {
 });
 
 test("roundToNextSlot rounds up correctly", async () => {
-  const { roundToNextSlot } = await import("./Walkins.js");
+  const { roundToNextSlot } = await import("./walkin.js");
 
   expect(roundToNextSlot(481, 30)).toBe(510);
   expect(roundToNextSlot(510, 30)).toBe(510);
 });
 
 test("isTaken returns true when slot overlaps appointment", async () => {
-  const { isTaken } = await import("./Walkins.js");
+  const { isTaken } = await import("./walkin.js");
 
   const appointments = [{ time: "08:00" }];
 
@@ -63,7 +63,7 @@ test("isTaken returns true when slot overlaps appointment", async () => {
 });
 
 test("isTaken returns false when slot is free", async () => {
-  const { isTaken } = await import("./Walkins.js");
+  const { isTaken } = await import("./walkin.js");
 
   const appointments = [{ time: "08:00" }];
 
@@ -71,7 +71,7 @@ test("isTaken returns false when slot is free", async () => {
 });
 
 test("getNextAvailableTime skips booked slot", async () => {
-  const { getNextAvailableTime } = await import("./Walkins.js");
+  const { getNextAvailableTime } = await import("./walkin.js");
 
   jest.useFakeTimers();
   jest.setSystemTime(new Date("2026-05-09T08:00:00"));
@@ -86,7 +86,7 @@ test("getNextAvailableTime skips booked slot", async () => {
 });
 
 test("showConfirmModal resolves true when OK is clicked", async () => {
-  const { showConfirmModal } = await import("./Walkins.js");
+  const { showConfirmModal } = await import("./walkin.js");
 
   const promise = showConfirmModal("Add patient?");
   document.getElementById("okBtn").click();
@@ -95,7 +95,7 @@ test("showConfirmModal resolves true when OK is clicked", async () => {
 });
 
 test("showConfirmModal resolves false when cancel is clicked", async () => {
-  const { showConfirmModal } = await import("./Walkins.js");
+  const { showConfirmModal } = await import("./walkin.js");
 
   const promise = showConfirmModal("Add patient?");
   document.getElementById("cancelBtn").click();
