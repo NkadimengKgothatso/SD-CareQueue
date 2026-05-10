@@ -135,8 +135,13 @@ async function loadAppointments(userId) {
 
         await loadVisitsCount(userId, next.clinicID);
 
-        const clinic = clinicsMap.get(String(next.clinicID));
+        const clinicIDNum = Number(clinicID);
+        const clinicIDStr = String(clinicID);
+
+        const clinic = clinicsMap.get(clinicIDStr);
         const clinicName = clinic ? clinic.name : "Unknown Clinic";
+
+        
 
         console.log("next.clinicID:", next.clinicID, "| type:", typeof next.clinicID);
 
