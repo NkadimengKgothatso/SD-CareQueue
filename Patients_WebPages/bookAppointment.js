@@ -587,7 +587,7 @@ confirmBtn.addEventListener("click", async () => {
             read: false,
             createdAt: serverTimestamp()
         });
-/*
+
         emailjs.init("jWEiS_k1FnVa1Zz5S");
 
         await emailjs.send("service_j8zb3jh", "template_4onbz1h", {
@@ -599,7 +599,7 @@ confirmBtn.addEventListener("click", async () => {
             appointment_time: time
         });
 
-*/
+
         alert("Appointment booked successfully!");
 
         document.getElementById("appt-date").value = "";
