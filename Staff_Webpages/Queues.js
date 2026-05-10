@@ -53,6 +53,7 @@ let unsubscribeWalkIn  = null;
 let regularAppts       = [];
 let walkInAppts        = [];
 let staffClinicID      = null;
+const sendingPositionTwo = new Set();
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 function getTodayString() {
@@ -76,20 +77,21 @@ function renderEmptyState() {
 async function sendPositionTwoNotification(appointment) {
     try {
         if (!appointment.userID) return;
+        if (!appointment.patientEmail) return;
+
+        await updateDoc(doc(db, "Queues", appointment.id), {
+            emailSent: true
+        });
 
         emailjs.init("jWEiS_k1FnVa1Zz5S");
 
         await emailjs.send("service_j8zb3jh", "template_neu0ubc", {
-            email: appointment.patientEmail || "",
+            email: appointment.patientEmail,
             name: appointment.patientName || "Patient",
             clinic_name: appointment.clinicName || "Clinic",
             appointment_reason: appointment.reason || "Appointment",
             appointment_date: appointment.date || "",
             appointment_time: appointment.time || ""
-        });
-
-        await updateDoc(doc(db, "Queues", appointment.id), {
-            emailSent: true
         });
 
         await addDoc(collection(db, "Notifications"), {
@@ -107,9 +109,9 @@ async function sendPositionTwoNotification(appointment) {
 
     } catch (error) {
         console.error("Failed to send position 2 notification:", error);
+        sendingPositionTwo.delete(appointment.id);
     }
 }
-
 
 
 
@@ -189,7 +191,8 @@ function buildCard(appointment, positionLabel) {
     if (advBtn) advBtn.addEventListener("click", () => updateStatus(appointment.id, advBtn.dataset.next));
     if (canBtn) canBtn.addEventListener("click", () => updateStatus(appointment.id, "cancelled"));
 
-    if (positionLabel === 2 && !appointment.emailSent) {
+    if (positionLabel === 2 && !appointment.emailSent && !sendingPositionTwo.has(appointment.id)) {
+        sendingPositionTwo.add(appointment.id);
         sendPositionTwoNotification(appointment);
     }
 
@@ -356,6 +359,7 @@ async function syncAppointmentsToQueues(appointments) {
         patientEmail: appt.patientEmail || "",
         clinicName: appt.clinicName || "",
         reason: appt.reason || "",
+        emailSent: appt.emailSent || false,
         date: today,
         userID: appt.userID || null,
         patientName: appt.patientName || null,
