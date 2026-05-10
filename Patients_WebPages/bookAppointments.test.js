@@ -83,3 +83,32 @@ test("getUserLocation resolves coordinates", async () => {
   expect(result.latitude).toBe(-26.2);
   expect(result.longitude).toBe(28.0);
 });
+
+test("getUserLocation rejects when geolocation is unavailable", async () => {
+  Object.defineProperty(navigator, "geolocation", {
+    configurable: true,
+    value: undefined
+  });
+
+  const { getUserLocation } = await import("./bookAppointment.js");
+
+  await expect(getUserLocation()).rejects.toBeDefined();
+});
+
+test("calculateDistance returns 0 for same coordinates", async () => {
+  const { calculateDistance } = await import("./bookAppointment.js");
+
+  expect(calculateDistance(-26.2, 28.0, -26.2, 28.0)).toBe(0);
+});
+
+test("isClinicOpenNow handles invalid hours", async () => {
+  const { isClinicOpenNow } = await import("./bookAppointment.js");
+
+  expect(typeof isClinicOpenNow("Invalid")).toBe("boolean");
+});
+
+test("formatTime pads single digit values", async () => {
+  const { formatTime } = await import("./bookAppointment.js");
+
+  expect(formatTime(9, 5)).toBe("09:05");
+});

@@ -7,7 +7,7 @@
     "test": "jest",
     "coverage": "jest --coverage",
     "coverage:appointments": "jest Staff_Webpages/Appointments.test.js --coverage --collectCoverageFrom=Staff_Webpages/Appointments.js",
-    "coverage:booking": "jest Patients_WebPages/bookAppointments.test.js --coverage --collectCoverageFrom=Patients_WebPages/bookAppointments.js",
+    "coverage:booking": "jest Patients_WebPages/bookAppointments.test.js --coverage --collectCoverageFrom=Patients_WebPages/bookAppointment.js",
     "coverage:availability": "jest Staff_Webpages/Availability.test.js --coverage --collectCoverageFrom=Staff_Webpages/Availability.js",
     "coverage:dashboard": "jest Patients_WebPages/dashboard.test.js --coverage --collectCoverageFrom=Patients_WebPages/PatientDashboard.js",
     "coverage:walkins": "jest Staff_Webpages/walkin.test.js --coverage --collectCoverageFrom=Staff_Webpages/walkin.js",
