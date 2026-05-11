@@ -449,10 +449,10 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 export {
-  convertTo24Hour,
-  parseClinicHours,
-  capitalise,
-  showStatus,
-  readScheduleFromPage,
-  applyScheduleToPage
+    convertTo24Hour,
+    parseClinicHours,
+    capitalise,
+    showStatus,
+    readScheduleFromPage,
+    applyScheduleToPage
 };
