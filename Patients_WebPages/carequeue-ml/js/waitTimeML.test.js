@@ -1,7 +1,3 @@
-// =============================================================
-// waitTimeML.test.js
-// =============================================================
-
 global.fetch = jest.fn();
 
 beforeEach(() => {
@@ -18,44 +14,56 @@ beforeEach(() => {
   `;
 });
 
-// =============================================================
-// warmUpAPI
-// =============================================================
-test("warmUpAPI calls the health endpoint without throwing", async () => {
-  fetch.mockResolvedValue({});   // warmUpAPI ignores the response
+test("getWaitTime posts normalized queue data to the prediction endpoint", async () => {
+  fetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({ estimatedWaitTime: 10 })
+  });
 
-  const { warmUpAPI } = await import("./waitTimeML.js");
+  const { getWaitTime } = await import("./waitTimeML.js");
 
-  expect(() => warmUpAPI()).not.toThrow();
-  expect(fetch).toHaveBeenCalledWith(
-    expect.stringContaining("/health")
-  );
+  await getWaitTime({
+    clinicID: "7",
+    queuePosition: "2",
+    queueLength: "5",
+    isWalkIn: true
+  });
+
+  const [url, options] = fetch.mock.calls[0];
+  const body = JSON.parse(options.body);
+
+  expect(url).toContain("/predict");
+  expect(options.method).toBe("POST");
+  expect(options.headers).toEqual({ "Content-Type": "application/json" });
+  expect(body).toEqual({
+    clinicID: 7,
+    queuePosition: 2,
+    queueLength: 5,
+    isWalkIn: true
+  });
 });
 
-// =============================================================
-// getWaitTime — happy path
-// =============================================================
 test("getWaitTime returns the estimatedWaitTime on success", async () => {
   fetch.mockResolvedValue({
-    ok:   true,
+    ok: true,
     json: async () => ({ estimatedWaitTime: 15 })
   });
 
   const { getWaitTime } = await import("./waitTimeML.js");
 
   const result = await getWaitTime({
-    clinicID:      1,
+    clinicID: 1,
     queuePosition: 2,
-    queueLength:   5,
-    isWalkIn:      false
+    queueLength: 5,
+    isWalkIn: false
   });
 
   expect(result).toBe(15);
 });
 
-test("getWaitTime sends isWalkIn as 1 when true", async () => {
+test("getWaitTime sends isWalkIn as true when true", async () => {
   fetch.mockResolvedValue({
-    ok:   true,
+    ok: true,
     json: async () => ({ estimatedWaitTime: 10 })
   });
 
@@ -64,12 +72,12 @@ test("getWaitTime sends isWalkIn as 1 when true", async () => {
   await getWaitTime({ clinicID: 1, queuePosition: 1, queueLength: 3, isWalkIn: true });
 
   const body = JSON.parse(fetch.mock.calls[0][1].body);
-  expect(body.isWalkIn).toBe(1);
+  expect(body.isWalkIn).toBe(true);
 });
 
-test("getWaitTime sends isWalkIn as 0 when false", async () => {
+test("getWaitTime sends isWalkIn as false when false", async () => {
   fetch.mockResolvedValue({
-    ok:   true,
+    ok: true,
     json: async () => ({ estimatedWaitTime: 10 })
   });
 
@@ -78,13 +86,27 @@ test("getWaitTime sends isWalkIn as 0 when false", async () => {
   await getWaitTime({ clinicID: 1, queuePosition: 1, queueLength: 3, isWalkIn: false });
 
   const body = JSON.parse(fetch.mock.calls[0][1].body);
-  expect(body.isWalkIn).toBe(0);
+  expect(body.isWalkIn).toBe(false);
+});
+
+test("getWaitTime defaults missing isWalkIn to false", async () => {
+  fetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({ estimatedWaitTime: 10 })
+  });
+
+  const { getWaitTime } = await import("./waitTimeML.js");
+
+  await getWaitTime({ clinicID: 1, queuePosition: 1, queueLength: 3 });
+
+  const body = JSON.parse(fetch.mock.calls[0][1].body);
+  expect(body.isWalkIn).toBe(false);
 });
 
 test("getWaitTime returns null when estimatedWaitTime is absent", async () => {
   fetch.mockResolvedValue({
-    ok:   true,
-    json: async () => ({})     // no estimatedWaitTime key
+    ok: true,
+    json: async () => ({})
   });
 
   const { getWaitTime } = await import("./waitTimeML.js");
@@ -94,22 +116,18 @@ test("getWaitTime returns null when estimatedWaitTime is absent", async () => {
   expect(result).toBeNull();
 });
 
-// =============================================================
-// getWaitTime — error paths
-// =============================================================
 test("getWaitTime returns null when response is not ok", async () => {
-  // Must include json() because the source calls res.json().catch(()=>({}))
   fetch.mockResolvedValue({
-    ok:   false,
+    ok: false,
     json: async () => ({ error: "bad request" })
   });
 
   const { getWaitTime } = await import("./waitTimeML.js");
 
   const result = await getWaitTime({
-    clinicID:      1,
+    clinicID: 1,
     queuePosition: 2,
-    queueLength:   5
+    queueLength: 5
   });
 
   expect(result).toBeNull();
@@ -121,16 +139,15 @@ test("getWaitTime returns null on network error", async () => {
   const { getWaitTime } = await import("./waitTimeML.js");
 
   const result = await getWaitTime({
-    clinicID:      1,
+    clinicID: 1,
     queuePosition: 2,
-    queueLength:   5
+    queueLength: 5
   });
 
   expect(result).toBeNull();
 });
 
 test("getWaitTime returns null on timeout", async () => {
-  // Simulate the fetchWithTimeout rejecting with a timeout error
   fetch.mockRejectedValue(new Error("timeout"));
 
   const { getWaitTime } = await import("./waitTimeML.js");
@@ -140,9 +157,6 @@ test("getWaitTime returns null on timeout", async () => {
   expect(result).toBeNull();
 });
 
-// =============================================================
-// DOM elements
-// =============================================================
 test("queue meter element exists in DOM", () => {
   expect(document.getElementById("queueMeter")).not.toBeNull();
 });

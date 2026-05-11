@@ -82,6 +82,7 @@ beforeEach(() => {
   mockOnAuthStateChanged.mockImplementation(() => jest.fn());
   mockOnSnapshot.mockImplementation(() => jest.fn());
   mockGetDocs.mockResolvedValue({ empty: true, docs: [], forEach: jest.fn() });
+  mockDoc.mockReturnValue("doc-ref");
 
   global.alert   = jest.fn();
   global.confirm = jest.fn(() => true);
@@ -355,24 +356,20 @@ test("cancelAppointment calls updateDoc with cancelled status when confirmed", a
 });
 
 test("cancelAppointment does not call updateDoc when cancelled", async () => {
-  const { cancelAppointment, showConfirmModal } = await load();
+  const { cancelAppointment } = await load();
 
   // Resolve the confirm modal with false (user clicked No)
-  jest.spyOn(document, "createElement").mockImplementation(
-    (() => {
-      const orig = document.createElement.bind(document);
-      return (tag) => {
-        const el = orig(tag);
-        if (tag === "dialog") {
-          setTimeout(() => {
-            const cancel = el.querySelector?.("#confirmCancelBtn");
-            if (cancel) cancel.click();
-          }, 0);
-        }
-        return el;
-      };
-    })()
-  );
+  const origCreate = document.createElement.bind(document);
+  jest.spyOn(document, "createElement").mockImplementation((tag) => {
+    const el = origCreate(tag);
+    if (tag === "dialog") {
+      setTimeout(() => {
+        const cancel = el.querySelector?.("#confirmCancelBtn");
+        if (cancel) cancel.click();
+      }, 0);
+    }
+    return el;
+  });
 
   await cancelAppointment("appt-xyz");
   await Promise.resolve();
