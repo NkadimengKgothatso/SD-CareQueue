@@ -447,3 +447,12 @@ onAuthStateChanged(auth, async (user) => {
         staffAvatarEl.textContent = initials;
     }
 });
+
+export {
+  convertTo24Hour,
+  parseClinicHours,
+  capitalise,
+  showStatus,
+  readScheduleFromPage,
+  applyScheduleToPage
+};
