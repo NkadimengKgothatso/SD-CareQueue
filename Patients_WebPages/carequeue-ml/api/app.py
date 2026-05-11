@@ -22,7 +22,14 @@ if not os.path.exists(MODEL_PATH):
 model = joblib.load(MODEL_PATH)
 print(" Model loaded:", MODEL_PATH)
 
-FEATURE_COLS = ["clinicID", "queuePosition", "queueLength", "hour", "dayOfWeek"]
+FEATURE_COLS = [
+    "clinicID",
+    "queuePosition",
+    "queueLength",
+    "isWalkIn",
+    "hour",
+    "dayOfWeek"
+]
 
 
 

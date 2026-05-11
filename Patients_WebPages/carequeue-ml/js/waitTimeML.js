@@ -183,35 +183,7 @@ export function loadQueueStatusML(
             if (meter) meter.value = percent;
             safeSet("queueProgressText", "");
 
-            /* ── "You're next" email notification ────────────
-            if (position === 2 && !myData.emailSent && patientEmail) {
-                try {
-                    emailjs.init("jWEiS_k1FnVa1Zz5S");
-                    await emailjs.send("service_j8zb3jh", "template_neu0ubc", {
-                        email:              patientEmail,
-                        name:               patientName,
-                        clinic_name:        clinicName,        // now correctly in scope
-                        appointment_reason: myData.reason || "Appointment",
-                        appointment_date:   myData.date   || "",
-                        appointment_time:   myData.time   || "",
-                    });
-
-                    await updateDoc(doc(db, "Queues", myData.id), { emailSent: true });
-
-                    await addDoc(collection(db, "Notifications"), {
-                        userID:     userId,
-                        clinicID:   Number(clinicID),
-                        clinicName: clinicName,
-                        type:       "Appointment",
-                        title:      "You're Almost Up!",
-                        message:    `Your ${myData.reason || "appointment"} at ${clinicName} is coming up — you are position 2 on ${myData.date} at ${myData.time}. Please make your way to the clinic.`,
-                        read:       false,
-                        createdAt:  serverTimestamp(),
-                    });
-                } catch (e) {
-                    console.warn("Email/notification error:", e);
-                }
-            }*/
+           
 
             // ── ML wait time prediction ──────────────────────
             safeSet("waitTime", "...");
