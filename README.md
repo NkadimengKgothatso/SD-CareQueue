@@ -1,4 +1,4 @@
-[![codecov](https://codecov.io/gh/NkadimengKgothatso/SDproject/branch/main/graph/badge.svg)](https://codecov.io/gh/NkadimengKgothatso/SDproject)
+[![codecov](https://codecov.io/gh/NkadimengKgothatso/SD-CareQueue/branch/main/graph/badge.svg)](https://codecov.io/gh/NkadimengKgothatso/SD-CareQueue)
 
 
 # **SD CareQueue**
