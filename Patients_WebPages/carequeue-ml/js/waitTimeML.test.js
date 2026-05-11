@@ -69,7 +69,7 @@ beforeEach(() => {
     <section id="progressPercent"></section>
     <section id="queuePosition"></section>
     <section id="waitTime"></section>
-    <progress id="queueMeter"></progress>
+    <progress id="queueMeter" max="100"></progress>
   `;
 });
 
@@ -338,6 +338,39 @@ test("loadQueueStatusML handles a single-person queue", async () => {
   expect(document.getElementById("progressPercent").textContent).toBe("100%");
   expect(document.getElementById("queueMeter").value).toBe(100);
   expect(document.getElementById("waitTime").textContent).toBe("8 min");
+});
+
+test("loadQueueStatusML can use the string clinicID fallback path", async () => {
+  fetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({ estimatedWaitTime: 12 })
+  });
+  const { callbacks } = captureSnapshotCallbacks();
+  const { loadQueueStatusML } = await import("./waitTimeML.js");
+
+  loadQueueStatusML("user-1", "appt-1", 7, {});
+  callbacks[0](snapshot([
+    { id: "outer-queue", appointmentId: "appt-1", status: "waiting" }
+  ]));
+
+  const otherDoc = {
+    id: "other",
+    data: jest.fn()
+      .mockReturnValueOnce({ appointmentId: "appt-2", clinicID: "7", status: "completed", position: 2 })
+      .mockReturnValueOnce({ appointmentId: "appt-2", clinicID: "7", status: "waiting", position: 2 })
+  };
+  const myDoc = {
+    id: "mine",
+    data: jest.fn()
+      .mockReturnValueOnce({ appointmentId: "appt-1", clinicID: "7", status: "completed", position: 1 })
+      .mockReturnValueOnce({ appointmentId: "appt-1", clinicID: "7", status: "waiting", position: 1 })
+  };
+
+  await callbacks[1]({ docs: [otherDoc, myDoc] });
+
+  expect(document.getElementById("queueCount").textContent).toBe("1 out of 2");
+  expect(document.getElementById("progressPercent").textContent).toBe("100%");
+  expect(document.getElementById("waitTime").textContent).toBe("12 min");
 });
 
 test("loadQueueStatusML clears display when the current appointment is missing from the clinic queue", async () => {
