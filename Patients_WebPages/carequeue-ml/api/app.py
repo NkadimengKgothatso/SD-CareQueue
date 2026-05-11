@@ -5,11 +5,6 @@ import pandas as pd
 import os
 from datetime import datetime
 
-
-
-
-# this is a simple Flask API for predicting wait times based on a pre-trained model. 
-# It includes input validation and error handling to ensure robust predictions.
 app = Flask(__name__)
 CORS(app)
 
@@ -25,17 +20,11 @@ print(" Model loaded:", MODEL_PATH)
 FEATURE_COLS = ["clinicID", "queuePosition", "queueLength", "hour", "dayOfWeek"]
 
 
-
-
-# Health check endpoint to verify the API is running
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"})
 
 
-
-
-# Prediction endpoint that accepts JSON input and returns estimated wait time
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.get_json(force=True)
@@ -65,22 +54,12 @@ def predict():
 
     except ValueError:
         return jsonify({"error": "Invalid numeric input"}), 400
-    
 
-
-
-    
-# the time features (hour and day of week) are fixed to the current time to ensure consistency with the training data,
-#  which also used the current time for these features.
-#  This allows the model to make predictions based on the same temporal context it was trained on.
     # ── FIXED TIME FEATURES (consistent with training) ──
     now = datetime.now()
     hour = now.hour
     day_of_week = now.weekday()
 
-
-# the input features are organized into a DataFrame in the same order as the model expects,
-#  ensuring that the prediction is based on the correct feature mapping.
     features_df = pd.DataFrame([{
         "clinicID": clinicID,
         "queuePosition": queuePosition,
@@ -89,22 +68,12 @@ def predict():
         "dayOfWeek": day_of_week,
     }], columns=FEATURE_COLS)
 
-
-
-# the model's prediction is obtained and rounded to the nearest minute,
-#  with a minimum of 1 minute to avoid zero or negative wait times.
-
     try:
         prediction = model.predict(features_df)[0]
         estimated_wait = max(1, round(float(prediction)))
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
 
-
-
-# the API returns a JSON response containing the estimated wait time, the unit of measurement,
-#  and the input features used for the prediction.
     return jsonify({
         "estimatedWaitTime": estimated_wait,
         "unit": "minutes",
@@ -117,6 +86,6 @@ def predict():
         }
     })
 
-# the API is run on host
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False, use_reloader=False)

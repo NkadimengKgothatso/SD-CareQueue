@@ -31,11 +31,6 @@ for doc in docs:
     day_of_week = d.get("dayOfWeek")
 
     created_at = d.get("createdAT")
-# the time features (hour and day of week) are fixed to the current time to ensure consistency with the training data,
-#  which also used the current time for these features. This allows the model to make predictions
-#  based on the same temporal context it was trained on. If the hour and dayOfWeek are missing from the Firestore data,
-#  we attempt to extract them from the createdAT timestamp, which provides a fallback to ensure
-#  that the dataset remains complete and useful for training the model.
 
     if hour is None or day_of_week is None:
         if isinstance(created_at, datetime):
@@ -48,8 +43,7 @@ for doc in docs:
 
     if None in [d.get("clinicID"), d.get("queuePosition"), queue_length, hour, day_of_week]:
         continue
-# each valid record is appended to the data list as a dictionary, 
-# which will later be converted into a DataFrame for cleaning and saving as a CSV file.
+
     data.append({
         "clinicID": d.get("clinicID"),
         "appointmentId": d.get("appointmentId"),
@@ -60,13 +54,12 @@ for doc in docs:
         "dayOfWeek": day_of_week,
         "actualWaitTime": actual_wait_time,
     })
-# the collected data is converted into a DataFrame, 
-# and basic statistics about the dataset are printed to the console.
+
 df = pd.DataFrame(data)
 
 print(f"Total valid records: {len(df)}")
 print("Cleaning dataset...")
-# the dataset is cleaned by converting all feature columns to numeric types and dropping any rows with missing values.
+
 df.to_csv("queue_data.csv", index=False)
 
 print("Saved ML dataset to queue_data.csv")

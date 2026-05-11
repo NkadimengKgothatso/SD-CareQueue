@@ -36,7 +36,6 @@ def log_queue_completion(
     user_id:        str  = None,
 ):
     # ── Validate wait time ──────────────────────────────────
-    # the actual wait time is calculated as the difference between the served_at and created_at timestamps, converted to minutes.
     actual_wait = round((served_at - created_at).total_seconds() / 60)
 
     if actual_wait <= 0:
@@ -49,7 +48,6 @@ def log_queue_completion(
 
     # ── Duplicate guard ─────────────────────────────────────
     # Prevent the same appointment being logged twice
-    
     existing = (
         db.collection("QueueHistory")
         .where("appointmentId", "==", str(appointment_id))
