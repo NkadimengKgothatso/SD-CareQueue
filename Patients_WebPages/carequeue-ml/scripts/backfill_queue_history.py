@@ -189,12 +189,12 @@ while written < TARGET_RECORDS:
         batch_write.commit()
         batch_write = db.batch()
         batch_count = 0
-        print("   💾 Batch committed")
+        print("    Batch committed")
 
 # Final commit
 if batch_count > 0:
     batch_write.commit()
-    print(f"   💾 Final batch committed ({batch_count} records)")
+    print(f"    Final batch committed ({batch_count} records)")
 
 
 # ─────────────────────────────────────────────
@@ -202,7 +202,7 @@ if batch_count > 0:
 # ─────────────────────────────────────────────
 print(f"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Done!
+ Done!
    Written  : {written} synthetic records
    Skipped  : {skipped}
    Period   : last {DAYS_BACK} days
