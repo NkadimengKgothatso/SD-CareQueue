@@ -66,7 +66,7 @@ function arrangeFirestore({
 }
 
 async function importAnalytics() {
-  const mod = await import("./Analytics.js");
+  const mod = await import("./analytics.js");
   document.dispatchEvent(new Event("DOMContentLoaded"));
   await Promise.resolve();
   await Promise.resolve();
@@ -481,7 +481,7 @@ test("DOMContentLoaded catches synchronous init errors", async () => {
     throw error;
   });
 
-  const mod = await import("./Analytics.js");
+  const mod = await import("./analytics.js");
   document.dispatchEvent(new Event("DOMContentLoaded"));
 
   expect(mod).toBeDefined();
