@@ -106,7 +106,7 @@ beforeEach(() => {
 // Helpers
 // ─────────────────────────────────────────────────────────────
 async function load() {
-  return import("./ClinicManagement.js");
+  return import("./clinicManagement.js");
 }
 
 // =============================================================
