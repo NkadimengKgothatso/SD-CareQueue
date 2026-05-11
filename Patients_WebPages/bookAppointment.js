@@ -547,7 +547,7 @@ confirmBtn.addEventListener("click", async () => {
         return;
     }
 
-    const clinicIdNum = Number(selectedClinicId);
+   
 
     const q = query(
         collection(db, "Appointments"),
