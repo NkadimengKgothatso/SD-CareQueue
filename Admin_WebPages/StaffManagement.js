@@ -220,3 +220,13 @@ function showToast(message, type = "") {
         toast.className = "toast";
     }, 3000);
 }
+// ─── Exports for testing ───────────────────────────────────────────────────
+export {
+    buildStaffTableHTML,
+    buildClinicOption,
+    validateStaffForm,
+    buildStaffPayload,
+    loadStaff,
+    loadClinics,
+    showToast
+};
