@@ -13,7 +13,7 @@ import {
     addDoc,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { loadQueueStatusML, warmUpAPI } from "./js/waitTimeML.js";
+import { loadQueueStatusML } from "./carequeue-ml/js/waitTimeML.js";
 
 // ================= Firebase Config =================
 const firebaseConfig = {
@@ -214,7 +214,7 @@ async function loadVisitsCount(userId, clinicID) {
 
 // ================= INIT =================
 window.addEventListener("DOMContentLoaded", () => {
-    warmUpAPI();
+
     const nameEl    = document.getElementById("userName");
     const roleEl    = document.getElementById("userRole");
     const welcomeEl = document.getElementById("welcomeMessage");
