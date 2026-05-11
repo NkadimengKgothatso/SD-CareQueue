@@ -1,82 +1,254 @@
-// ================= Firebase Setup =================
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {getAuth,signOut as firebaseSignOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { db, auth } from "./firebase.js";
+
 import {
-    getFirestore,
-    doc,
-    getDoc,
-    collection,
-    query,
-    where,
-    getDocs,
-    onSnapshot,
-    addDoc,
-    serverTimestamp
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  doc,
+  getDocs,
+  updateDoc,
+  deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { loadQueueStatusML } from "./carequeue-ml/js/waitTimeML.js";
 
-// ================= Firebase Config =================
-const firebaseConfig = {
-    apiKey: "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
-    authDomain: "carequeue-284bb.firebaseapp.com",
-    projectId: "carequeue-284bb",
-    storageBucket: "carequeue-284bb.firebasestorage.app",
-    messagingSenderId: "702048481855",
-    appId: "1:702048481855:web:1bb9675ecadb9e22043e8a"
-};
+import {
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// ================= Initialize Firebase =================
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+let notifications = [];
+let currentFilter = "all";
 
+const listEl = document.getElementById("notifList");
+const toastEl = document.getElementById("toast");
 
-// ================= Global Variables =================
-let emptyStates, filledStates;
+const nameSurnameEl = document.getElementById("userName");
+const emailEl =  document.getElementById("userEmail");
 
-const clinicsMap = new Map();
-let queueUnsubscribe = null;
-
-let patientName  = "";
-let patientEmail = "";
-
-
-// ================= LOAD CLINICS =================
-async function loadClinics() {
-    try {
-        clinicsMap.clear();
-        const snapshot = await getDocs(collection(db, "clinicsObjects"));
-        snapshot.forEach(docSnap => {
-            const c = docSnap.data();
-            const clinicId = c.id ? String(c.id) : docSnap.id;
-            clinicsMap.set(clinicId, { ...c, id: clinicId });
-        });
-        console.log("Clinics loaded:", clinicsMap.size);
-    } catch (err) {
-        console.error("Failed to load clinics:", err);
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        nameSurnameEl.textContent = user.displayName;
+        emailEl.textContent = user.email;
+        setAvatarInitial(user.displayName, user.email);
+        loadNotifications(user.uid);
+    } else {
+        nameSurnameEl.textContent = "Guest";
+        window.location.href = "../index.html";
+        return;
     }
+});
+
+
+
+function loadNotifications(userID) {
+  const q = query(
+  collection(db, "Notifications"),
+  where("userID", "==", userID)
+);
+
+  onSnapshot(
+    q,
+    (snapshot) => {
+      notifications = snapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
+
+         return {
+          id: docSnap.id,
+          type: data.type || "appointment",
+          icon: getIcon(data.type),
+          unread: data.read === false,
+          name : data.clinicName,
+          title: data.title || "Notification",
+          msg: data.message || "",
+          createdAt: data.createdAt, // keep raw timestamp
+          time: formatTime(data.createdAt),
+          tags: data.clinicName ? [`Clinic: ${data.clinicName}`] : [],
+          urgent: data.type === "queue"
+        };
+      });
+
+       notifications.sort((a, b) => {
+        if (!a.createdAt || !b.createdAt) return 0;
+
+        return b.createdAt.seconds - a.createdAt.seconds;
+      });
+
+      render();
+    },
+    (error) => {
+      console.error("Error loading notifications:", error);
+      alert("Failed to load notifications");
+    }
+  );
 }
 
-
-// ================= UI HELPERS =================
-function showEmpty() {
-    emptyStates.style.display = "block";
-    filledStates.style.display = "none";
+function getIcon(type) {
+  if (type === "appointment") return "📅";
+  if (type === "queue") return "⏱";
+  if (type === "reminder") return "🔔";
+  if (type === "alert") return "⚠";
+  return "🔔";
 }
 
-function showFilled() {
-    emptyStates.style.display = "none";
-    filledStates.style.display = "block";
+function formatTime(timestamp) {
+  if (!timestamp || !timestamp.toDate) return "Just now";
+
+  const date = timestamp.toDate();
+
+  return date.toLocaleString("en-ZA", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  });
 }
 
+function render() {
+  const filtered = notifications.filter((n) => {
+    if (currentFilter === "all") return true;
+    if (currentFilter === "unread") return n.unread;
+    return n.type === currentFilter;
+  });
 
-// ================= NAVIGATION =================
-window.goToAppointments = function () {
-    window.location.href = "MyAppointments.html";
+  document.getElementById("count-all").textContent = notifications.length;
+  document.getElementById("count-unread").textContent =
+    notifications.filter((n) => n.unread).length;
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = `
+      <section class="empty">
+        <section class="ico">🎉</section>
+        <h3>You're all caught up</h3>
+        <p>No notifications match this filter.</p>
+      </section>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = filtered.map((n) => `
+    <section class="notif ${n.unread ? "unread" : ""}" data-id="${n.id}">
+      <section class="icon ${n.type}">${n.icon}</section>
+
+      <section class="body">
+        <section class="title">
+          <section>${n.title} At ${n.name} </section>
+          
+          <section class="time">${n.time}</section>
+        </section>
+
+        <section class="msg">${n.msg}</section>
+
+        <section class="meta">
+          ${n.urgent ? `<section class="tag urgent">Urgent</section>` : ""}
+          ${n.tags.map((t) => `<section class="tag">${t}</section>`).join("")}
+        </section>
+      </section>
+
+      <section class="row-actions">
+        ${
+          n.unread
+            ? `<button class="icon-btn" title="Mark as read" data-action="read" data-id="${n.id}">✓</button>`
+            : ""
+        }
+
+        <button class="icon-btn" title="Dismiss" data-action="dismiss" data-id="${n.id}">✕</button>
+      </section>
+    </section>
+  `).join("");
+}
+
+listEl.addEventListener("click", async (e) => {
+  const btn = e.target.closest("[data-action]");
+
+  if (!btn) {
+    const card = e.target.closest(".notif");
+
+    if (card) {
+      const id = card.dataset.id;
+      const n = notifications.find((x) => x.id === id);
+
+      if (n && n.unread) {
+        await updateDoc(doc(db, "Notifications", id), {
+          read: true
+        });
+      }
+    }
+
+    return;
+  }
+
+  const id = btn.dataset.id;
+  const n = notifications.find((x) => x.id === id);
+
+  if (!n) return;
+
+  if (btn.dataset.action === "read") {
+    await updateDoc(doc(db, "Notifications", id), {
+      read: true
+    });
+
+    alert("Marked as read");
+  }
+
+  if (btn.dataset.action === "dismiss") {
+    await deleteDoc(doc(db, "Notifications", id));
+
+    alert("Notification deleted");
+  }
+});
+
+document.getElementById("filters").addEventListener("click", (e) => {
+  const btn = e.target.closest(".filter-btn");
+
+  if (!btn) return;
+
+  document.querySelectorAll(".filter-btn").forEach((b) => {
+    b.classList.remove("active");
+  });
+
+  btn.classList.add("active");
+  currentFilter = btn.dataset.filter;
+
+  render();
+});
+
+document.getElementById("markAllBtn").addEventListener("click", async () => {
+  const unreadNotifications = notifications.filter((n) => n.unread);
+
+  for (const n of unreadNotifications) {
+    await updateDoc(doc(db, "Notifications", n.id), {
+      read: true
+    });
+  }
+
+  alert("All notifications marked as read");
+});
+
+document.getElementById("clearBtn").addEventListener("click", async () => {
+  if (!confirm("Clear all notifications?")) return;
+
+  for (const n of notifications) {
+    await deleteDoc(doc(db, "Notifications", n.id));
+  }
+
+  alert("All notifications cleared");
+});
+
+function __setNotificationsForTest(data) {
+  notifications = data;
+}
+
+function __setCurrentFilterForTest(filter) {
+  currentFilter = filter;
+}
+
+export {
+  getIcon,
+  formatTime,
+  render,
+  __setNotificationsForTest,
+  __setCurrentFilterForTest
 };
 
 
-// ================= AVATAR INITIALS =================
 function setAvatarInitial(name, email) {
     let initials = "";
     if (name && name.trim().length > 0) {
@@ -88,201 +260,3 @@ function setAvatarInitial(name, email) {
     }
     document.getElementById("patientAvatar").textContent = initials.toUpperCase();
 }
-
-
-// ================= LOAD APPOINTMENTS =================
-async function loadAppointments(userId) {
-    console.log("Loading appointments for:", userId);
-
-    const container = document.getElementById("appointmentsContainer");
-    container.innerHTML = "";
-
-    try {
-        const q = query(collection(db, "Appointments"), where("userID", "==", userId));
-        const snapshot = await getDocs(q);
-
-        if (snapshot.empty) { showEmpty(); return; }
-
-        await loadClinics();
-
-        let appointments = [];
-        snapshot.forEach(docSnap => appointments.push({ id: docSnap.id, ...docSnap.data() }));
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const upcoming = appointments
-            .filter(a => {
-                const apptDate = new Date(a.date);
-                apptDate.setHours(0, 0, 0, 0);
-                const notCancelled = !["cancelled", "completed"].includes((a.status || "").toLowerCase().trim());
-                return apptDate >= today && notCancelled;
-            })
-            .sort((a, b) => {
-                const dateA = new Date(`${a.date}T${a.time || "00:00"}`);
-                const dateB = new Date(`${b.date}T${b.time || "00:00"}`);
-                return dateA - dateB;
-            });
-
-        if (upcoming.length === 0) { showEmpty(); return; }
-
-        const next = upcoming[0];
-        if (!next) { showEmpty(); return; }
-
-        showFilled();
-
-        await loadVisitsCount(userId, next.clinicID);
-
-        const clinicIDStr = String(next.clinicID);
-        const clinic      = clinicsMap.get(clinicIDStr);
-        const clinicName  = clinic ? clinic.name : "Unknown Clinic";
-
-        console.log("next.clinicID:", next.clinicID, "| type:", typeof next.clinicID);
-
-        container.innerHTML = `
-            <li class="appointment-card upcoming-card">
-                <section class="card-accent accent-upcoming"></section>
-                <article class="card-body">
-                    <header class="card-header">
-                        <h2 class="clinic-name">${clinicName}</h2>
-                        <button class="view-btn" onclick="goToAppointments()">View</button>
-                    </header>
-                    <section class="info-wrap">
-                        <section class="info-row">
-                            <i class="fa-regular fa-calendar"></i>
-                            <section>${next.date}</section>
-                        </section>
-                        <section class="info-row">
-                            <i class="fa-regular fa-clock"></i>
-                            <section>${next.time}</section>
-                        </section>
-                        <section class="info-row">
-                            <i class="fa-solid fa-notes-medical"></i>
-                            <section>${next.reason || "General Appointment"}</section>
-                        </section>
-                    </section>
-                    <footer class="card-footer">
-                        <section class="status-badge ${(next.status || "scheduled").toLowerCase()}">
-                            ${next.status || "Scheduled"}
-                        </section>
-                    </footer>
-                </article>
-            </li>
-        `;
-
-        // ── Load real-time queue status and ML predictions ──
-        if (queueUnsubscribe) { queueUnsubscribe(); }
-        queueUnsubscribe = loadQueueStatusML(
-            userId,
-            next.id,
-            next.clinicID,
-            db,
-            clinicName,
-            patientName,
-            patientEmail
-        );
-
-    } catch (error) {
-        console.error("Firestore error:", error);
-        showEmpty();
-    }
-}
-
-
-// ================= LOAD VISITS COUNT =================
-async function loadVisitsCount(userId, clinicID) {
-    try {
-        const q = query(
-            collection(db, "Appointments"),
-            where("userID", "==", userId),
-            where("clinicID", "==", Number(clinicID))
-        );
-        const snapshot = await getDocs(q);
-
-        let count = 0;
-        snapshot.forEach(docSnap => {
-            if ((docSnap.data().status || "").toLowerCase() !== "cancelled") count++;
-        });
-
-        document.getElementById("visitsCount").textContent = count;
-
-    } catch (error) {
-        console.error("Visits count error:", error);
-    }
-}
-
-
-// ================= INIT =================
-window.addEventListener("DOMContentLoaded", () => {
-
-    const nameEl    = document.getElementById("userName");
-    const roleEl    = document.getElementById("userRole");
-    const welcomeEl = document.getElementById("welcomeMessage");
-    const dateEl    = document.getElementById("currentDate");
-
-    emptyStates  = document.getElementById("emptyStates");
-    filledStates = document.getElementById("filledStates");
-
-    onAuthStateChanged(auth, async (user) => {
-
-        if (!user) { window.location.href = "/index.html"; return; }
-
-        try {
-            const userSnap = await getDoc(doc(db, "Users", user.uid));
-
-            if (userSnap.exists()) {
-                const data  = userSnap.data();
-                const name  = data.displayName || "";
-                const email = user.email || "";
-
-                patientName  = name;
-                patientEmail = email;
-
-                nameEl.textContent    = name || "User";
-                roleEl.textContent    = data.role || "Unknown";
-                welcomeEl.textContent = `Welcome, ${name || "User"}`;
-                document.getElementById("userEmail").textContent = email;
-
-                setAvatarInitial(name, email);
-            }
-
-            dateEl.textContent = new Date().toLocaleDateString("en-ZA", {
-                weekday: "long",
-                year:    "numeric",
-                month:   "long",
-                day:     "numeric"
-            });
-
-            await loadAppointments(user.uid);
-
-        } catch (error) {
-            console.error("Auth error:", error);
-        }
-    });
-});
-
-
-// ================= SIGN OUT =================
-window.signOut = async function () {
-    if (queueUnsubscribe) {
-        queueUnsubscribe();
-        queueUnsubscribe = null;
-    }
-    await firebaseSignOut(auth);
-    window.location.href = "/index.html";
-};
-
-
-// ================= ACTIVE NAV LINK =================
-const currentPage = window.location.pathname.split("/").pop();
-document.querySelectorAll("aside nav ul li a").forEach(link => {
-    if (link.getAttribute("href") === currentPage) link.classList.add("active");
-});
-
-
-export {
-    showEmpty,
-    showFilled,
-    setAvatarInitial,
-    loadVisitsCount,
-};
