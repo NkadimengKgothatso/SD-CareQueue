@@ -26,10 +26,10 @@ function buildDOM() {
       <tbody id="waitTableBody"></tbody>
     </table>
 
-    <div id="patientsValue"></div>
-    <div id="waitValue"></div>
-    <div id="noShowValue"></div>
-    <div id="trendValue"></div>
+    <section id="patientsValue"></section>
+    <section id="waitValue"></section>
+    <section id="noShowValue"></section>
+    <section id="trendValue"></section>
 
     <form id="filterForm"></form>
 

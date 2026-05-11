@@ -61,24 +61,24 @@ jest.mock("./carequeue-ml/js/waitTimeML.js", () => ({
 
 function buildDOM() {
   document.body.innerHTML = `
-    <div id="userName"></div>
-    <div id="userRole"></div>
-    <div id="welcomeMessage"></div>
-    <div id="currentDate"></div>
-    <div id="userEmail"></div>
-    <div id="patientAvatar"></div>
+    <section id="userName"></section>
+    <section id="userRole"></section>
+    <section id="welcomeMessage"></section>
+    <section id="currentDate"></section>
+    <section id="userEmail"></section>
+    <section id="patientAvatar"></section>
 
-    <div id="emptyStates"></div>
-    <div id="filledStates"></div>
+    <section id="emptyStates"></section>
+    <section id="filledStates"></section>
     <ul id="appointmentsContainer"></ul>
 
-    <div id="queueCount"></div>
-    <div id="queueProgressText"></div>
-    <div id="progressPercent"></div>
+    <section id="queueCount"></section>
+    <section id="queueProgressText"></section>
+    <section id="progressPercent"></section>
     <progress id="queueMeter"></progress>
-    <div id="queuePosition"></div>
-    <div id="waitTime"></div>
-    <div id="visitsCount"></div>
+    <section id="queuePosition"></section>
+    <section id="waitTime"></section>
+    <section id="visitsCount"></section>
 
     <aside>
       <nav>

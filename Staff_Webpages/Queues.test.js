@@ -2,16 +2,16 @@ beforeEach(() => {
   document.body.innerHTML = `
     <ul id="upcoming"></ul>
 
-    <div id="stat-total"></div>
-    <div id="stat-inqueue"></div>
-    <div id="stat-completed"></div>
-    <div id="stat-avgwait"></div>
+    <section id="stat-total"></section>
+    <section id="stat-inqueue"></section>
+    <section id="stat-completed"></section>
+    <section id="stat-avgwait"></section>
 
-    <div class="name-Surname"></div>
+    <section class="name-Surname"></section>
 
-    <div id="staffName"></div>
-    <div id="staffEmail"></div>
-    <div id="staffAvatar"></div>
+    <section id="staffName"></section>
+    <section id="staffEmail"></section>
+    <section id="staffAvatar"></section>
   `;
 
   global.alert = jest.fn();

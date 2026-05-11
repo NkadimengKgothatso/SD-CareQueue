@@ -32,7 +32,7 @@ function buildDOM() {
     <!-- ── Add clinic modal ───────────────────────── -->
     <button class="addBtn"></button>
 
-    <div id="clinicModal">
+    <section id="clinicModal">
       <form>
         <input id="clinicName"   value="" />
         <input id="Location"     value="" />
@@ -40,37 +40,37 @@ function buildDOM() {
         <select id="province">
           <option value="Gauteng">Gauteng</option>
         </select>
-        <div id="clinicServicesDropdown" class="custom-select">
-          <div class="select-trigger">Select Services</div>
-          <div class="select-options">
+        <section id="clinicServicesDropdown" class="custom-select">
+          <section class="select-trigger">Select Services</section>
+          <section class="select-options">
             <label><input type="checkbox" value="General" /></label>
             <label><input type="checkbox" value="Dental"  /></label>
-          </div>
-        </div>
+          </section>
+        </section>
         <button type="submit">Add</button>
       </form>
-    </div>
+    </section>
 
     <!-- ── Manage (edit) clinic modal ────────────── -->
-    <div id="ManageClinicModal">
+    <section id="ManageClinicModal">
       <form>
         <input id="ManageClinicName"   value="" />
         <input id="ManageLocation"     value="" />
         <input id="ManageClinicStatus" value="" />
         <input id="manageProvince"     value="" />
-        <div id="manageClinicServicesDropdown" class="custom-select">
-          <div class="select-trigger">Select Services</div>
-          <div class="select-options">
+        <section id="manageClinicServicesDropdown" class="custom-select">
+          <section class="select-trigger">Select Services</section>
+          <section class="select-options">
             <label><input type="checkbox" value="General" /></label>
             <label><input type="checkbox" value="Dental"  /></label>
-          </div>
-        </div>
+          </section>
+        </section>
         <button type="submit">Save</button>
       </form>
-    </div>
+    </section>
 
     <!-- ── Clinic hours modal ─────────────────────── -->
-    <div id="clinicHoursModal">
+    <section id="clinicHoursModal">
       <form>
         <select id="startDay">
           <option value="">--</option>
@@ -86,12 +86,12 @@ function buildDOM() {
         <input id="endTime"   value="" />
         <button type="submit">Update</button>
       </form>
-    </div>
+    </section>
 
     <!-- ── Shared controls ───────────────────────── -->
     <button class="close-btn"></button>
     <input  id="clinicSearch" />
-    <div class="clinics"></div>
+    <section class="clinics"></section>
   `;
 }
 

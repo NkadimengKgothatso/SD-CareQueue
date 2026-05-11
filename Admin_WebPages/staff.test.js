@@ -30,14 +30,14 @@ jest.mock(
 
 function buildDOM() {
   document.body.innerHTML = `
-    <div id="inviteModal" style="display:none"></div>
-    <div id="toast" class="toast"></div>
+    <section id="inviteModal" style="display:none"></section>
+    <section id="toast" class="toast"></section>
 
     <table>
       <tbody id="staffTableBody"></tbody>
     </table>
 
-    <div id="staffCount"></div>
+    <section id="staffCount"></section>
 
     <input id="staffName" value="" />
     <input id="staffEmail" value="" />
