@@ -1,575 +1,849 @@
 // =============================================================
-// clinicManagement.test.js  –  improved coverage
+// clinicManagement.test.js
 // =============================================================
 
-// ── Shared mock for Firebase / admin bootstrap ────────────────
+// ── Mocks ─────────────────────────────────────────────────────
 jest.mock("/Admin_WebPages/admin.js", () => ({
-  initAdminPage: jest.fn(),
-  db: {}
+    initAdminPage: jest.fn(),
+    db: {}
 }));
 
 jest.mock(
-  "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
-  () => ({
-    collection:      jest.fn(),
-    addDoc:          jest.fn(() => Promise.resolve()),
-    serverTimestamp: jest.fn(() => "TIMESTAMP"),
-    getDocs:         jest.fn(() =>
-      Promise.resolve({ forEach: jest.fn() })
-    ),
-    doc:       jest.fn(),
-    updateDoc: jest.fn(() => Promise.resolve()),
-    deleteDoc: jest.fn(() => Promise.resolve())
-  }),
-  { virtual: true }
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
+    () => ({
+        collection:      jest.fn(),
+        addDoc:          jest.fn(() => Promise.resolve()),
+        serverTimestamp: jest.fn(() => "TIMESTAMP"),
+        getDocs:         jest.fn(() =>
+            Promise.resolve({ forEach: jest.fn() })
+        ),
+        doc:       jest.fn(),
+        updateDoc: jest.fn(() => Promise.resolve()),
+        deleteDoc: jest.fn(() => Promise.resolve())
+    }),
+    { virtual: true }
 );
 
-// ── Full DOM used by every test ───────────────────────────────
-// Includes the hours-modal inputs that were missing before,
-// plus the add-clinic and manage-clinic form fields.
+// ── DOM ───────────────────────────────────────────────────────
 function buildDOM() {
-  document.body.innerHTML = `
-    <!-- ── Add clinic modal ───────────────────────── -->
-    <button class="addBtn"></button>
+    document.body.innerHTML = `
+        <button class="addBtn"></button>
 
-    <div id="clinicModal">
-      <form>
-        <input id="clinicName"   value="" />
-        <input id="Location"     value="" />
-        <select id="clinicStatus"><option value="Active">Active</option></select>
-        <select id="province">
-          <option value="Gauteng">Gauteng</option>
-        </select>
-        <div id="clinicServicesDropdown" class="custom-select">
-          <div class="select-trigger">Select Services</div>
-          <div class="select-options">
-            <label><input type="checkbox" value="General" /></label>
-            <label><input type="checkbox" value="Dental"  /></label>
-          </div>
-        </div>
-        <button type="submit">Add</button>
-      </form>
-    </div>
+        <section class="modal" id="clinicModal">
+            <section class="modal-content">
+                <span class="close-btn">&times;</span>
+                <form class="clinicForm">
+                    <input id="clinicName" value="" />
+                    <input id="Location"   value="" />
+                    <select id="clinicStatus">
+                        <option value="Active">Active</option>
+                        <option value="Closed">Closed</option>
+                        <option value="Busy">Busy</option>
+                    </select>
+                    <select id="province">
+                        <option value="" disabled selected>Select Province</option>
+                        <option value="Gauteng">Gauteng</option>
+                        <option value="Limpopo">Limpopo</option>
+                        <option value="Western Cape">Western Cape</option>
+                    </select>
+                    <section class="custom-select" id="clinicServicesDropdown">
+                        <section class="select-trigger">Select Services</section>
+                        <section class="select-options">
+                            <label><input type="checkbox" value="General" /></label>
+                            <label><input type="checkbox" value="Emergency" /></label>
+                            <label><input type="checkbox" value="Dental" /></label>
+                        </section>
+                    </section>
+                    <button type="submit">Add Clinic</button>
+                </form>
+            </section>
+        </section>
 
-    <!-- ── Manage (edit) clinic modal ────────────── -->
-    <div id="ManageClinicModal">
-      <form>
-        <input id="ManageClinicName"   value="" />
-        <input id="ManageLocation"     value="" />
-        <input id="ManageClinicStatus" value="" />
-        <input id="manageProvince"     value="" />
-        <div id="manageClinicServicesDropdown" class="custom-select">
-          <div class="select-trigger">Select Services</div>
-          <div class="select-options">
-            <label><input type="checkbox" value="General" /></label>
-            <label><input type="checkbox" value="Dental"  /></label>
-          </div>
-        </div>
-        <button type="submit">Save</button>
-      </form>
-    </div>
+        <section class="ManageModal" id="ManageClinicModal">
+            <section class="modal-content">
+                <span class="close-btn">&times;</span>
+                <form class="clinicForm">
+                    <input id="ManageClinicName" value="" />
+                    <input id="ManageLocation"   value="" />
+                    <select id="ManageClinicStatus">
+                        <option value="Active">Active</option>
+                        <option value="Closed">Closed</option>
+                        <option value="Busy">Busy</option>
+                    </select>
+                    <select id="manageProvince">
+                        <option value="" disabled selected>Select Province</option>
+                        <option value="Gauteng">Gauteng</option>
+                        <option value="Limpopo">Limpopo</option>
+                        <option value="Western Cape">Western Cape</option>
+                    </select>
+                    <section class="custom-select" id="manageClinicServicesDropdown">
+                        <section class="select-trigger">Select Services</section>
+                        <section class="select-options">
+                            <label><input type="checkbox" value="General" /></label>
+                            <label><input type="checkbox" value="Emergency" /></label>
+                            <label><input type="checkbox" value="Dental" /></label>
+                        </section>
+                    </section>
+                    <button type="submit">Update Clinic</button>
+                </form>
+            </section>
+        </section>
 
-    <!-- ── Clinic hours modal ─────────────────────── -->
-    <div id="clinicHoursModal">
-      <form>
-        <select id="startDay">
-          <option value="">--</option>
-          <option value="Mon">Mon</option>
-          <option value="Fri">Fri</option>
-        </select>
-        <select id="endDay">
-          <option value="">--</option>
-          <option value="Mon">Mon</option>
-          <option value="Fri">Fri</option>
-        </select>
-        <input id="startTime" value="" />
-        <input id="endTime"   value="" />
-        <button type="submit">Update</button>
-      </form>
-    </div>
+        <section class="modal" id="clinicHoursModal">
+            <section class="modal-content">
+                <span class="close-btn">&times;</span>
+                <form class="clinicForm">
+                    <select id="startDay">
+                        <option value="" disabled selected>Start Day</option>
+                        <option value="Mon">Monday</option>
+                        <option value="Tue">Tuesday</option>
+                        <option value="Wed">Wednesday</option>
+                        <option value="Thu">Thursday</option>
+                        <option value="Fri">Friday</option>
+                        <option value="Sat">Saturday</option>
+                        <option value="Sun">Sunday</option>
+                    </select>
+                    <select id="endDay">
+                        <option value="" disabled selected>End Day</option>
+                        <option value="Mon">Monday</option>
+                        <option value="Tue">Tuesday</option>
+                        <option value="Wed">Wednesday</option>
+                        <option value="Thu">Thursday</option>
+                        <option value="Fri">Friday</option>
+                        <option value="Sat">Saturday</option>
+                        <option value="Sun">Sunday</option>
+                    </select>
+                    <select id="startTime">
+                        <option value="6am">6:00 AM</option>
+                        <option value="7am">7:00 AM</option>
+                        <option value="8am">8:00 AM</option>
+                        <option value="9am">9:00 AM</option>
+                        <option value="10am">10:00 AM</option>
+                        <option value="11am">11:00 AM</option>
+                        <option value="12pm">12:00 PM</option>
+                        <option value="1pm">1:00 PM</option>
+                        <option value="2pm">2:00 PM</option>
+                        <option value="3pm">3:00 PM</option>
+                        <option value="4pm">4:00 PM</option>
+                        <option value="5pm">5:00 PM</option>
+                        <option value="6pm">6:00 PM</option>
+                        <option value="7pm">7:00 PM</option>
+                        <option value="8pm">8:00 PM</option>
+                    </select>
+                    <select id="endTime">
+                        <option value="6am">6:00 AM</option>
+                        <option value="7am">7:00 AM</option>
+                        <option value="8am">8:00 AM</option>
+                        <option value="9am">9:00 AM</option>
+                        <option value="10am">10:00 AM</option>
+                        <option value="11am">11:00 AM</option>
+                        <option value="12pm">12:00 PM</option>
+                        <option value="1pm">1:00 PM</option>
+                        <option value="2pm">2:00 PM</option>
+                        <option value="3pm">3:00 PM</option>
+                        <option value="4pm">4:00 PM</option>
+                        <option value="5pm">5:00 PM</option>
+                        <option value="6pm">6:00 PM</option>
+                        <option value="7pm">7:00 PM</option>
+                        <option value="8pm">8:00 PM</option>
+                    </select>
+                    <button type="submit">Update Operating Hours</button>
+                </form>
+            </section>
+        </section>
 
-    <!-- ── Shared controls ───────────────────────── -->
-    <button class="close-btn"></button>
-    <input  id="clinicSearch" />
-    <div class="clinics"></div>
-  `;
+        <input id="clinicSearch" />
+        <div class="clinics"></div>
+    `;
 }
 
+// ── Setup ─────────────────────────────────────────────────────
 beforeEach(() => {
-  buildDOM();
-  global.alert   = jest.fn();
-  global.confirm = jest.fn(() => true);
-  jest.resetModules();
+    buildDOM();
+    global.alert   = jest.fn();
+    global.confirm = jest.fn(() => true);
+    jest.resetModules();
 });
 
-// ─────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────
 async function load() {
-  return import("./clinicManagement.js");
+    return import("./clinicManagement.js");
+}
+
+// Finds a checkbox by value — immune to ordering changes
+function getCheckbox(dropdownId, value) {
+    return document.querySelector(`#${dropdownId} input[value="${value}"]`);
+}
+
+async function loadWithClinics(clinicFixtures) {
+    const { getDocs } = await import(
+        "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
+    );
+
+    getDocs.mockResolvedValueOnce({
+        forEach: (cb) =>
+            clinicFixtures.forEach((c) =>
+                cb({
+                    id: c.id,
+                    data: () => ({
+                        name:          c.name,
+                        address:       c.address,
+                        province:      c.province,
+                        status:        c.status,
+                        service:       c.service,
+                        opening_hours: c.operatingHours
+                    })
+                })
+            )
+    });
+
+    const mod = await load();
+    await Promise.resolve();
+    return mod;
 }
 
 // =============================================================
 // 1. getSelectedServices
 // =============================================================
-test("getSelectedServices returns checked services", async () => {
-  const { getSelectedServices } = await load();
+describe("getSelectedServices", () => {
 
-  const boxes = document.querySelectorAll(
-    "#manageClinicServicesDropdown input"
-  );
-  boxes[0].checked = true;
+    test("returns checked services", async () => {
+        const { getSelectedServices } = await load();
+        getCheckbox("manageClinicServicesDropdown", "General").checked = true;
+        expect(getSelectedServices("manageClinicServicesDropdown")).toContain("General");
+    });
 
-  expect(getSelectedServices("manageClinicServicesDropdown"))
-    .toContain("General");
-});
+    test("returns empty array when nothing checked", async () => {
+        const { getSelectedServices } = await load();
+        expect(getSelectedServices("manageClinicServicesDropdown")).toEqual([]);
+    });
 
-test("getSelectedServices returns empty array when nothing checked", async () => {
-  const { getSelectedServices } = await load();
+    test("returns multiple checked services", async () => {
+        const { getSelectedServices } = await load();
+        getCheckbox("manageClinicServicesDropdown", "General").checked = true;
+        getCheckbox("manageClinicServicesDropdown", "Dental").checked  = true;
+        const result = getSelectedServices("manageClinicServicesDropdown");
+        expect(result).toContain("General");
+        expect(result).toContain("Dental");
+        expect(result).toHaveLength(2);
+    });
 
-  expect(getSelectedServices("manageClinicServicesDropdown"))
-    .toEqual([]);
-});
+    test("returns all services when all checked", async () => {
+        const { getSelectedServices } = await load();
+        document.querySelectorAll("#manageClinicServicesDropdown input")
+            .forEach(cb => cb.checked = true);
+        expect(getSelectedServices("manageClinicServicesDropdown")).toHaveLength(3);
+    });
 
-test("getSelectedServices returns multiple checked services", async () => {
-  const { getSelectedServices } = await load();
-
-  const boxes = document.querySelectorAll(
-    "#manageClinicServicesDropdown input"
-  );
-  boxes[0].checked = true;
-  boxes[1].checked = true;
-
-  const result = getSelectedServices("manageClinicServicesDropdown");
-  expect(result).toContain("General");
-  expect(result).toContain("Dental");
+    test("works for add clinic dropdown too", async () => {
+        const { getSelectedServices } = await load();
+        getCheckbox("clinicServicesDropdown", "Emergency").checked = true;
+        expect(getSelectedServices("clinicServicesDropdown")).toContain("Emergency");
+    });
 });
 
 // =============================================================
 // 2. clearServices
 // =============================================================
-test("clearServices unchecks all services", async () => {
-  const { clearServices } = await load();
+describe("clearServices", () => {
 
-  const boxes = document.querySelectorAll(
-    "#manageClinicServicesDropdown input"
-  );
-  boxes[0].checked = true;
-  boxes[1].checked = true;
+    test("unchecks all services", async () => {
+        const { clearServices } = await load();
+        getCheckbox("manageClinicServicesDropdown", "General").checked = true;
+        getCheckbox("manageClinicServicesDropdown", "Dental").checked  = true;
+        clearServices("manageClinicServicesDropdown");
+        expect(getCheckbox("manageClinicServicesDropdown", "General").checked).toBe(false);
+        expect(getCheckbox("manageClinicServicesDropdown", "Dental").checked).toBe(false);
+    });
 
-  clearServices("manageClinicServicesDropdown");
+    test("resets trigger label to placeholder after clearing", async () => {
+        const { clearServices } = await load();
+        getCheckbox("manageClinicServicesDropdown", "General").checked = true;
+        clearServices("manageClinicServicesDropdown");
+        const trigger = document.querySelector("#manageClinicServicesDropdown .select-trigger");
+        expect(trigger.textContent).toContain("Select Services");
+    });
 
-  expect(boxes[0].checked).toBe(false);
-  expect(boxes[1].checked).toBe(false);
+    test("works even when nothing was checked", async () => {
+        const { clearServices } = await load();
+        expect(() => clearServices("manageClinicServicesDropdown")).not.toThrow();
+    });
+
+    test("works on add clinic dropdown", async () => {
+        const { clearServices } = await load();
+        getCheckbox("clinicServicesDropdown", "General").checked = true;
+        clearServices("clinicServicesDropdown");
+        expect(getCheckbox("clinicServicesDropdown", "General").checked).toBe(false);
+    });
 });
 
 // =============================================================
 // 3. preselectServices
 // =============================================================
-test("preselectServices checks matching services", async () => {
-  const { preselectServices } = await load();
+describe("preselectServices", () => {
 
-  preselectServices("manageClinicServicesDropdown", ["Dental"]);
+    test("checks matching service", async () => {
+        const { preselectServices } = await load();
+        preselectServices("manageClinicServicesDropdown", ["Dental"]);
+        expect(getCheckbox("manageClinicServicesDropdown", "General").checked).toBe(false);
+        expect(getCheckbox("manageClinicServicesDropdown", "Dental").checked).toBe(true);
+    });
 
-  const boxes = document.querySelectorAll(
-    "#manageClinicServicesDropdown input"
-  );
-  expect(boxes[0].checked).toBe(false);
-  expect(boxes[1].checked).toBe(true);
-});
+    test("handles a plain string instead of array", async () => {
+        const { preselectServices } = await load();
+        preselectServices("manageClinicServicesDropdown", "General");
+        expect(getCheckbox("manageClinicServicesDropdown", "General").checked).toBe(true);
+        expect(getCheckbox("manageClinicServicesDropdown", "Dental").checked).toBe(false);
+    });
 
-test("preselectServices handles a plain string instead of array", async () => {
-  const { preselectServices } = await load();
+    test("handles empty array gracefully", async () => {
+        const { preselectServices } = await load();
+        preselectServices("manageClinicServicesDropdown", []);
+        expect(getCheckbox("manageClinicServicesDropdown", "General").checked).toBe(false);
+        expect(getCheckbox("manageClinicServicesDropdown", "Dental").checked).toBe(false);
+    });
 
-  preselectServices("manageClinicServicesDropdown", "General");
+    test("handles null gracefully", async () => {
+        const { preselectServices } = await load();
+        preselectServices("manageClinicServicesDropdown", null);
+        expect(getCheckbox("manageClinicServicesDropdown", "General").checked).toBe(false);
+        expect(getCheckbox("manageClinicServicesDropdown", "Dental").checked).toBe(false);
+    });
 
-  const boxes = document.querySelectorAll(
-    "#manageClinicServicesDropdown input"
-  );
-  expect(boxes[0].checked).toBe(true);
-  expect(boxes[1].checked).toBe(false);
-});
+    test("handles undefined gracefully", async () => {
+        const { preselectServices } = await load();
+        preselectServices("manageClinicServicesDropdown", undefined);
+        expect(getCheckbox("manageClinicServicesDropdown", "General").checked).toBe(false);
+    });
 
-test("preselectServices handles empty/null gracefully", async () => {
-  const { preselectServices } = await load();
+    test("checks multiple services from array", async () => {
+        const { preselectServices } = await load();
+        preselectServices("manageClinicServicesDropdown", ["General", "Emergency"]);
+        expect(getCheckbox("manageClinicServicesDropdown", "General").checked).toBe(true);
+        expect(getCheckbox("manageClinicServicesDropdown", "Dental").checked).toBe(false);
+        expect(getCheckbox("manageClinicServicesDropdown", "Emergency").checked).toBe(true);
+    });
 
-  preselectServices("manageClinicServicesDropdown", null);
-
-  const boxes = document.querySelectorAll(
-    "#manageClinicServicesDropdown input"
-  );
-  expect(boxes[0].checked).toBe(false);
-  expect(boxes[1].checked).toBe(false);
+    test("updates trigger label after preselecting", async () => {
+        const { preselectServices } = await load();
+        preselectServices("manageClinicServicesDropdown", ["General"]);
+        const trigger = document.querySelector("#manageClinicServicesDropdown .select-trigger");
+        expect(trigger.textContent).toContain("General");
+    });
 });
 
 // =============================================================
 // 4. updateTriggerLabel
 // =============================================================
-test("updateTriggerLabel shows checked service names", async () => {
-  const { updateTriggerLabel } = await load();
+describe("updateTriggerLabel", () => {
 
-  const dropdown = document.getElementById(
-    "manageClinicServicesDropdown"
-  );
-  dropdown.querySelectorAll("input")[0].checked = true;
+    test("shows checked service name", async () => {
+        const { updateTriggerLabel } = await load();
+        const dropdown = document.getElementById("manageClinicServicesDropdown");
+        getCheckbox("manageClinicServicesDropdown", "General").checked = true;
+        updateTriggerLabel(dropdown);
+        expect(dropdown.querySelector(".select-trigger").textContent).toContain("General");
+    });
 
-  updateTriggerLabel(dropdown);
+    test("shows multiple checked service names", async () => {
+        const { updateTriggerLabel } = await load();
+        const dropdown = document.getElementById("manageClinicServicesDropdown");
+        getCheckbox("manageClinicServicesDropdown", "General").checked = true;
+        getCheckbox("manageClinicServicesDropdown", "Dental").checked  = true;
+        updateTriggerLabel(dropdown);
+        const text = dropdown.querySelector(".select-trigger").textContent;
+        expect(text).toContain("General");
+        expect(text).toContain("Dental");
+    });
 
-  expect(dropdown.querySelector(".select-trigger").textContent)
-    .toContain("General");
-});
+    test("falls back to placeholder when nothing checked", async () => {
+        const { updateTriggerLabel } = await load();
+        const dropdown = document.getElementById("manageClinicServicesDropdown");
+        updateTriggerLabel(dropdown);
+        expect(dropdown.querySelector(".select-trigger").textContent).toContain("Select Services");
+    });
 
-test("updateTriggerLabel falls back to placeholder when nothing checked", async () => {
-  const { updateTriggerLabel } = await load();
-
-  const dropdown = document.getElementById(
-    "manageClinicServicesDropdown"
-  );
-
-  updateTriggerLabel(dropdown);
-
-  expect(dropdown.querySelector(".select-trigger").textContent)
-    .toContain("Select Services");
+    test("updates label correctly after unchecking all", async () => {
+        const { updateTriggerLabel } = await load();
+        const dropdown = document.getElementById("manageClinicServicesDropdown");
+        getCheckbox("manageClinicServicesDropdown", "General").checked = true;
+        updateTriggerLabel(dropdown);
+        getCheckbox("manageClinicServicesDropdown", "General").checked = false;
+        updateTriggerLabel(dropdown);
+        expect(dropdown.querySelector(".select-trigger").textContent).toContain("Select Services");
+    });
 });
 
 // =============================================================
 // 5. openEditModal
 // =============================================================
-test("openEditModal fills form fields", async () => {
-  const { openEditModal } = await load();
+describe("openEditModal", () => {
 
-  openEditModal("1", "Care Clinic", "123 Main", "Active", ["General"], "Gauteng");
+    test("fills all form fields correctly", async () => {
+        const { openEditModal } = await load();
+        openEditModal("1", "Care Clinic", "123 Main", "Active", ["General"], "Gauteng");
+        expect(document.getElementById("ManageClinicName").value).toBe("Care Clinic");
+        expect(document.getElementById("ManageLocation").value).toBe("123 Main");
+        expect(document.getElementById("manageProvince").value).toBe("Gauteng");
+    });
 
-  expect(document.getElementById("ManageClinicName").value).toBe("Care Clinic");
-  expect(document.getElementById("ManageLocation").value).toBe("123 Main");
-  expect(document.getElementById("manageProvince").value).toBe("Gauteng");
-});
+    test("opens the manage modal", async () => {
+        const { openEditModal } = await load();
+        openEditModal("2", "Test Clinic", "Road X", "Active", [], "Limpopo");
+        expect(document.getElementById("ManageClinicModal").style.display).toBe("flex");
+    });
 
-test("openEditModal opens the manage modal", async () => {
-  const { openEditModal } = await load();
+    test("defaults province to empty string when not provided", async () => {
+        const { openEditModal } = await load();
+        openEditModal("3", "No Province", "Somewhere", "Active", []);
+        expect(document.getElementById("manageProvince").value).toBe("");
+    });
 
-  openEditModal("2", "Test Clinic", "Road X", "Active", [], "Limpopo");
+    test("preselects services in the dropdown", async () => {
+        const { openEditModal } = await load();
+        openEditModal("4", "Service Clinic", "Road A", "Active", ["Dental"], "Gauteng");
+        expect(getCheckbox("manageClinicServicesDropdown", "Dental").checked).toBe(true);
+        expect(getCheckbox("manageClinicServicesDropdown", "General").checked).toBe(false);
+    });
 
-  expect(document.getElementById("ManageClinicModal").style.display)
-    .toBe("flex");
-});
+    test("sets the correct status value", async () => {
+        const { openEditModal } = await load();
+        openEditModal("5", "Closed Clinic", "Road B", "Closed", [], "Gauteng");
+        expect(document.getElementById("ManageClinicStatus").value).toBe("Closed");
+    });
 
-test("openEditModal defaults province to empty string when not provided", async () => {
-  const { openEditModal } = await load();
+    test("stores editingClinicId so manage form updates the right doc", async () => {
+        const { openEditModal } = await load();
+        const { updateDoc } = await import(
+            "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
+        );
 
-  openEditModal("3", "No Province", "Somewhere", "Active", []);
+        openEditModal("clinic-99", "Target Clinic", "Road C", "Active", [], "Gauteng");
 
-  expect(document.getElementById("manageProvince").value).toBe("");
+        document.getElementById("ManageClinicName").value   = "Updated Name";
+        document.getElementById("ManageLocation").value     = "Updated Addr";
+        document.getElementById("ManageClinicStatus").value = "Active";
+
+        const form = document.querySelector("#ManageClinicModal form");
+        form.dispatchEvent(new Event("submit", { bubbles: true }));
+        await Promise.resolve();
+
+        expect(updateDoc).toHaveBeenCalled();
+    });
 });
 
 // =============================================================
 // 6. addClinicToUI – rendering
 // =============================================================
-test("addClinicToUI renders clinic card with name and province", async () => {
-  const { addClinicToUI } = await load();
+describe("addClinicToUI - rendering", () => {
 
-  addClinicToUI("1", "Care Clinic", "123 Main", "Active", ["General"], "08:00-17:00", "Gauteng");
+    test("renders clinic card with name", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("1", "Care Clinic", "123 Main", "Active", ["General"], "08:00-17:00", "Gauteng");
+        expect(document.body.textContent).toContain("Care Clinic");
+    });
 
-  expect(document.body.textContent).toContain("Care Clinic");
-  expect(document.body.textContent).toContain("Gauteng");
-  expect(document.body.textContent).toContain("08:00-17:00");
-});
+    test("renders clinic card with province", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("1", "Care Clinic", "123 Main", "Active", ["General"], "08:00-17:00", "Gauteng");
+        expect(document.body.textContent).toContain("Gauteng");
+    });
 
-test("addClinicToUI handles string service", async () => {
-  const { addClinicToUI } = await load();
+    test("renders clinic card with operating hours", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("1", "Care Clinic", "123 Main", "Active", ["General"], "08:00-17:00", "Gauteng");
+        expect(document.body.textContent).toContain("08:00-17:00");
+    });
 
-  addClinicToUI("3", "String Service Clinic", "Main Road", "Busy", "Emergency", "Hours not available", "Western Cape");
+    test("renders multiple services as individual chips", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("2", "Multi Service", "Road X", "Active", ["General", "Dental", "Emergency"], "09:00-17:00", "Gauteng");
+        const chips = document.querySelectorAll(".services");
+        expect(chips).toHaveLength(3);
+    });
 
-  expect(document.body.textContent).toContain("String Service Clinic");
-  expect(document.body.textContent).toContain("Emergency");
-  expect(document.body.textContent).toContain("Hours not specified");
-});
+    test("handles string service", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("3", "String Clinic", "Main Road", "Busy", "Emergency", "Hours not available", "Western Cape");
+        expect(document.body.textContent).toContain("Emergency");
+        expect(document.body.textContent).toContain("Hours not specified");
+    });
 
-test("addClinicToUI falls back to 'General' when service is falsy", async () => {
-  const { addClinicToUI } = await load();
+    test("falls back to General when service is null", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("5", "Fallback Clinic", "Somewhere", "Active", null, "09:00-13:00", "Gauteng");
+        expect(document.body.textContent).toContain("General");
+    });
 
-  addClinicToUI("5", "Fallback Clinic", "Somewhere", "Active", null, "09:00-13:00", "Gauteng");
+    test("omits province when it is 'unknown' (lowercase)", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("6", "Unknown Prov Clinic", "Road Y", "Active", ["Dental"], "10:00-14:00", "unknown");
+        const location = document.querySelector(".Location");
+        expect(location.textContent).not.toContain(", unknown");
+    });
 
-  expect(document.body.textContent).toContain("General");
-});
+    test("omits province when it is 'Unknown' (capitalised)", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("6b", "Unknown Prov Clinic 2", "Road Z", "Active", ["Dental"], "10:00-14:00", "Unknown");
+        const location = document.querySelector(".Location");
+        expect(location.textContent).not.toContain(", Unknown");
+    });
 
-test("addClinicToUI omits province when it is 'unknown'", async () => {
-  const { addClinicToUI } = await load();
+    test("shows province when it is valid", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("6c", "Valid Province Clinic", "Road A", "Active", ["Dental"], "10:00-14:00", "Limpopo");
+        const location = document.querySelector(".Location");
+        expect(location.textContent).toContain("Limpopo");
+    });
 
-  addClinicToUI("6", "Unknown Prov Clinic", "Road Y", "Active", ["Dental"], "10:00-14:00", "unknown");
+    test("shows Hours not specified when hours is null", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("7", "No Hours Clinic", "Road H", "Active", ["General"], null, "Gauteng");
+        expect(document.body.textContent).toContain("Hours not specified");
+    });
 
-  // Province should NOT appear next to location
-  const card = document.querySelector(".clinicName");
-  expect(card.textContent).not.toContain(", unknown");
-});
+    test("applies correct colour for Active status", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("8a", "Active Clinic", "Active Road", "Active", ["General"], "N/A", "Gauteng");
+        const statusEl = document.querySelector("#status");
+        expect(statusEl.style.color).toBe("rgb(22, 101, 52)");
+    });
 
-test("addClinicToUI applies correct colour for Closed status", async () => {
-  const { addClinicToUI } = await load();
+    test("applies correct colour for Closed status", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("7", "Closed Clinic", "Closed Road", "Closed", ["General"], "N/A", "Gauteng");
+        const statusEl = document.querySelector("#status");
+        expect(statusEl.style.color).toBe("rgb(153, 27, 27)");
+    });
 
-  addClinicToUI("7", "Closed Clinic", "Closed Road", "Closed", ["General"], "N/A", "Gauteng");
+    test("applies correct colour for Busy status", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("8", "Busy Clinic", "Busy Road", "Busy", ["General"], "N/A", "Gauteng");
+        const statusEl = document.querySelector("#status");
+        expect(statusEl.style.color).toBe("rgb(55, 65, 81)");
+    });
 
-  const statusEl = document.querySelector("#status");
-  expect(statusEl.style.color).toBe("rgb(153, 27, 27)");
-});
-
-test("addClinicToUI applies correct colour for Busy status", async () => {
-  const { addClinicToUI } = await load();
-
-  addClinicToUI("8", "Busy Clinic", "Busy Road", "Busy", ["General"], "N/A", "Gauteng");
-
-  const statusEl = document.querySelector("#status");
-  expect(statusEl.style.color).toBe("rgb(55, 65, 81)");
+    test("defaults to Active colours for unknown status", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("8b", "Pending Clinic", "Road X", "Pending", ["General"], "N/A", "Gauteng");
+        const statusEl = document.querySelector("#status");
+        expect(statusEl.style.color).toBe("rgb(22, 101, 52)");
+    });
 });
 
 // =============================================================
-// 7. addClinicToUI – hours modal button (the previously failing test)
+// 7. addClinicToUI – hours button
 // =============================================================
-test("addClinicToUI hours-btn opens clinicHoursModal", async () => {
-  const { addClinicToUI } = await load();
+describe("addClinicToUI - hours button", () => {
 
-  addClinicToUI("4", "Hours Clinic", "Side Road", "Active", ["General"], "Mon-Fri: 08:00-17:00", "Gauteng");
+    test("opens clinicHoursModal", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("4", "Hours Clinic", "Side Road", "Active", ["General"], "Mon-Fri: 8am-5pm", "Gauteng");
+        document.querySelector(".hours-btn").click();
+        expect(document.getElementById("clinicHoursModal").style.display).toBe("flex");
+    });
 
-  document.querySelector(".hours-btn").click();
+    test("populates fields when hours match the expected pattern", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("10", "Pattern Clinic", "Pattern Rd", "Active", ["General"], "Mon-Fri: 8am-5pm", "Gauteng");
+        document.querySelector(".hours-btn").click();
+        expect(document.getElementById("startDay").value).toBe("Mon");
+        expect(document.getElementById("endDay").value).toBe("Fri");
+        expect(document.getElementById("startTime").value).toBe("8am");
+        expect(document.getElementById("endTime").value).toBe("5pm");
+    });
 
-  expect(document.getElementById("clinicHoursModal").style.display)
-    .toBe("flex");
-});
+    test("clears fields when hours do not match the pattern", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("11", "No Pattern Clinic", "No Pattern Rd", "Active", ["General"], "Hours not specified", "Gauteng");
+        document.querySelector(".hours-btn").click();
+        expect(document.getElementById("startDay").value).toBe("");
+        expect(document.getElementById("endDay").value).toBe("");
+        expect(document.getElementById("startTime").value).toBe("");
+        expect(document.getElementById("endTime").value).toBe("");
+    });
 
-test("hours-btn populates fields when hours match the expected pattern", async () => {
-  const { addClinicToUI } = await load();
-
-  // The source regex uses \w+ which matches word chars only (no colons).
-  // A valid matching format is "Mon-Fri: 0800-1700" (no colons in times).
-  addClinicToUI("10", "Pattern Clinic", "Pattern Rd", "Active", ["General"], "Mon-Fri: 0800-1700", "Gauteng");
-
-  document.querySelector(".hours-btn").click();
-
-  expect(document.getElementById("startDay").value).toBe("Mon");
-  expect(document.getElementById("endDay").value).toBe("Fri");
-  expect(document.getElementById("startTime").value).toBe("0800");
-  expect(document.getElementById("endTime").value).toBe("1700");
-});
-
-test("hours-btn clears fields when hours do NOT match the pattern", async () => {
-  const { addClinicToUI } = await load();
-
-  addClinicToUI("11", "No Pattern Clinic", "No Pattern Rd", "Active", ["General"], "Hours not specified", "Gauteng");
-
-  document.querySelector(".hours-btn").click();
-
-  expect(document.getElementById("startDay").value).toBe("");
-  expect(document.getElementById("endDay").value).toBe("");
-  expect(document.getElementById("startTime").value).toBe("");
-  expect(document.getElementById("endTime").value).toBe("");
+    test("clears fields when operatingHours is null", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("12", "Null Hours Clinic", "Null Rd", "Active", ["General"], null, "Gauteng");
+        document.querySelector(".hours-btn").click();
+        expect(document.getElementById("startDay").value).toBe("");
+    });
 });
 
 // =============================================================
 // 8. addClinicToUI – manage button
 // =============================================================
-test("manage-btn opens ManageClinicModal", async () => {
-  const { addClinicToUI } = await load();
+describe("addClinicToUI - manage button", () => {
 
-  addClinicToUI("9", "Manage Clinic", "Manage Rd", "Active", ["General"], "08:00-17:00", "Gauteng");
+    test("opens ManageClinicModal", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("9", "Manage Clinic", "Manage Rd", "Active", ["General"], "08:00-17:00", "Gauteng");
+        document.querySelector(".manage-btn").click();
+        expect(document.getElementById("ManageClinicModal").style.display).toBe("flex");
+    });
 
-  document.querySelector(".manage-btn").click();
+    test("fills in ManageClinicName", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("9b", "Edit Me Clinic", "Edit Road", "Active", ["Dental"], "09:00-15:00", "Limpopo");
+        document.querySelector(".manage-btn").click();
+        expect(document.getElementById("ManageClinicName").value).toBe("Edit Me Clinic");
+    });
 
-  expect(document.getElementById("ManageClinicModal").style.display)
-    .toBe("flex");
-});
+    test("fills in ManageLocation", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("9c", "Edit Location", "Target Road", "Active", ["Dental"], "09:00-15:00", "Limpopo");
+        document.querySelector(".manage-btn").click();
+        expect(document.getElementById("ManageLocation").value).toBe("Target Road");
+    });
 
-test("manage-btn fills in ManageClinicName", async () => {
-  const { addClinicToUI } = await load();
+    test("fills in province", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("9d", "Province Clinic", "Province Rd", "Active", ["General"], "08:00-17:00", "Western Cape");
+        document.querySelector(".manage-btn").click();
+        expect(document.getElementById("manageProvince").value).toBe("Western Cape");
+    });
 
-  addClinicToUI("9b", "Edit Me Clinic", "Edit Road", "Active", ["Dental"], "09:00-15:00", "Limpopo");
-
-  document.querySelector(".manage-btn").click();
-
-  expect(document.getElementById("ManageClinicName").value).toBe("Edit Me Clinic");
+    test("preselects correct services in manage dropdown", async () => {
+        const { addClinicToUI } = await load();
+        addClinicToUI("9e", "Service Edit Clinic", "Svc Rd", "Active", ["Dental"], "08:00-17:00", "Gauteng");
+        document.querySelector(".manage-btn").click();
+        expect(getCheckbox("manageClinicServicesDropdown", "Dental").checked).toBe(true);
+        expect(getCheckbox("manageClinicServicesDropdown", "General").checked).toBe(false);
+    });
 });
 
 // =============================================================
 // 9. addClinicToUI – delete button
 // =============================================================
-test("delete-btn removes clinic card from DOM after confirm", async () => {
-  const { addClinicToUI } = await load();
+describe("addClinicToUI - delete button", () => {
 
-  global.confirm = jest.fn(() => true);
+    test("removes clinic card after confirm", async () => {
+        const { addClinicToUI } = await load();
+        global.confirm = jest.fn(() => true);
+        addClinicToUI("12", "Delete Me", "Delete Rd", "Active", ["General"], "08:00-17:00", "Gauteng");
+        expect(document.querySelectorAll(".clinic").length).toBe(1);
+        await document.querySelector(".delete-btn").click();
+        await Promise.resolve();
+        expect(document.querySelectorAll(".clinic").length).toBe(0);
+    });
 
-  addClinicToUI("12", "Delete Me", "Delete Rd", "Active", ["General"], "08:00-17:00", "Gauteng");
+    test("does nothing when confirm returns false", async () => {
+        const { addClinicToUI } = await load();
+        global.confirm = jest.fn(() => false);
+        addClinicToUI("13", "Keep Me", "Keep Rd", "Active", ["General"], "08:00-17:00", "Gauteng");
+        document.querySelector(".delete-btn").click();
+        expect(document.querySelectorAll(".clinic").length).toBe(1);
+    });
 
-  expect(document.querySelectorAll(".clinic").length).toBe(1);
-
-  await document.querySelector(".delete-btn").click();
-
-  // Card is removed optimistically (deleteDoc resolves asynchronously,
-  // but clinic.remove() is called in the then-callback)
-  await Promise.resolve();
-
-  expect(document.querySelectorAll(".clinic").length).toBe(0);
-});
-
-test("delete-btn does nothing when confirm returns false", async () => {
-  const { addClinicToUI } = await load();
-
-  global.confirm = jest.fn(() => false);
-
-  addClinicToUI("13", "Keep Me", "Keep Rd", "Active", ["General"], "08:00-17:00", "Gauteng");
-
-  document.querySelector(".delete-btn").click();
-
-  expect(document.querySelectorAll(".clinic").length).toBe(1);
+    test("calls deleteDoc with the correct id", async () => {
+        const { addClinicToUI } = await load();
+        const { deleteDoc } = await import(
+            "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
+        );
+        global.confirm = jest.fn(() => true);
+        addClinicToUI("target-id", "Target Clinic", "Target Rd", "Active", ["General"], "08:00-17:00", "Gauteng");
+        await document.querySelector(".delete-btn").click();
+        await Promise.resolve();
+        expect(deleteDoc).toHaveBeenCalled();
+    });
 });
 
 // =============================================================
 // 10. renderClinics
 // =============================================================
-test("renderClinics renders multiple clinics", async () => {
-  const { renderClinics } = await load();
+describe("renderClinics", () => {
 
-  renderClinics([
-    { id: "1", name: "Clinic One",  address: "Addr One", status: "Active", service: ["General"], operatingHours: "08:00-17:00", province: "Gauteng" },
-    { id: "2", name: "Clinic Two",  address: "Addr Two", status: "Closed", service: ["Dental"],  operatingHours: "09:00-15:00", province: "Limpopo" }
-  ]);
+    test("renders multiple clinics", async () => {
+        const { renderClinics } = await load();
+        renderClinics([
+            { id: "1", name: "Clinic One", address: "Addr One", status: "Active", service: ["General"], operatingHours: "08:00-17:00", province: "Gauteng" },
+            { id: "2", name: "Clinic Two", address: "Addr Two", status: "Closed", service: ["Dental"],  operatingHours: "09:00-15:00", province: "Limpopo" }
+        ]);
+        expect(document.body.textContent).toContain("Clinic One");
+        expect(document.body.textContent).toContain("Clinic Two");
+    });
 
-  expect(document.body.textContent).toContain("Clinic One");
-  expect(document.body.textContent).toContain("Clinic Two");
-});
+    test("clears previous clinics before rendering", async () => {
+        const { addClinicToUI, renderClinics } = await load();
+        addClinicToUI("old", "Old Clinic", "Old Rd", "Active", [], "N/A", "Gauteng");
+        renderClinics([
+            { id: "new", name: "New Clinic", address: "New Rd", status: "Active", service: [], operatingHours: "N/A", province: "Gauteng" }
+        ]);
+        expect(document.body.textContent).not.toContain("Old Clinic");
+        expect(document.body.textContent).toContain("New Clinic");
+    });
 
-test("renderClinics clears previous clinics before rendering", async () => {
-  const { addClinicToUI, renderClinics } = await load();
+    test("renders empty list without crashing", async () => {
+        const { renderClinics } = await load();
+        expect(() => renderClinics([])).not.toThrow();
+        expect(document.querySelectorAll(".clinic").length).toBe(0);
+    });
 
-  addClinicToUI("old", "Old Clinic", "Old Rd", "Active", [], "N/A", "Gauteng");
-
-  renderClinics([
-    { id: "new", name: "New Clinic", address: "New Rd", status: "Active", service: [], operatingHours: "N/A", province: "Gauteng" }
-  ]);
-
-  expect(document.body.textContent).not.toContain("Old Clinic");
-  expect(document.body.textContent).toContain("New Clinic");
+    test("renders correct number of clinic cards", async () => {
+        const { renderClinics } = await load();
+        renderClinics([
+            { id: "1", name: "One",   address: "A1", status: "Active", service: [], operatingHours: "N/A", province: "Gauteng" },
+            { id: "2", name: "Two",   address: "A2", status: "Active", service: [], operatingHours: "N/A", province: "Gauteng" },
+            { id: "3", name: "Three", address: "A3", status: "Active", service: [], operatingHours: "N/A", province: "Gauteng" }
+        ]);
+        expect(document.querySelectorAll(".clinic").length).toBe(3);
+    });
 });
 
 // =============================================================
-// 11. Modal open / close via addBtn and close-btn
+// 11. Modal controls
 // =============================================================
-test("addBtn opens clinicModal", async () => {
-  await load();
+describe("Modal controls", () => {
 
-  document.querySelector(".addBtn").click();
+    test("addBtn opens clinicModal", async () => {
+        await load();
+        document.querySelector(".addBtn").click();
+        expect(document.getElementById("clinicModal").style.display).toBe("flex");
+    });
 
-  expect(document.getElementById("clinicModal").style.display)
-    .toBe("flex");
-});
+    test("close-btn closes all modals", async () => {
+        await load();
+        document.getElementById("clinicModal").style.display       = "flex";
+        document.getElementById("ManageClinicModal").style.display = "flex";
+        document.getElementById("clinicHoursModal").style.display  = "flex";
+        document.querySelector(".close-btn").click();
+        expect(document.getElementById("clinicModal").style.display).toBe("none");
+        expect(document.getElementById("ManageClinicModal").style.display).toBe("none");
+        expect(document.getElementById("clinicHoursModal").style.display).toBe("none");
+    });
 
-test("close-btn closes all modals", async () => {
-  await load();
+    test("clicking modal backdrop closes clinicModal", async () => {
+        await load();
+        document.getElementById("clinicModal").style.display = "flex";
+        const event = new MouseEvent("click", { bubbles: true });
+        Object.defineProperty(event, "target", {
+            value: document.getElementById("clinicModal"),
+            writable: false
+        });
+        window.dispatchEvent(event);
+        expect(document.getElementById("clinicModal").style.display).toBe("none");
+    });
 
-  // Open all three modals manually
-  document.getElementById("clinicModal").style.display       = "flex";
-  document.getElementById("ManageClinicModal").style.display = "flex";
-  document.getElementById("clinicHoursModal").style.display  = "flex";
+    test("clicking modal backdrop closes ManageClinicModal", async () => {
+        await load();
+        document.getElementById("ManageClinicModal").style.display = "flex";
+        const event = new MouseEvent("click", { bubbles: true });
+        Object.defineProperty(event, "target", {
+            value: document.getElementById("ManageClinicModal"),
+            writable: false
+        });
+        window.dispatchEvent(event);
+        expect(document.getElementById("ManageClinicModal").style.display).toBe("none");
+    });
 
-  document.querySelector(".close-btn").click();
-
-  expect(document.getElementById("clinicModal").style.display).toBe("none");
-  expect(document.getElementById("ManageClinicModal").style.display).toBe("none");
-  expect(document.getElementById("clinicHoursModal").style.display).toBe("none");
+    test("clicking modal backdrop closes clinicHoursModal", async () => {
+        await load();
+        document.getElementById("clinicHoursModal").style.display = "flex";
+        const event = new MouseEvent("click", { bubbles: true });
+        Object.defineProperty(event, "target", {
+            value: document.getElementById("clinicHoursModal"),
+            writable: false
+        });
+        window.dispatchEvent(event);
+        expect(document.getElementById("clinicHoursModal").style.display).toBe("none");
+    });
 });
 
 // =============================================================
 // 12. Search
-// Search reads from the module-level `clinics` array, which is
-// only populated by loadClinics() (via getDocs). We mock getDocs
-// to return our fixture data so the search handler has something
-// to filter against.
 // =============================================================
+describe("Search", () => {
 
-// Helper: configure getDocs mock and trigger loadClinics
-async function loadWithClinics(clinicFixtures) {
-  const { getDocs } = await import(
-    "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
-  );
+    test("filters clinics by name", async () => {
+        await loadWithClinics([
+            { id: "1", name: "Alpha Clinic", address: "Alpha Rd", status: "Active", service: ["General"],  operatingHours: "N/A", province: "Gauteng" },
+            { id: "2", name: "Beta Clinic",  address: "Beta Rd",  status: "Active", service: ["Dental"],   operatingHours: "N/A", province: "Limpopo" }
+        ]);
+        const search = document.getElementById("clinicSearch");
+        search.value = "alpha";
+        search.dispatchEvent(new Event("input"));
+        expect(document.querySelector(".clinics").textContent).toContain("Alpha Clinic");
+        expect(document.querySelector(".clinics").textContent).not.toContain("Beta Clinic");
+    });
 
-  getDocs.mockResolvedValueOnce({
-    forEach: (cb) =>
-      clinicFixtures.forEach((c) =>
-        cb({
-          id: c.id,
-          data: () => ({
-            name:          c.name,
-            address:       c.address,
-            province:      c.province,
-            status:        c.status,
-            service:       c.service,
-            opening_hours: c.operatingHours
-          })
-        })
-      )
-  });
+    test("filters clinics by province", async () => {
+        await loadWithClinics([
+            { id: "1", name: "Alpha Clinic", address: "Addr 1", status: "Active", service: ["General"], operatingHours: "N/A", province: "Gauteng" },
+            { id: "2", name: "Beta Clinic",  address: "Addr 2", status: "Active", service: ["Dental"],  operatingHours: "N/A", province: "Limpopo" }
+        ]);
+        const search = document.getElementById("clinicSearch");
+        search.value = "limpopo";
+        search.dispatchEvent(new Event("input"));
+        expect(document.querySelector(".clinics").textContent).not.toContain("Alpha Clinic");
+        expect(document.querySelector(".clinics").textContent).toContain("Beta Clinic");
+    });
 
-  // loadClinics() is called automatically on module import;
-  // wait for it to resolve
-  const mod = await load();
-  await Promise.resolve(); // flush microtasks
-  return mod;
-}
+    test("filters clinics by status", async () => {
+        await loadWithClinics([
+            { id: "1", name: "Open Clinic",   address: "Addr 1", status: "Active", service: ["General"], operatingHours: "N/A", province: "Gauteng" },
+            { id: "2", name: "Closed Clinic", address: "Addr 2", status: "Closed", service: ["Dental"],  operatingHours: "N/A", province: "Gauteng" }
+        ]);
+        const search = document.getElementById("clinicSearch");
+        search.value = "closed";
+        search.dispatchEvent(new Event("input"));
+        expect(document.querySelector(".clinics").textContent).toContain("Closed Clinic");
+        expect(document.querySelector(".clinics").textContent).not.toContain("Open Clinic");
+    });
 
-test("search filters clinics by name", async () => {
-  await loadWithClinics([
-    { id: "1", name: "Alpha Clinic", address: "Alpha Rd", status: "Active", service: ["General"], operatingHours: "0800-1700", province: "Gauteng" },
-    { id: "2", name: "Beta Clinic",  address: "Beta Rd",  status: "Active", service: ["Dental"],  operatingHours: "0900-1500", province: "Limpopo" }
-  ]);
+    test("filters clinics by service", async () => {
+        await loadWithClinics([
+            { id: "1", name: "Dental Place",   address: "Addr 1", status: "Active", service: ["Dental"],   operatingHours: "N/A", province: "Gauteng" },
+            { id: "2", name: "General Clinic", address: "Addr 2", status: "Active", service: ["General"],  operatingHours: "N/A", province: "Gauteng" }
+        ]);
+        const search = document.getElementById("clinicSearch");
+        search.value = "dental";
+        search.dispatchEvent(new Event("input"));
+        expect(document.querySelector(".clinics").textContent).toContain("Dental Place");
+        expect(document.querySelector(".clinics").textContent).not.toContain("General Clinic");
+    });
 
-  const search = document.getElementById("clinicSearch");
-  search.value = "alpha";
-  search.dispatchEvent(new Event("input"));
+    test("empty string shows all clinics", async () => {
+        await loadWithClinics([
+            { id: "1", name: "Alpha Clinic", address: "Addr 1", status: "Active", service: ["General"], operatingHours: "N/A", province: "Gauteng" },
+            { id: "2", name: "Beta Clinic",  address: "Addr 2", status: "Active", service: ["Dental"],  operatingHours: "N/A", province: "Limpopo" }
+        ]);
+        const search = document.getElementById("clinicSearch");
+        search.value = "";
+        search.dispatchEvent(new Event("input"));
+        expect(document.querySelector(".clinics").textContent).toContain("Alpha Clinic");
+        expect(document.querySelector(".clinics").textContent).toContain("Beta Clinic");
+    });
 
-  expect(document.querySelector(".clinics").textContent).toContain("Alpha Clinic");
-  expect(document.querySelector(".clinics").textContent).not.toContain("Beta Clinic");
-});
+    test("search is case insensitive", async () => {
+        await loadWithClinics([
+            { id: "1", name: "Alpha Clinic", address: "Addr 1", status: "Active", service: ["General"], operatingHours: "N/A", province: "Gauteng" }
+        ]);
+        const search = document.getElementById("clinicSearch");
+        search.value = "ALPHA";
+        search.dispatchEvent(new Event("input"));
+        expect(document.querySelector(".clinics").textContent).toContain("Alpha Clinic");
+    });
 
-test("search filters clinics by province", async () => {
-  await loadWithClinics([
-    { id: "1", name: "Alpha Clinic", address: "Addr 1", status: "Active", service: ["General"], operatingHours: "0800-1700", province: "Gauteng" },
-    { id: "2", name: "Beta Clinic",  address: "Addr 2", status: "Active", service: ["Dental"],  operatingHours: "0900-1500", province: "Limpopo" }
-  ]);
+    test("no match shows empty clinics container", async () => {
+        await loadWithClinics([
+            { id: "1", name: "Alpha Clinic", address: "Addr 1", status: "Active", service: ["General"], operatingHours: "N/A", province: "Gauteng" }
+        ]);
+        const search = document.getElementById("clinicSearch");
+        search.value = "zzznomatch";
+        search.dispatchEvent(new Event("input"));
+        expect(document.querySelectorAll(".clinic").length).toBe(0);
+    });
 
-  const search = document.getElementById("clinicSearch");
-  search.value = "limpopo";
-  search.dispatchEvent(new Event("input"));
-
-  expect(document.querySelector(".clinics").textContent).not.toContain("Alpha Clinic");
-  expect(document.querySelector(".clinics").textContent).toContain("Beta Clinic");
-});
-
-test("search with empty string shows all clinics", async () => {
-  await loadWithClinics([
-    { id: "1", name: "Alpha Clinic", address: "Addr 1", status: "Active", service: ["General"], operatingHours: "N/A", province: "Gauteng" },
-    { id: "2", name: "Beta Clinic",  address: "Addr 2", status: "Active", service: ["Dental"],  operatingHours: "N/A", province: "Limpopo" }
-  ]);
-
-  const search = document.getElementById("clinicSearch");
-  search.value = "";
-  search.dispatchEvent(new Event("input"));
-
-  expect(document.querySelector(".clinics").textContent).toContain("Alpha Clinic");
-  expect(document.querySelector(".clinics").textContent).toContain("Beta Clinic");
-});
-
-// =============================================================
-// 13. Window click closes modals when target IS the modal
-// =============================================================
-test("clicking the modal backdrop closes clinicModal", async () => {
-  await load();
-
-  document.getElementById("clinicModal").style.display = "flex";
-
-  // Simulate a click whose target is the modal itself
-  const event = new MouseEvent("click", { bubbles: true });
-  Object.defineProperty(event, "target", {
-    value: document.getElementById("clinicModal"),
-    writable: false
-  });
-  window.dispatchEvent(event);
-
-  expect(document.getElementById("clinicModal").style.display).toBe("none");
+    test("filters clinics by address", async () => {
+        await loadWithClinics([
+            { id: "1", name: "Clinic A", address: "Main Street",  status: "Active", service: ["General"], operatingHours: "N/A", province: "Gauteng" },
+            { id: "2", name: "Clinic B", address: "Church Avenue", status: "Active", service: ["General"], operatingHours: "N/A", province: "Gauteng" }
+        ]);
+        const search = document.getElementById("clinicSearch");
+        search.value = "main street";
+        search.dispatchEvent(new Event("input"));
+        expect(document.querySelector(".clinics").textContent).toContain("Clinic A");
+        expect(document.querySelector(".clinics").textContent).not.toContain("Clinic B");
+    });
 });
