@@ -315,11 +315,11 @@ async function saveAvailability(uid, staffName, clinicID) {
         // Must stay within clinic hours
         if (clinicOpenTime && clinicCloseTime) {
             if (d.start < clinicOpenTime) {
-                showStatus(`${capitalise(day)} start time cannot be before clinic opens at ${clinicOpenTime}.`, "error");
+                showStatus(`${capitalise(day)}  clinic opens at ${clinicOpenTime}.`, "error");
                 return;
             }
             if (d.end > clinicCloseTime) {
-                showStatus(`${capitalise(day)} end time cannot be after clinic closes at ${clinicCloseTime}.`, "error");
+                showStatus(`${capitalise(day)}  clinic closes at ${clinicCloseTime}.`, "error");
                 return;
             }
         }
