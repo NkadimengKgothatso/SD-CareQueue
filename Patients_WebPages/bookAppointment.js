@@ -547,9 +547,11 @@ confirmBtn.addEventListener("click", async () => {
         return;
     }
 
+    const clinicIdNum = Number(selectedClinicId);
+
     const q = query(
         collection(db, "Appointments"),
-        where("clinicID", "==", selectedClinicId),
+        where("clinicID", "==", clinicIdNum),
         where("date", "==", date),
         where("time", "==", time)
     );
