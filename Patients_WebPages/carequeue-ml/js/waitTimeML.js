@@ -9,20 +9,30 @@ import {
     serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// ── deployed API  ──────────────────────
+// ── Deployed API ───────────────────────────────────────────────
 const ML_API_URL = "https://sd-carequeue.onrender.com/predict";
+const ML_HEALTH_URL = "https://sd-carequeue.onrender.com/health";
 
 let lastRequestId = 0;
 
 // ─────────────────────────────────────────────────────────────
+// warmUpAPI
+// ─────────────────────────────────────────────────────────────
+// FIX: Render free tier spins down after 15 min of inactivity.
+// Pinging /health on page load wakes the server so the first
+// real predict call doesn't time out (cold start = ~30-60s).
+// Call this once when your page loads:  warmUpAPI();
+export function warmUpAPI() {
+    fetch(ML_HEALTH_URL).catch(() => {});
+}
+
+// ─────────────────────────────────────────────────────────────
 // fetchWithTimeout
 // ─────────────────────────────────────────────────────────────
-// This helper function wraps the standard fetch API with a timeout mechanism.
-//  It returns a promise that either resolves with the fetch response or rejects with a timeout error if the specified time limit is exceeded. 
-// This ensures that the application can handle cases where the ML API might be unresponsive,
-//  preventing it from hanging indefinitely while waiting for a response.
-
-async function fetchWithTimeout(url, options, timeout = 4000) {
+// Wraps fetch with a timeout. If the server doesn't respond
+// within `timeout` ms the promise rejects with "timeout".
+// FIX: Increased from 4000 → 10000 ms to survive Render cold starts.
+async function fetchWithTimeout(url, options, timeout = 10000) {
     return new Promise((resolve, reject) => {
         const timer = setTimeout(() => reject(new Error("timeout")), timeout);
         fetch(url, options)
@@ -34,11 +44,9 @@ async function fetchWithTimeout(url, options, timeout = 4000) {
 // ─────────────────────────────────────────────────────────────
 // getWaitTime — calls Flask ML API
 // ─────────────────────────────────────────────────────────────
-// This function sends a POST request to the ML API with the relevant data 
-// (clinicID, queuePosition, queueLength, isWalkIn) and returns the estimated wait time.
-// If the API call fails or returns an error, 
-// it gracefully handles the failure by returning null,
-//  allowing the application to fall back to a default wait time estimation method if necessary.
+// Sends clinicID, queuePosition, queueLength, isWalkIn to the
+// ML API and returns the estimated wait time in minutes.
+// Returns null on any failure so callers can use a fallback.
 export async function getWaitTime(data) {
     try {
         const res = await fetchWithTimeout(ML_API_URL, {
@@ -48,15 +56,21 @@ export async function getWaitTime(data) {
                 clinicID:      Number(data.clinicID),
                 queuePosition: Number(data.queuePosition),
                 queueLength:   Number(data.queueLength),
-                isWalkIn:      Boolean(data.isWalkIn ?? false),
+                isWalkIn:      data.isWalkIn ? 1 : 0,   // FIX: int not boolean
             }),
         });
 
-        if (!res.ok) return null;
+        if (!res.ok) {
+            const errJson = await res.json().catch(() => ({}));
+            console.warn("[CareQueue ML] API error:", errJson);
+            return null;
+        }
+
         const json = await res.json();
         return json?.estimatedWaitTime ?? null;
 
-    } catch {
+    } catch (e) {
+        console.warn("[CareQueue ML] API unreachable:", e.message);
         return null;
     }
 }
@@ -64,9 +78,8 @@ export async function getWaitTime(data) {
 // ─────────────────────────────────────────────────────────────
 // safeSet
 // ─────────────────────────────────────────────────────────────
-// This utility function safely updates the text content of a DOM element by its ID.
-// It checks if the element exists before attempting to set its text content, 
-// preventing potential errors if the element is not found in the DOM.
+// Safely sets textContent on a DOM element by ID.
+// No-ops if the element doesn't exist.
 function safeSet(id, value) {
     const el = document.getElementById(id);
     if (el) el.textContent = value;
@@ -86,12 +99,6 @@ function safeSet(id, value) {
 //
 // Returns a cleanup function: call it to unsubscribe all listeners.
 // ─────────────────────────────────────────────────────────────
-
-
-
-
-// This function sets up real-time listeners on the Firestore database 
-// to track the patient's position in the clinic queue and update the UI accordingly.
 export function loadQueueStatusML(
     userId,
     appointmentId,
@@ -104,6 +111,9 @@ export function loadQueueStatusML(
     const activeStatuses = ["waiting", "scheduled", "active"];
     let innerUnsub = null;
 
+    // FIX: Warm up Render server as soon as the queue listener starts
+    warmUpAPI();
+
     const setEmpty = () => {
         safeSet("queueCount",        "");
         safeSet("queueProgressText", "");
@@ -114,13 +124,12 @@ export function loadQueueStatusML(
         if (meter) meter.value = 0;
     };
 
-    // ── Outer: watch this patient's queue doc ────────────────
+    // ── Outer: watch this patient's queue doc ─────────────────
     const appointmentQ = query(
         collection(db, "Queues"),
         where("appointmentId", "==", appointmentId)
     );
 
-    // the outer listener watches for changes to the patient's specific queue document based on their appointment ID.
     const outerUnsub = onSnapshot(appointmentQ, (snapshot) => {
 
         // Tear down stale inner listener
@@ -137,7 +146,9 @@ export function loadQueueStatusML(
         );
         const myData = { id: myDoc.id, ...myDoc.data() };
 
-        // ── Inner: watch all clinic queue docs ───────────────
+        // ── Inner: watch all clinic queue docs ────────────────
+        // FIX: Query using Number(clinicID) — Firestore requires
+        // type-exact matches. Always write clinicID as Number too.
         const clinicQ = query(
             collection(db, "Queues"),
             where("clinicID", "==", Number(clinicID))
@@ -150,7 +161,7 @@ export function loadQueueStatusML(
                 .filter(d => activeStatuses.includes((d.status || "").toLowerCase().trim()))
                 .sort((a, b) => (a.position ?? 999) - (b.position ?? 999));
 
-            // Fallback: string clinicID match
+            // Fallback: string clinicID match (handles legacy string-stored IDs)
             if (all.length === 0) {
                 all = clinicSnap.docs
                     .map(d => ({ id: d.id, ...d.data() }))
@@ -167,10 +178,14 @@ export function loadQueueStatusML(
             if (userIndex === -1) { setEmpty(); return; }
 
             const entry    = all[userIndex];
+
+            // FIX: Always use entry.position if set (written by clinic side).
+            // Fallback to array index only if missing — make sure clinic code
+            // always writes `position: Number` when adding to the queue.
             const position = entry.position ?? (userIndex + 1);
             const isWalkIn = entry.isWalkIn ?? false;
 
-            // ── Progress meter ───────────────────────────────
+            // ── Progress meter ────────────────────────────────
             safeSet("queueCount",    `${position} out of ${total}`);
             safeSet("queuePosition", String(position));
 
@@ -183,9 +198,7 @@ export function loadQueueStatusML(
             if (meter) meter.value = percent;
             safeSet("queueProgressText", "");
 
-           
-
-            // ── ML wait time prediction ──────────────────────
+            // ── ML wait time prediction ───────────────────────
             safeSet("waitTime", "...");
             const requestId = ++lastRequestId;
 
@@ -193,25 +206,24 @@ export function loadQueueStatusML(
                 clinicID,
                 queuePosition: position,
                 queueLength:   total,
-                isWalkIn,
+                isWalkIn,                   // converted to 1/0 inside getWaitTime
             });
 
-            if (requestId !== lastRequestId) return;  // stale response, ignore
+            if (requestId !== lastRequestId) return;  // stale response, discard
 
-            
             const displayWait = predicted !== null
                 ? predicted
-                : Math.round(position * 25);  // fallback: 25 min per person ahead   
+                : Math.round(position * 21);  // fallback: 21 min per position
 
             safeSet("waitTime", `${displayWait} min`);
 
-            //  Write prediction back to Queues.estimateWait
+            // Write prediction back to Queues.estimateWait
             try {
                 await updateDoc(doc(db, "Queues", myData.id), {
                     estimateWait: displayWait,
                 });
             } catch (e) {
-                console.warn("Could not update estimateWait:", e);
+                console.warn("[CareQueue ML] Could not update estimateWait:", e);
             }
         });
     });
