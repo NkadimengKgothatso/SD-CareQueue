@@ -11,13 +11,16 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# FIX: Lock CORS to your frontend domain in production
-# Replace the URL below with your actual frontend domain
+# Lock CORS to known origins — add your production domain here
 CORS(app, origins=[
-    "http://localhost",
     "http://127.0.0.1",
-    "https://sd-carequeue.web.app",        # replace with your actual Firebase hosting URL
-    "https://sd-carequeue.firebaseapp.com" # replace with your actual Firebase hosting URL
+    "http://127.0.0.1:5500",
+    "http://127.0.0.1:5502",
+    "http://localhost",
+    "http://localhost:5500",
+    "http://localhost:5502",
+    "https://sd-carequeue.web.app",
+    "https://sd-carequeue.firebaseapp.com",
 ])
 
 # =========================================================
@@ -32,7 +35,7 @@ if not os.path.exists(MODEL_PATH):
 
 model = joblib.load(MODEL_PATH)
 
-# FIX: Print expected features BEFORE app.run() so it always shows
+# Print BEFORE app.run() so it always shows in terminal
 print("Model loaded:", MODEL_PATH)
 print("MODEL EXPECTED FEATURES:")
 print(model.feature_names_in_)
@@ -47,7 +50,7 @@ FEATURE_COLS = [
     "queueLength",
     "hour",
     "dayOfWeek",
-    "isWalkIn"
+    "isWalkIn",
 ]
 
 # =========================================================
@@ -89,7 +92,7 @@ def predict():
         clinicID      = float(data["clinicID"])
         queuePosition = int(data["queuePosition"])
         queueLength   = int(data["queueLength"])
-        isWalkIn      = 1 if data["isWalkIn"] else 0   # accepts true/false/1/0/"true"
+        isWalkIn      = 1 if data["isWalkIn"] else 0
 
         # -------------------------------------------------
         # Validate values
@@ -104,7 +107,7 @@ def predict():
             return jsonify({"error": "queuePosition cannot exceed queueLength"}), 400
 
         # -------------------------------------------------
-        # Time features (derived server-side, same as training)
+        # Time features — derived server-side to match training
         # -------------------------------------------------
         now         = datetime.now()
         hour        = now.hour
