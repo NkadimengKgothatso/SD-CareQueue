@@ -1,174 +1,165 @@
 """
-generate_synthetic_data.py
+backfill_queue_history.py
 ==========================
 Generates 200 realistic synthetic QueueHistory records over the last 3 months
 based on your actual clinic IDs and realistic South African clinic patterns.
 
 Run from scripts/ folder:
-    python generate_synthetic_data.py
+    python backfill_queue_history.py
 """
 
 import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime, timedelta
 import random
+import os
 
 
 # ─────────────────────────────────────────────
 # INIT FIREBASE
 # ─────────────────────────────────────────────
 if not firebase_admin._apps:
-    cred = credentials.Certificate("serviceAccountKey.json")
+    KEY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "serviceAccountKey.json")
+    cred = credentials.Certificate(KEY_PATH)
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
 
 # ─────────────────────────────────────────────
-# CONFIG — matches your actual Firestore data
+# CONFIG
 # ─────────────────────────────────────────────
 CLINIC_IDS = [
     10002143430,
     9051104017,
-    617067000,      # seen in your export
+    617067000,
 ]
 
-# Clinic opening hours (start_hour, end_hour)
 CLINIC_HOURS = {
     10002143430: (7, 17),
     9051104017:  (8, 16),
     617067000:   (7, 15),
 }
 
-# Realistic queue sizes per clinic (min, max)
 QUEUE_SIZES = {
-    10002143430: (5, 25),
-    9051104017:  (3, 18),
-    617067000:   (4, 20),
+    10002143430: (5, 20),
+    9051104017:  (3, 15),
+    617067000:   (4, 18),
 }
 
-# Realistic wait times vary by:
-# - time of day (mornings busier → longer waits)
-# - day of week (Mondays busiest)
-# - queue position (later = longer wait)
+WALK_IN_RATIO = {
+    10002143430: 0.35,
+    9051104017:  0.25,
+    617067000:   0.40,
+}
 
 TARGET_RECORDS = 200
-DAYS_BACK      = 90   # 3 months
+DAYS_BACK      = 90
+MAX_WAIT       = 120   # FIX: hard cap — no synthetic record exceeds 2 hours
+MIN_WAIT       = 5     # FIX: minimum realistic wait
 
 
 # ─────────────────────────────────────────────
 # HELPERS
 # ─────────────────────────────────────────────
-def realistic_wait(position, queue_length, hour, day_of_week):
+def realistic_wait(position, queue_length, hour, day_of_week, is_walk_in):
     """
-    Generate a realistic wait time in minutes based on context.
-    Models real clinic behaviour:
-    - Morning rush (8-10am): longer waits
-    - Lunch dip (12-13): shorter
-    - Monday spike: +20%
-    - Position matters most
+    Generate a realistic wait time in minutes.
+    FIX: Capped at MAX_WAIT (120 min) so synthetic data doesn't
+    pollute training with impossible 300-500 min wait times.
     """
-    # Base: ~12 min per person ahead
-    base = position * random.uniform(8, 15)
+    # Base: 8-12 min per person ahead (reduced from 8-15)
+    base = position * random.uniform(8, 12)
 
     # Time-of-day multiplier
     if 7 <= hour <= 9:
-        tod = random.uniform(1.3, 1.6)   # morning rush
+        tod = random.uniform(1.2, 1.5)   # morning rush
     elif 10 <= hour <= 11:
-        tod = random.uniform(1.1, 1.3)
+        tod = random.uniform(1.0, 1.2)
     elif 12 <= hour <= 13:
         tod = random.uniform(0.8, 1.0)   # lunch dip
     elif 14 <= hour <= 15:
-        tod = random.uniform(1.0, 1.2)
+        tod = random.uniform(0.9, 1.1)
     else:
         tod = random.uniform(0.7, 0.9)   # late afternoon quieter
 
     # Day-of-week multiplier (0=Monday)
-    dow_mult = {0: 1.3, 1: 1.1, 2: 1.0, 3: 1.0, 4: 0.9, 5: 0.8, 6: 0.7}
+    dow_mult = {0: 1.2, 1: 1.1, 2: 1.0, 3: 1.0, 4: 0.9, 5: 0.8, 6: 0.7}
     dow = dow_mult.get(day_of_week, 1.0)
 
-    # Queue pressure: longer queues = slightly longer per-person time
-    pressure = 1.0 + (queue_length / 100)
+    # Queue pressure
+    pressure = 1.0 + (queue_length / 150)   # FIX: reduced pressure factor
 
-    wait = base * tod * dow * pressure
+    # Walk-in penalty
+    walk_in_penalty = 1.10 if is_walk_in else 1.0
 
-    # Add some natural noise
-    wait += random.gauss(0, 3)
+    wait = base * tod * dow * pressure * walk_in_penalty
+    wait += random.gauss(0, 2)   # FIX: reduced noise from 3 to 2
 
-    return max(5, round(wait))   # minimum 5 min wait
+    # FIX: hard clamp — never exceed MAX_WAIT or go below MIN_WAIT
+    return max(MIN_WAIT, min(MAX_WAIT, round(wait)))
 
 
 def random_weekday_date(days_back):
     """Pick a random date within the last N days, skipping Sundays."""
     while True:
         offset = random.randint(1, days_back)
-        date = datetime.now() - timedelta(days=offset)
-        if date.weekday() != 6:   # skip Sundays (clinics closed)
+        date   = datetime.now() - timedelta(days=offset)
+        if date.weekday() != 6:
             return date
 
 
 # ─────────────────────────────────────────────
 # GENERATE RECORDS
 # ─────────────────────────────────────────────
-print(f"⚙️  Generating {TARGET_RECORDS} synthetic QueueHistory records...\n")
+print(f"Generating {TARGET_RECORDS} synthetic QueueHistory records...\n")
 
-written = 0
-skipped = 0
-
+written     = 0
+skipped     = 0
 batch_write = db.batch()
 batch_count = 0
 MAX_BATCH   = 400
 
 while written < TARGET_RECORDS:
 
-    clinic_id = random.choice(CLINIC_IDS)
+    clinic_id             = random.choice(CLINIC_IDS)
     open_hour, close_hour = CLINIC_HOURS[clinic_id]
-    min_q, max_q = QUEUE_SIZES[clinic_id]
+    min_q, max_q          = QUEUE_SIZES[clinic_id]
 
-    # Pick a random date and hour within clinic hours
-    base_date  = random_weekday_date(DAYS_BACK)
-    hour       = random.randint(open_hour, close_hour - 1)
-    minute     = random.choice([0, 15, 30, 45])
+    base_date   = random_weekday_date(DAYS_BACK)
+    hour        = random.randint(open_hour, close_hour - 1)
+    minute      = random.choice([0, 15, 30, 45])
     day_of_week = base_date.weekday()
 
-    # Queue state
-    queue_length  = random.randint(min_q, max_q)
-    position      = random.randint(1, queue_length)
+    queue_length = random.randint(min_q, max_q)
+    position     = random.randint(1, queue_length)
+    is_walk_in   = 1 if random.random() < WALK_IN_RATIO.get(clinic_id, 0.3) else 0
 
-    # appointmentTime: the scheduled slot
     appointment_time = base_date.replace(
         hour=hour, minute=minute, second=0, microsecond=0
     )
 
-    # actualWaitTime: realistic based on context
-    actual_wait = realistic_wait(position, queue_length, hour, day_of_week)
+    actual_wait = realistic_wait(position, queue_length, hour, day_of_week, is_walk_in)
 
-    # createdAT: patient joined the queue `actual_wait` minutes before appointment
-    # Add small noise so it's not perfectly clean
     arrival_offset = actual_wait + random.randint(-2, 2)
-    arrival_offset = max(5, arrival_offset)
-    created_at = appointment_time - timedelta(minutes=arrival_offset)
+    arrival_offset = max(MIN_WAIT, arrival_offset)
+    created_at     = appointment_time - timedelta(minutes=arrival_offset)
 
-    # Synthetic appointment and user IDs
-    appt_id = f"synthetic_{written:04d}_{random.randint(1000,9999)}"
+    appt_id = f"synthetic_{written:04d}_{random.randint(1000, 9999)}"
     user_id = f"synthetic_user_{random.randint(100, 999)}"
 
     record = {
         "clinicID":        int(clinic_id),
         "appointmentId":   appt_id,
         "userID":          user_id,
-
-        "queuePosition":   position,
-        "queueLength":     queue_length,
-
+        "queuePosition":   int(position),
+        "queueLength":     int(queue_length),
         "createdAT":       created_at,
         "appointmentTime": appointment_time,
-
-        "hour":            created_at.hour,
-        "dayOfWeek":       day_of_week,
-
-        "actualWaitTime":  actual_wait,
-
+        "hour":            int(created_at.hour),
+        "dayOfWeek":       int(day_of_week),
+        "isWalkIn":        is_walk_in,        # int (1/0)
+        "actualWaitTime":  int(actual_wait),  # capped at MAX_WAIT
         "loggedAt":        datetime.now(),
         "source":          "synthetic",
     }
@@ -176,25 +167,26 @@ while written < TARGET_RECORDS:
     new_ref = db.collection("QueueHistory").document()
     batch_write.set(new_ref, record)
     batch_count += 1
-    written += 1
+    written     += 1
 
     print(
         f"   [{written:>3}/{TARGET_RECORDS}] clinic={clinic_id} | "
         f"pos={position}/{queue_length} | "
         f"hour={hour:02d}:{minute:02d} | "
-        f"day={day_of_week} | wait={actual_wait} min"
+        f"day={day_of_week} | "
+        f"walkIn={is_walk_in} | "
+        f"wait={actual_wait} min"
     )
 
     if batch_count >= MAX_BATCH:
         batch_write.commit()
-        batch_write = db.batch()
-        batch_count = 0
-        print("   💾 Batch committed")
+        batch_write  = db.batch()
+        batch_count  = 0
+        print("   Batch committed")
 
-# Final commit
 if batch_count > 0:
     batch_write.commit()
-    print(f"   💾 Final batch committed ({batch_count} records)")
+    print(f"   Final batch committed ({batch_count} records)")
 
 
 # ─────────────────────────────────────────────
@@ -202,16 +194,16 @@ if batch_count > 0:
 # ─────────────────────────────────────────────
 print(f"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Done!
-   Written  : {written} synthetic records
-   Skipped  : {skipped}
-   Period   : last {DAYS_BACK} days
-   Clinics  : {CLINIC_IDS}
+Done!
+   Written : {written} synthetic records
+   Skipped : {skipped}
+   Period  : last {DAYS_BACK} days
+   Clinics : {CLINIC_IDS}
+   Max wait: {MAX_WAIT} min (capped)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Next steps:
   1. python 1_export_firestore.py
   2. python 2_train_model.py
-  3. Copy-Item wait_time_model.pkl ..\\api\\wait_time_model.pkl
-  4. Restart Flask API
+  3. Restart Flask API
 """)
