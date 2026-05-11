@@ -1,26 +1,31 @@
 beforeEach(() => {
+  const days = [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday"
+  ];
+
   document.body.innerHTML = `
-    <section id="saveStatus"></section>
+    <div id="saveStatus"></div>
+    <div class="week-card-header"></div>
 
-    <section class="week-card-header"></section>
-
-    <section id="row-monday"></section>
-    <input type="checkbox" id="toggle-monday" />
-    <input id="start-monday" value="08:00" />
-    <input id="end-monday" value="17:00" />
-
-    <section id="row-tuesday"></section>
-    <input type="checkbox" id="toggle-tuesday" />
-    <input id="start-tuesday" value="08:00" />
-    <input id="end-tuesday" value="17:00" />
+    ${days.map(day => `
+      <div id="row-${day}"></div>
+      <input type="checkbox" id="toggle-${day}" />
+      <input id="start-${day}" value="08:00" />
+      <input id="end-${day}" value="17:00" />
+    `).join("")}
 
     <button id="saveBtn"></button>
 
-    <section id="staffName"></section>
-    <section id="staffEmail"></section>
-    <section id="staffAvatar"></section>
-
-    <section class="name-Surname"></section>
+    <div id="staffName"></div>
+    <div id="staffEmail"></div>
+    <div id="staffAvatar"></div>
+    <div class="name-Surname"></div>
   `;
 });
 

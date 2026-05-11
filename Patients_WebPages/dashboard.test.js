@@ -1,51 +1,26 @@
 beforeEach(() => {
   document.body.innerHTML = `
-    <section id="emptyStates"></section>
-    <section id="filledStates"></section>
+    <div id="emptyStates"></div>
+    <div id="filledStates"></div>
+    <div id="patientAvatar"></div>
 
-    <section id="patientAvatar"></section>
-
-    <section id="queueCount"></section>
-    <section id="queueProgressText"></section>
-    <section id="progressPercent"></section>
+    <div id="queueCount"></div>
+    <div id="queueProgressText"></div>
+    <div id="progressPercent"></div>
     <progress id="queueMeter"></progress>
-    <section id="queuePosition"></section>
-    <section id="waitTime"></section>
+    <div id="queuePosition"></div>
+    <div id="waitTime"></div>
 
-    <section id="visitsCount"></section>
+    <div id="visitsCount"></div>
 
     <aside>
       <nav>
         <ul>
-          <li><a href="Dashboard.html"></a></li>
+          <li><a href="PatientDashboard.html"></a></li>
         </ul>
       </nav>
     </aside>
   `;
-});
-
-test("showEmpty displays empty state", async () => {
-  const module = await import("./PatientDashboard.js");
-
-  module.showEmpty();
-
-  expect(document.getElementById("emptyStates").style.display)
-    .toBe("block");
-
-  expect(document.getElementById("filledStates").style.display)
-    .toBe("none");
-});
-
-test("showFilled displays filled state", async () => {
-  const module = await import("./PatientDashboard.js");
-
-  module.showFilled();
-
-  expect(document.getElementById("emptyStates").style.display)
-    .toBe("none");
-
-  expect(document.getElementById("filledStates").style.display)
-    .toBe("block");
 });
 
 test("setAvatarInitial uses name initials", async () => {
@@ -53,8 +28,7 @@ test("setAvatarInitial uses name initials", async () => {
 
   setAvatarInitial("John Doe", "john@test.com");
 
-  expect(document.getElementById("patientAvatar").textContent)
-    .toBe("JD");
+  expect(document.getElementById("patientAvatar").textContent).toBe("JD");
 });
 
 test("setAvatarInitial falls back to email", async () => {
@@ -62,11 +36,29 @@ test("setAvatarInitial falls back to email", async () => {
 
   setAvatarInitial("", "john@test.com");
 
-  expect(document.getElementById("patientAvatar").textContent)
-    .toBe("J");
+  expect(document.getElementById("patientAvatar").textContent).toBe("J");
 });
 
 test("queue meter exists", () => {
-  expect(document.getElementById("queueMeter"))
-    .not.toBeNull();
+  expect(document.getElementById("queueMeter")).not.toBeNull();
+});
+
+test("showEmpty displays empty state", async () => {
+  const module = await import("./PatientDashboard.js");
+
+  module.__setDashboardElementsForTest();
+  module.showEmpty();
+
+  expect(document.getElementById("emptyStates").style.display).toBe("block");
+  expect(document.getElementById("filledStates").style.display).toBe("none");
+});
+
+test("showFilled displays filled state", async () => {
+  const module = await import("./PatientDashboard.js");
+
+  module.__setDashboardElementsForTest();
+  module.showFilled();
+
+  expect(document.getElementById("emptyStates").style.display).toBe("none");
+  expect(document.getElementById("filledStates").style.display).toBe("block");
 });

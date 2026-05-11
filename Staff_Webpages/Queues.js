@@ -539,10 +539,15 @@ onAuthStateChanged(auth, async (user) => {
     startQueueListeners();
 });
 
+function __setQueueDataForTest(data) {
+  queueData = data;
+}
+
 export {
   getTodayString,
   renderEmptyState,
   buildCard,
   updateStats,
-  renderQueue
+  renderQueue,
+  __setQueueDataForTest
 };
