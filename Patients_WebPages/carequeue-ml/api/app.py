@@ -5,170 +5,118 @@ import pandas as pd
 import os
 from datetime import datetime
 
-# =========================================================
-# CareQueue ML Wait Time API
-# =========================================================
 
+
+
+# this is a simple Flask API for predicting wait times based on a pre-trained model. 
+# It includes input validation and error handling to ensure robust predictions.
 app = Flask(__name__)
+CORS(app)
 
-# Lock CORS to known origins — add your production domain here
-CORS(app, origins=[
-    "http://127.0.0.1",
-    "http://127.0.0.1:5500",
-    "http://127.0.0.1:5502",
-    "http://localhost",
-    "http://localhost:5500",
-    "http://localhost:5502",
-    "https://sd-carequeue.web.app",
-    "https://sd-carequeue.firebaseapp.com",
-])
-
-# =========================================================
-# Load trained model
-# =========================================================
-
-BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "wait_time_model.pkl")
 
 if not os.path.exists(MODEL_PATH):
     raise FileNotFoundError(f"Model not found at {MODEL_PATH}")
 
 model = joblib.load(MODEL_PATH)
+print(" Model loaded:", MODEL_PATH)
 
-# Print BEFORE app.run() so it always shows in terminal
-print("Model loaded:", MODEL_PATH)
-print("MODEL EXPECTED FEATURES:")
-print(model.feature_names_in_)
+FEATURE_COLS = ["clinicID", "queuePosition", "queueLength", "hour", "dayOfWeek"]
 
-# =========================================================
-# MUST MATCH TRAINING FEATURES EXACTLY
-# =========================================================
 
-FEATURE_COLS = [
-    "clinicID",
-    "queuePosition",
-    "queueLength",
-    "hour",
-    "dayOfWeek",
-    "isWalkIn",
-]
 
-# =========================================================
-# Health Check
-# =========================================================
 
+# Health check endpoint to verify the API is running
 @app.route("/health", methods=["GET"])
 def health():
-    return jsonify({
-        "status":           "ok",
-        "modelLoaded":      True,
-        "expectedFeatures": list(model.feature_names_in_)
-    })
+    return jsonify({"status": "ok"})
 
-# =========================================================
-# Prediction Endpoint
-# =========================================================
 
+
+
+# Prediction endpoint that accepts JSON input and returns estimated wait time
 @app.route("/predict", methods=["POST"])
 def predict():
+    data = request.get_json(force=True)
+
+    required = ["clinicID", "queuePosition", "queueLength"]
+    missing = [f for f in required if f not in data]
+
+    if missing:
+        return jsonify({"error": f"Missing fields: {missing}"}), 400
 
     try:
-        data = request.get_json(force=True)
-
-        # -------------------------------------------------
-        # Validate required fields
-        # -------------------------------------------------
-        required = ["clinicID", "queuePosition", "queueLength", "isWalkIn"]
-        missing  = [f for f in required if f not in data]
-
-        if missing:
-            return jsonify({"error": f"Missing fields: {missing}"}), 400
-
-        # -------------------------------------------------
-        # Parse inputs
-        # clinicID → float64 to avoid int32 overflow (ID > 2.1B)
-        # isWalkIn → int (1/0) to match training dtype
-        # -------------------------------------------------
-        clinicID      = float(data["clinicID"])
+        clinicID = int(data["clinicID"])
         queuePosition = int(data["queuePosition"])
-        queueLength   = int(data["queueLength"])
-        isWalkIn      = 1 if data["isWalkIn"] else 0
+        queueLength = int(data["queueLength"])
 
-        # -------------------------------------------------
-        # Validate values
-        # -------------------------------------------------
         if queueLength <= 0:
             return jsonify({"error": "queueLength must be > 0"}), 400
 
         if queuePosition < 1:
             return jsonify({"error": "queuePosition must be >= 1"}), 400
 
+        #  FIX: do NOT silently clamp
         if queuePosition > queueLength:
-            return jsonify({"error": "queuePosition cannot exceed queueLength"}), 400
+            return jsonify({
+                "error": "queuePosition cannot exceed queueLength"
+            }), 400
 
-        # -------------------------------------------------
-        # Time features — derived server-side to match training
-        # -------------------------------------------------
-        now         = datetime.now()
-        hour        = now.hour
-        day_of_week = now.weekday()
+    except ValueError:
+        return jsonify({"error": "Invalid numeric input"}), 400
+    
 
-        # -------------------------------------------------
-        # Build model input — column order must match FEATURE_COLS
-        # -------------------------------------------------
-        features_df = pd.DataFrame([{
-            "clinicID":      float(clinicID),
-            "queuePosition": int(queuePosition),
-            "queueLength":   int(queueLength),
-            "hour":          hour,
-            "dayOfWeek":     day_of_week,
-            "isWalkIn":      isWalkIn,
-        }], columns=FEATURE_COLS)
 
-        print("\n Incoming request:")
-        print(features_df.to_string())
-        print(features_df.dtypes)
 
-        # -------------------------------------------------
-        # Prediction
-        # -------------------------------------------------
-        prediction     = model.predict(features_df)[0]
+    
+# the time features (hour and day of week) are fixed to the current time to ensure consistency with the training data,
+#  which also used the current time for these features.
+#  This allows the model to make predictions based on the same temporal context it was trained on.
+    # ── FIXED TIME FEATURES (consistent with training) ──
+    now = datetime.now()
+    hour = now.hour
+    day_of_week = now.weekday()
+
+
+# the input features are organized into a DataFrame in the same order as the model expects,
+#  ensuring that the prediction is based on the correct feature mapping.
+    features_df = pd.DataFrame([{
+        "clinicID": clinicID,
+        "queuePosition": queuePosition,
+        "queueLength": queueLength,
+        "hour": hour,
+        "dayOfWeek": day_of_week,
+    }], columns=FEATURE_COLS)
+
+
+
+# the model's prediction is obtained and rounded to the nearest minute,
+#  with a minimum of 1 minute to avoid zero or negative wait times.
+
+    try:
+        prediction = model.predict(features_df)[0]
         estimated_wait = max(1, round(float(prediction)))
-
-        print(f" Predicted wait time: {estimated_wait} minutes")
-
-        # -------------------------------------------------
-        # Response
-        # -------------------------------------------------
-        return jsonify({
-            "estimatedWaitTime": estimated_wait,
-            "unit":              "minutes",
-            "inputs": {
-                "clinicID":      int(clinicID),
-                "queuePosition": queuePosition,
-                "queueLength":   queueLength,
-                "hour":          hour,
-                "dayOfWeek":     day_of_week,
-                "isWalkIn":      isWalkIn,
-            }
-        })
-
-    except ValueError as e:
-        print(f" ValueError: {e}")
-        return jsonify({"error": "Invalid numeric input", "detail": str(e)}), 400
-
     except Exception as e:
-        print(f" Error: {e}")
         return jsonify({"error": str(e)}), 500
+    
 
-# =========================================================
-# Run server
-# =========================================================
 
+
+# the API returns a JSON response containing the estimated wait time, the unit of measurement,
+#  and the input features used for the prediction.
+    return jsonify({
+        "estimatedWaitTime": estimated_wait,
+        "unit": "minutes",
+        "inputs": {
+            "clinicID": clinicID,
+            "queuePosition": queuePosition,
+            "queueLength": queueLength,
+            "hour": hour,
+            "dayOfWeek": day_of_week,
+        }
+    })
+
+# the API is run on host
 if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=5000,
-        debug=False,
-        use_reloader=False
-    )
+    app.run(host="0.0.0.0", port=5000, debug=False, use_reloader=False)

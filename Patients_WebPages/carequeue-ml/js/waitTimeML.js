@@ -229,7 +229,7 @@ export function loadQueueStatusML(
             
             const displayWait = predicted !== null
                 ? predicted
-                : Math.round(position * 21);  // fallback: 21 min per person ahead   
+                : Math.round(position * 25);  // fallback: 25 min per person ahead   
 
             safeSet("waitTime", `${displayWait} min`);
 
