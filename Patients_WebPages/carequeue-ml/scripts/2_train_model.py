@@ -43,7 +43,7 @@ TARGET = "actualWaitTime"
 # -----------------------------------------
 # VALIDATE COLUMNS
 # -----------------------------------------
-
+# the script checks for the presence of all required feature columns and the target column in the dataset.
 missing = [c for c in FEATURES + [TARGET] if c not in df.columns]
 
 if missing:
@@ -57,7 +57,9 @@ if missing:
 # -----------------------------------------
 # CLEAN DATA
 # -----------------------------------------
-
+# the script converts all feature columns and the target column to numeric types, coercing any non-numeric values to NaN.
+# It then drops any rows with missing values, ensuring that the dataset is clean and ready for training the model. 
+# The number of rows dropped due to null values is also printed to the console for transparency.
 df = df[FEATURES + [TARGET]].copy()
 
 for col in FEATURES + [TARGET]:
@@ -75,7 +77,9 @@ print(f"-> {len(df)} rows after cleaning")
 # -----------------------------------------
 # TRAIN / TEST SPLIT
 # -----------------------------------------
-
+# the dataset is split into training and testing sets using an 80/20 split, with a fixed random state for reproducibility.
+# The number of rows in the training and testing sets is printed to the console to provide insight
+# into the size of the data being used for model training and evaluation.
 X = df[FEATURES]
 y = df[TARGET]
 
@@ -90,7 +94,10 @@ print(f"-> Training on {len(X_train)} rows, testing on {len(X_test)} rows")
 # -----------------------------------------
 # MODEL
 # -----------------------------------------
-
+# a Random Forest Regressor is initialized with specific hyperparameters, including the number of trees (n_estimators),
+# the maximum depth of the trees (max_depth), the minimum number of samples required to be at a leaf node (min_samples_leaf),
+# a fixed random state for reproducibility, and the use of all available CPU cores for parallel
+# processing (n_jobs=-1). The model is then trained on the training data (X_train and y_train).
 model = RandomForestRegressor(
     n_estimators=300,
     max_depth=15,
@@ -106,7 +113,8 @@ print("Model trained")
 # -----------------------------------------
 # EVALUATION
 # -----------------------------------------
-
+# the model's performance is evaluated on both the training and testing sets 
+# using Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE) metrics.
 test_pred  = model.predict(X_test)
 train_pred = model.predict(X_train)
 
@@ -134,7 +142,7 @@ else:
 # -----------------------------------------
 # FEATURE IMPORTANCE
 # -----------------------------------------
-
+# the feature importance scores from the trained Random Forest model are extracted and displayed in a sorted manner.
 print("\nFeature importance:")
 importance = pd.Series(model.feature_importances_, index=FEATURES).sort_values(ascending=False)
 for feat, score in importance.items():
@@ -144,7 +152,8 @@ for feat, score in importance.items():
 # -----------------------------------------
 # SAVE MODEL + FEATURES
 # -----------------------------------------
-
+# the trained model and the list of feature names are saved to disk using joblib,
+#  allowing for later use in the API for making predictions.
 out_dir = os.path.join(os.path.dirname(__file__), "..", "api")
 os.makedirs(out_dir, exist_ok=True)
 

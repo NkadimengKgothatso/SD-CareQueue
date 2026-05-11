@@ -9,7 +9,7 @@ import {
     serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// ── Update this when you deploy the API ──────────────────────
+// ── deployed API  ──────────────────────
 const ML_API_URL = "https://sd-carequeue.onrender.com/predict";
 
 let lastRequestId = 0;
@@ -17,6 +17,11 @@ let lastRequestId = 0;
 // ─────────────────────────────────────────────────────────────
 // fetchWithTimeout
 // ─────────────────────────────────────────────────────────────
+// This helper function wraps the standard fetch API with a timeout mechanism.
+//  It returns a promise that either resolves with the fetch response or rejects with a timeout error if the specified time limit is exceeded. 
+// This ensures that the application can handle cases where the ML API might be unresponsive,
+//  preventing it from hanging indefinitely while waiting for a response.
+
 async function fetchWithTimeout(url, options, timeout = 4000) {
     return new Promise((resolve, reject) => {
         const timer = setTimeout(() => reject(new Error("timeout")), timeout);
@@ -29,6 +34,11 @@ async function fetchWithTimeout(url, options, timeout = 4000) {
 // ─────────────────────────────────────────────────────────────
 // getWaitTime — calls Flask ML API
 // ─────────────────────────────────────────────────────────────
+// This function sends a POST request to the ML API with the relevant data 
+// (clinicID, queuePosition, queueLength, isWalkIn) and returns the estimated wait time.
+// If the API call fails or returns an error, 
+// it gracefully handles the failure by returning null,
+//  allowing the application to fall back to a default wait time estimation method if necessary.
 export async function getWaitTime(data) {
     try {
         const res = await fetchWithTimeout(ML_API_URL, {
@@ -54,6 +64,9 @@ export async function getWaitTime(data) {
 // ─────────────────────────────────────────────────────────────
 // safeSet
 // ─────────────────────────────────────────────────────────────
+// This utility function safely updates the text content of a DOM element by its ID.
+// It checks if the element exists before attempting to set its text content, 
+// preventing potential errors if the element is not found in the DOM.
 function safeSet(id, value) {
     const el = document.getElementById(id);
     if (el) el.textContent = value;
@@ -73,6 +86,12 @@ function safeSet(id, value) {
 //
 // Returns a cleanup function: call it to unsubscribe all listeners.
 // ─────────────────────────────────────────────────────────────
+
+
+
+
+// This function sets up real-time listeners on the Firestore database 
+// to track the patient's position in the clinic queue and update the UI accordingly.
 export function loadQueueStatusML(
     userId,
     appointmentId,
@@ -101,6 +120,7 @@ export function loadQueueStatusML(
         where("appointmentId", "==", appointmentId)
     );
 
+    // the outer listener watches for changes to the patient's specific queue document based on their appointment ID.
     const outerUnsub = onSnapshot(appointmentQ, (snapshot) => {
 
         // Tear down stale inner listener
@@ -206,10 +226,10 @@ export function loadQueueStatusML(
 
             if (requestId !== lastRequestId) return;  // stale response, ignore
 
-            //  Fixed: actually use predicted value, not always userIndex * 30
+            
             const displayWait = predicted !== null
                 ? predicted
-                : Math.round(position * 8);           // formula fallback
+                : Math.round(position * 25);  // fallback: 25 min per person ahead   
 
             safeSet("waitTime", `${displayWait} min`);
 
