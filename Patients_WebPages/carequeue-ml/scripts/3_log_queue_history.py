@@ -15,14 +15,14 @@ db = firestore.client()
 # It writes one training row to QueueHistory.
 #
 # Parameters:
-#   clinic_id       – int   – e.g. 10002143430
-#   appointment_id  – str   – Firestore doc ID from Queues/Appointments
-#   queue_position  – int   – patient's position when they joined
-#   queue_length    – int   – total queue size at that moment
+#   clinic_id       – int      – e.g. 10002143430
+#   appointment_id  – str      – Firestore doc ID from Queues/Appointments
+#   queue_position  – int      – patient's position when they joined
+#   queue_length    – int      – total queue size at that moment
 #   created_at      – datetime – when patient joined the queue (createdAT)
 #   served_at       – datetime – when patient was called/served
-#   is_walk_in      – bool  – True if walk-in, False if booked appointment
-#   user_id         – str   – userID from Queues doc (can be None for walk-ins)
+#   is_walk_in      – bool     – True if walk-in, False if booked appointment
+#   user_id         – str      – userID from Queues doc (can be None for walk-ins)
 # ─────────────────────────────────────────────────────────────
 
 def log_queue_completion(
@@ -36,11 +36,11 @@ def log_queue_completion(
     user_id:        str  = None,
 ):
     # ── Validate wait time ──────────────────────────────────
-    # the actual wait time is calculated as the difference between the served_at and created_at timestamps, converted to minutes.
+    # Actual wait time is the difference between served and joined, in minutes.
     actual_wait = round((served_at - created_at).total_seconds() / 60)
 
     if actual_wait <= 0:
-        print(f" Skipping {appointment_id} — invalid wait time ({actual_wait} min)")
+        print(f"Skipping {appointment_id} — invalid wait time ({actual_wait} min)")
         return
 
     if actual_wait > 180:
@@ -48,8 +48,7 @@ def log_queue_completion(
         return
 
     # ── Duplicate guard ─────────────────────────────────────
-    # Prevent the same appointment being logged twice
-    
+    # Prevent the same appointment being logged twice.
     existing = (
         db.collection("QueueHistory")
         .where("appointmentId", "==", str(appointment_id))
@@ -57,7 +56,7 @@ def log_queue_completion(
         .stream()
     )
     if any(True for _ in existing):
-        print(f"  Skipping {appointment_id} — already logged in QueueHistory")
+        print(f"Skipping {appointment_id} — already logged in QueueHistory")
         return
 
     # ── Derive time features ────────────────────────────────
@@ -78,7 +77,11 @@ def log_queue_completion(
         "hour":          int(hour),
         "dayOfWeek":     int(day_of_week),
         "isWeekend":     bool(is_weekend),
-        "isWalkIn":      bool(is_walk_in),   #  critical for model accuracy
+
+        # FIX: store isWalkIn as int (1/0) not bool so Firestore export
+        # and model training always get the correct numeric dtype.
+        # The old bool storage caused dtype mismatches during training.
+        "isWalkIn":      1 if is_walk_in else 0,
 
         # ── Target variable ──
         "actualWaitTime": int(actual_wait),
@@ -86,16 +89,16 @@ def log_queue_completion(
         # ── Audit timestamps ──
         "createdAT":  created_at,
         "servedAT":   served_at,
-        "loggedAt":   firestore.SERVER_TIMESTAMP,  #  server time, timezone-safe
+        "loggedAt":   firestore.SERVER_TIMESTAMP,
 
         # ── Data provenance ──
-        "source": "real",   # distinguishes from synthetic bootstrap data
+        "source": "real",
     }
 
     db.collection("QueueHistory").add(record)
 
     print(
-        f" Logged  | clinic={clinic_id} | appt={appointment_id} | "
+        f"Logged  | clinic={clinic_id} | appt={appointment_id} | "
         f"pos={queue_position}/{queue_length} | "
         f"walkIn={is_walk_in} | wait={actual_wait} min"
     )
