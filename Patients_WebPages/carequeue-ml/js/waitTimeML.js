@@ -209,7 +209,7 @@ export function loadQueueStatusML(
             //  Fixed: actually use predicted value, not always userIndex * 30
             const displayWait = predicted !== null
                 ? predicted
-                : Math.round(position * 8);           // formula fallback
+                : Math.round(position * 14);           // formula fallback
 
             safeSet("waitTime", `${displayWait} min`);
 
