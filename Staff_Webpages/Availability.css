@@ -2,21 +2,6 @@
    Availability Page Styles
    ============================================================ */
 
-
-
-/* ── Top Bar ──────────────────────────────────────────────── */
-.top-bar {
-    height: 60px;
-    background: #fff;
-    border-bottom: 1px solid var(--clr-border);
-    display: flex;
-    align-items: center;
-    padding: 0 24px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-
 /* ── Page Header ──────────────────────────────────────────── */
 .page-header {
     margin-bottom: 28px;
@@ -60,6 +45,22 @@
     letter-spacing: 1px;
     text-transform: uppercase;
     color: var(--clr-muted);
+}
+
+/* ── Clinic Hours Note ────────────────────────────────────── */
+.clinic-hours-note {
+    margin: 0;
+    padding: 12px 22px;
+    font-size: 13px;
+    color: var(--clr-muted);
+    border-bottom: 1px solid #f0f2f5;
+    background: #f8f9fa;
+    line-height: 1.8;
+}
+
+.clinic-hours-note i {
+    color: var(--clr-primary);
+    margin-right: 6px;
 }
 
 /* ── Day Row ──────────────────────────────────────────────── */
@@ -182,6 +183,7 @@
 
 .time-input:disabled {
     cursor: not-allowed;
+    opacity: 0.5;
 }
 
 .time-separator {

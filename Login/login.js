@@ -155,7 +155,6 @@ window.signInWithGoogle = async function () {
   } catch (err) {
     console.error("Authentication error:", err);
     isRedirecting = false;
-    console.error("Authentication error:", err);
     showError(
       err.code === "auth/popup-closed-by-user"
         ? "Sign-in was cancelled. Please try again."
@@ -166,39 +165,46 @@ window.signInWithGoogle = async function () {
 };
 
 // ================= SESSION RESTORE =================
-// Sign out any existing session so users must always log in fresh
+// On page load, sign out any leftover session so users must log in fresh.
+// After that first check, the listener does nothing so it never
+// interferes with an active login attempt.
+let initialCheckDone = false;
+
 onAuthStateChanged(auth, async (user) => {
+  // Never interrupt an active login or redirect
   if (isRedirecting) return;
-  if (user) {
-    await signOut(auth);
+
+  if (!initialCheckDone) {
+    // This is the first time the listener fires (page load)
+    // If someone was already logged in, clear their session
+    initialCheckDone = true;
+    if (user) {
+      await signOut(auth);
+    }
+    return;
   }
+
+  // After the initial check, do nothing
+  // signInWithGoogle() handles everything from here
 });
 
 // ================= HELPERS =================
-//When the admin clicks the Google sign-in button, the code immediately disables it 
-//and changes its text to "Signing in…" so they can't click it twice. 
-//If the login fails for any reason, resetBtn puts the button back to how it was
+// Resets the sign-in button back to its original state after a failed login
 function resetBtn(btn) {
   btn.disabled = false;
   btn.querySelector("strong.provider-name").textContent = "Continue with Google";
 }
-//showError has to do two things:
-//Create the paragraph if it doesn't exist yet
-//Put the error message in it and make it visible
+
+// Shows an error message above the sign-in button
 function showError(msg) {
-  //does the error element already exist
   let el = document.getElementById("auth-error");
   if (!el) {
-  // it doesn't exist yet, so build it from scratch
-    el = document.createElement("p"); // create a new <p> tag
-    el.id = "auth-error";     // give it the id
-    el.className = "auth-error"; // give it the CSS class for red styling
-  // find the buttons section and place the error paragraph just above it  
+    el = document.createElement("p");
+    el.id = "auth-error";
+    el.className = "auth-error";
     const providersSection = document.querySelector("section.providers");
     if (providersSection) providersSection.before(el);
-//After this block, el is a real paragraph element sitting on the page, 
-//whether it was just created or was already there from a previous error.    
   }
-  el.textContent = msg; // e.g. "Access denied: You are not authorized as an administrator."
-  el.style.display = "block";  // make it visible (CSS had it hidden by default until there's actually an error to show)
+  el.textContent = msg;
+  el.style.display = "block";
 }
