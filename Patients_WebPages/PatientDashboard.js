@@ -127,7 +127,6 @@ async function loadAppointments(userId) {
         if (upcoming.length === 0) { showEmpty(); return; }
 
         const next = upcoming[0];
-        if (!next) { showEmpty(); return; }
 
         showFilled();
 

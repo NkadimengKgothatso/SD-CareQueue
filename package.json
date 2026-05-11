@@ -22,15 +22,15 @@
 
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NkadimengKgothatso/SD-CareQueue.git"
+    "url": "git+https://github.com/NkadimengKgothatso/SDproject.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/NkadimengKgothatso/SD-CareQueue/issues"
+    "url": "https://github.com/NkadimengKgothatso/SDproject/issues"
   },
-  "homepage": "https://github.com/NkadimengKgothatso/SD-CareQueue#readme",
+  "homepage": "https://github.com/NkadimengKgothatso/SDproject#readme",
   "devDependencies": {
     "@babel/core": "^7.29.0",
     "@babel/preset-env": "^7.29.5",
