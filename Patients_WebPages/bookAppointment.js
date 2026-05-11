@@ -482,6 +482,7 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         nameSurnameEl.textContent = user.displayName;
         emailEl.textContent = user.email;
+        setAvatarInitial(user.displayName, user.email);
     } else {
         nameSurnameEl.textContent = "Guest";
     }
@@ -547,7 +548,7 @@ confirmBtn.addEventListener("click", async () => {
         return;
     }
 
-   
+  
 
     const q = query(
         collection(db, "Appointments"),
@@ -654,6 +655,19 @@ dateInput.addEventListener("change", () => {
         renderTimeSlots(dateInput.value, selectedClinicId);
     }
 });
+
+
+function setAvatarInitial(name, email) {
+    let initials = "";
+    if (name && name.trim().length > 0) {
+        const parts = name.trim().split(" ");
+        initials += parts[0].charAt(0);
+        if (parts.length > 1) initials += parts[parts.length - 1].charAt(0);
+    } else if (email && email.length > 0) {
+        initials = email.charAt(0);
+    }
+    document.getElementById("patientAvatar").textContent = initials.toUpperCase();
+}
 
 export {
     formatTime,

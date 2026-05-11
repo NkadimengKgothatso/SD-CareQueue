@@ -29,6 +29,7 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         nameSurnameEl.textContent = user.displayName;
         emailEl.textContent = user.email;
+        setAvatarInitial(user.displayName, user.email);
         loadNotifications(user.uid);
     } else {
         nameSurnameEl.textContent = "Guest";
@@ -246,3 +247,16 @@ export {
   __setNotificationsForTest,
   __setCurrentFilterForTest
 };
+
+
+function setAvatarInitial(name, email) {
+    let initials = "";
+    if (name && name.trim().length > 0) {
+        const parts = name.trim().split(" ");
+        initials += parts[0].charAt(0);
+        if (parts.length > 1) initials += parts[parts.length - 1].charAt(0);
+    } else if (email && email.length > 0) {
+        initials = email.charAt(0);
+    }
+    document.getElementById("patientAvatar").textContent = initials.toUpperCase();
+}
