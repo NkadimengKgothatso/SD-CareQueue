@@ -21,57 +21,8 @@ The system uses a Random Forest regression model trained on historical queue act
 
 ---
 
-# System Architecture
 
-```text
-┌────────────────────────────────────────────────────────────┐
-│                    CLIENT DEVICE                           │
-│ ┌────────────────────────────────────────────────────────┐ │
-│ │ User Browser                                          │ │
-│ │ HTML / CSS / JS                                       │ │
-│ │ Firebase SDK                                          │ │
-│ └────────────────────────────────────────────────────────┘ │
-└────────────────────────────────────────────────────────────┘
-                            │
-                            │ HTTPS
-                            ▼
-┌────────────────────────────────────────────────────────────┐
-│                    VERCEL FRONTEND                         │
-│ ┌────────────────────────────────────────────────────────┐ │
-│ │ Patients_WebPages                                     │ │
-│ │ index.html                                            │ │
-│ │ dashboard.js                                          │ │
-│ │ login.js                                              │ │
-│ │ waitTimeML.js                                         │ │
-│ │ Firebase SDK Config                                   │ │
-│ │ Edge Network / CDN                                    │ │
-│ └────────────────────────────────────────────────────────┘ │
-└────────────────────────────────────────────────────────────┘
-            │                                  │
-            │ Firebase SDK                     │ POST /predict
-            ▼                                  ▼
-┌──────────────────────────────┐   ┌──────────────────────────────┐
-│       FIREBASE CLOUD         │   │        ML API — RENDER       │
-│                              │   │  sd-carequeue.onrender.com   │
-│ ┌──────────────────────────┐ │   │                              │
-│ │ Authentication           │ │   │ ┌──────────────────────────┐ │
-│ │ • OAuth Google           │ │   │ │ app.py (Flask API)      │ │
-│ │ • Email / Password       │ │   │ │ wait_time_model.pkl     │ │
-│ └──────────────────────────┘ │   │ │ Random Forest Predictor  │ │
-│                              │   │ └──────────────────────────┘ │
-│ ┌──────────────────────────┐ │   └──────────────────────────────┘
-│ │ Firestore Database       │ │                  │
-│ │ • Users                  │ │                  │ estimatedWaitTime
-│ │ • Appointments           │ │                  │
-│ │ • Queues                 │ │◄─────────────────┘
-│ │ • QueueHistory ✦         │ │
-│ │ • Notifications          │ │
-│ │ • StaffAvailability      │ │
-│ │ • clinicsObjects         │ │
-│ │ • admins                 │ │
-│ │ • ApprovedStaff          │ │
-│ └──────────────────────────┘ │
-└──────────────────────────────┘
+
 
 ✦ QueueHistory = ML training source
 ```
