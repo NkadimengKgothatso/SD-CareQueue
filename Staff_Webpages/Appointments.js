@@ -185,11 +185,25 @@ function buildCard(appt) {
 // ─── Render Full List ─────────────────────────────────────────────────────────
 function renderAppointments() {
     appointmentList.innerHTML = "";
-    module.allQueues = [
-        { status: "waiting" },
-        { status: "waiting" },
-        { status: "completed" }
-        ];
+function renderAppointments() {
+    appointmentList.innerHTML = "";
+
+    updateStats();
+
+    const filtered = getFilteredAppointments();
+
+    if (!filtered.length) {
+        renderEmptyState();
+        return;
+    }
+
+    filtered
+        .sort((a, b) =>
+            (a.date || "").localeCompare(b.date || "") ||
+            (a.time || "").localeCompare(b.time || "")
+        )
+        .forEach(appt => appointmentList.appendChild(buildCard(appt)));
+}
     updateStats();
 
     const filtered = getFilteredAppointments();
