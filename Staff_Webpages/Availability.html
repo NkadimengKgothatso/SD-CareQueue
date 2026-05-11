@@ -5,13 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Availability – Care Queue</title>
-
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/icon?family=Material+Icons">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="Staff.css">
     <link rel="stylesheet" href="Availability.css">
 </head>
@@ -20,14 +15,10 @@
 
     <!-- Top Navigation Bar -->
     <header class="top-bar">
-
         <nav class="logo">
             <section class="logo-icon"></section>
-            <section class="logo-name">
-                Care Queue
-            </section>
+            <section class="logo-name">Care Queue</section>
         </nav>
-
     </header>
 
     <section class="container">
@@ -37,56 +28,54 @@
 
             <nav class="sidebar-nav">
 
-                <section class="nav-item"
-                    onclick="window.location.href='StaffDashboard.html'">
+                <section class="nav-item" onclick="window.location.href='StaffDashboard.html'">
                     <section class="nav-dot"></section>
                     <section>Dashboard</section>
                 </section>
 
-                <section class="nav-item active"
-                    onclick="window.location.href='Availability.html'">
+                <section class="nav-item active" onclick="window.location.href='Availability.html'">
                     <section class="nav-dot"></section>
                     <section>My Availability</section>
                 </section>
 
-                <section class="nav-item"
-                    onclick="window.location.href='Appointments.html'">
+                <section class="nav-item" onclick="window.location.href='Appointments.html'">
                     <section class="nav-dot"></section>
                     <section>Manage Appointment</section>
                 </section>
 
-                <section class="nav-item"
-                    onclick="window.location.href='Queues.html'">
+                <section class="nav-item" onclick="window.location.href='Queues.html'">
                     <section class="nav-dot"></section>
                     <section>Queue Management</section>
                 </section>
 
-                <section class="nav-item"
-                    onclick="window.location.href='WalkIns.html'">
+                <section class="nav-item" onclick="window.location.href='Analytics.html'">
+                    <section class="nav-dot"></section>
+                    <section>Analytics</section>
+                </section>
 
+                <section class="nav-item" onclick="window.location.href='WalkIns.html'">
                     <section class="nav-dot"></section>
                     <section>Walk-in</section>
                 </section>
 
-                
+                <section class="nav-item">
+                    <section class="nav-dot"></section>
+                    <section>Notifications</section>
+                </section>
 
             </nav>
 
             <!-- User Section -->
             <section class="sidebar-footer">
                 <section class="user-info">
-        
-                    <section class="user-avatar" id="staffAvatar">
-                        <!-- initials will be injected by JS -->
-                    </section>
-
+                    <section class="user-avatar" id="staffAvatar"></section>
                     <section class="user-details">
                         <section class="user-name" id="staffName"></section>
                         <section class="user-email" id="staffEmail"></section>
                     </section>
-
                 </section>
             </section>
+
         </aside>
 
         <!-- Main Content -->
@@ -94,398 +83,191 @@
 
             <!-- Page Header -->
             <section class="page-header">
-
                 <h2>My Availability</h2>
-
-                <p>
-                    Set the days and hours you are available
-                    to see patients.
-                </p>
-
+                <p>Set the days and hours you are available to see patients.</p>
             </section>
 
             <!-- Week Schedule Card -->
             <section class="week-card">
 
-                <section class="week-card-header">
+                <header class="week-card-header">
                     <h3>Weekly Schedule</h3>
-                </section>
+                </header>
 
                 <!-- Monday -->
-                <section class="day-row" id="row-monday">
-
+                <article class="day-row" id="row-monday">
                     <section class="day-label-group">
-
-                        <section class="day-name">
-                            Monday
-                        </section>
-
+                        <section class="day-name">Monday</section>
                         <label class="toggle-switch">
-
-                            <input type="checkbox"
-                                id="toggle-monday"
-                                checked>
-
+                            <input type="checkbox" id="toggle-monday" checked>
                             <section class="toggle-slider"></section>
-
                         </label>
-
                     </section>
-
                     <section class="time-range">
-
                         <label>From</label>
-
-                        <input type="time"
-                            class="time-input"
-                            id="start-monday"
-                            value="08:00">
-
+                        <input type="time" class="time-input" id="start-monday" value="08:00">
                         <section class="time-separator">–</section>
-
                         <label>To</label>
-
-                        <input type="time"
-                            class="time-input"
-                            id="end-monday"
-                            value="17:00">
-
+                        <input type="time" class="time-input" id="end-monday" value="17:00">
                     </section>
-
-                </section>
+                </article>
 
                 <!-- Tuesday -->
-                <section class="day-row" id="row-tuesday">
-
+                <article class="day-row" id="row-tuesday">
                     <section class="day-label-group">
-
-                        <section class="day-name">
-                            Tuesday
-                        </section>
-
+                        <section class="day-name">Tuesday</section>
                         <label class="toggle-switch">
-
-                            <input type="checkbox"
-                                id="toggle-tuesday"
-                                checked>
-
+                            <input type="checkbox" id="toggle-tuesday" checked>
                             <section class="toggle-slider"></section>
-
                         </label>
-
                     </section>
-
                     <section class="time-range">
-
                         <label>From</label>
-
-                        <input type="time"
-                            class="time-input"
-                            id="start-tuesday"
-                            value="08:00">
-
+                        <input type="time" class="time-input" id="start-tuesday" value="08:00">
                         <section class="time-separator">–</section>
-
                         <label>To</label>
-
-                        <input type="time"
-                            class="time-input"
-                            id="end-tuesday"
-                            value="17:00">
-
+                        <input type="time" class="time-input" id="end-tuesday" value="17:00">
                     </section>
-
-                </section>
+                </article>
 
                 <!-- Wednesday -->
-                <section class="day-row" id="row-wednesday">
-
+                <article class="day-row" id="row-wednesday">
                     <section class="day-label-group">
-
-                        <section class="day-name">
-                            Wednesday
-                        </section>
-
+                        <section class="day-name">Wednesday</section>
                         <label class="toggle-switch">
-
-                            <input type="checkbox"
-                                id="toggle-wednesday"
-                                checked>
-
+                            <input type="checkbox" id="toggle-wednesday" checked>
                             <section class="toggle-slider"></section>
-
                         </label>
-
                     </section>
-
                     <section class="time-range">
-
                         <label>From</label>
-
-                        <input type="time"
-                            class="time-input"
-                            id="start-wednesday"
-                            value="08:00">
-
+                        <input type="time" class="time-input" id="start-wednesday" value="08:00">
                         <section class="time-separator">–</section>
-
                         <label>To</label>
-
-                        <input type="time"
-                            class="time-input"
-                            id="end-wednesday"
-                            value="17:00">
-
+                        <input type="time" class="time-input" id="end-wednesday" value="17:00">
                     </section>
-
-                </section>
+                </article>
 
                 <!-- Thursday -->
-                <section class="day-row" id="row-thursday">
-
+                <article class="day-row" id="row-thursday">
                     <section class="day-label-group">
-
-                        <section class="day-name">
-                            Thursday
-                        </section>
-
+                        <section class="day-name">Thursday</section>
                         <label class="toggle-switch">
-
-                            <input type="checkbox"
-                                id="toggle-thursday"
-                                checked>
-
+                            <input type="checkbox" id="toggle-thursday" checked>
                             <section class="toggle-slider"></section>
-
                         </label>
-
                     </section>
-
                     <section class="time-range">
-
                         <label>From</label>
-
-                        <input type="time"
-                            class="time-input"
-                            id="start-thursday"
-                            value="08:00">
-
+                        <input type="time" class="time-input" id="start-thursday" value="08:00">
                         <section class="time-separator">–</section>
-
                         <label>To</label>
-
-                        <input type="time"
-                            class="time-input"
-                            id="end-thursday"
-                            value="17:00">
-
+                        <input type="time" class="time-input" id="end-thursday" value="17:00">
                     </section>
-
-                </section>
+                </article>
 
                 <!-- Friday -->
-                <section class="day-row" id="row-friday">
-
+                <article class="day-row" id="row-friday">
                     <section class="day-label-group">
-
-                        <section class="day-name">
-                            Friday
-                        </section>
-
+                        <section class="day-name">Friday</section>
                         <label class="toggle-switch">
-
-                            <input type="checkbox"
-                                id="toggle-friday"
-                                checked>
-
+                            <input type="checkbox" id="toggle-friday" checked>
                             <section class="toggle-slider"></section>
-
                         </label>
-
                     </section>
-
                     <section class="time-range">
-
                         <label>From</label>
-
-                        <input type="time"
-                            class="time-input"
-                            id="start-friday"
-                            value="08:00">
-
+                        <input type="time" class="time-input" id="start-friday" value="08:00">
                         <section class="time-separator">–</section>
-
                         <label>To</label>
-
-                        <input type="time"
-                            class="time-input"
-                            id="end-friday"
-                            value="17:00">
-
+                        <input type="time" class="time-input" id="end-friday" value="17:00">
                     </section>
-
-                </section>
+                </article>
 
                 <!-- Saturday -->
-                <section class="day-row day-off"
-                    id="row-saturday">
-
+                <article class="day-row day-off" id="row-saturday">
                     <section class="day-label-group">
-
-                        <section class="day-name">
-                            Saturday
-                        </section>
-
+                        <section class="day-name">Saturday</section>
                         <label class="toggle-switch">
-
-                            <input type="checkbox"
-                                id="toggle-saturday">
-
+                            <input type="checkbox" id="toggle-saturday">
                             <section class="toggle-slider"></section>
-
                         </label>
-
                     </section>
-
                     <section class="time-range">
-
                         <label>From</label>
-
-                        <input type="time"
-                            class="time-input"
-                            id="start-saturday"
-                            value="08:00">
-
+                        <input type="time" class="time-input" id="start-saturday" value="08:00">
                         <section class="time-separator">–</section>
-
                         <label>To</label>
-
-                        <input type="time"
-                            class="time-input"
-                            id="end-saturday"
-                            value="13:00">
-
+                        <input type="time" class="time-input" id="end-saturday" value="13:00">
                     </section>
-
-                </section>
+                </article>
 
                 <!-- Sunday -->
-                <section class="day-row day-off"
-                    id="row-sunday">
-
+                <article class="day-row day-off" id="row-sunday">
                     <section class="day-label-group">
-
-                        <section class="day-name">
-                            Sunday
-                        </section>
-
+                        <section class="day-name">Sunday</section>
                         <label class="toggle-switch">
-
-                            <input type="checkbox"
-                                id="toggle-sunday">
-
+                            <input type="checkbox" id="toggle-sunday">
                             <section class="toggle-slider"></section>
-
                         </label>
-
                     </section>
-
                     <section class="time-range">
-
                         <label>From</label>
-
-                        <input type="time"
-                            class="time-input"
-                            id="start-sunday"
-                            value="08:00">
-
+                        <input type="time" class="time-input" id="start-sunday" value="08:00">
                         <section class="time-separator">–</section>
-
                         <label>To</label>
-
-                        <input type="time"
-                            class="time-input"
-                            id="end-sunday"
-                            value="13:00">
-
+                        <input type="time" class="time-input" id="end-sunday" value="13:00">
                     </section>
-
-                </section>
+                </article>
 
             </section>
+            <!-- end .week-card -->
 
-            <!-- Save Button -->
+            <!-- Save Section -->
             <section class="save-section">
-
-                <button class="save-btn"
-                    id="saveBtn">
-
+                <button class="save-btn" id="saveBtn">
                     <i class="fa-solid fa-floppy-disk"></i>
-
                     Save Availability
                 </button>
-
-                <section class="save-status"
-                    id="saveStatus"></section>
-
+                <section class="save-status" id="saveStatus"></section>
             </section>
 
         </main>
 
     </section>
 
-    <!-- Toggle logic -->
+    <!-- Toggle Logic -->
     <script>
+        // Only apply toggle logic to days that are ON by default (Mon-Fri)
+        // Saturday and Sunday are handled by Availability.js after clinic hours are fetched
+        const defaultOnDays = ["monday", "tuesday", "wednesday", "thursday", "friday"];
 
-        const days = [
-            "monday",
-            "tuesday",
-            "wednesday",
-            "thursday",
-            "friday",
-            "saturday",
-            "sunday"
-        ];
-
-        days.forEach(day => {
-
-            const toggle =
-                document.getElementById(`toggle-${day}`);
-
-            const startInput =
-                document.getElementById(`start-${day}`);
-
-            const endInput =
-                document.getElementById(`end-${day}`);
-
-            const row =
-                document.getElementById(`row-${day}`);
+        defaultOnDays.forEach(day => {
+            const toggle     = document.getElementById(`toggle-${day}`);
+            const startInput = document.getElementById(`start-${day}`);
+            const endInput   = document.getElementById(`end-${day}`);
+            const row        = document.getElementById(`row-${day}`);
 
             function applyState() {
-
-                const isOn = toggle.checked;
-
+                const isOn          = toggle.checked;
                 startInput.disabled = !isOn;
-                endInput.disabled = !isOn;
-
-                row.classList.toggle(
-                    "day-off",
-                    !isOn
-                );
+                endInput.disabled   = !isOn;
+                row.classList.toggle("day-off", !isOn);
             }
 
             applyState();
-
-            toggle.addEventListener(
-                "change",
-                applyState
-            );
+            toggle.addEventListener("change", applyState);
         });
 
+        // Saturday and Sunday start disabled until Availability.js
+        // enables them if the clinic is open on those days
+        ["saturday", "sunday"].forEach(day => {
+            document.getElementById(`start-${day}`).disabled = true;
+            document.getElementById(`end-${day}`).disabled   = true;
+        });
     </script>
 
-    <script type="module"
-        src="Availability.js"></script>
+    <script type="module" src="Availability.js"></script>
 
 </body>
 

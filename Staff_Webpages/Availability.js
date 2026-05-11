@@ -1,7 +1,5 @@
-
-//Availability.js
 // ─── Imports ────────────────────────────────────────────────────────────────
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
     getFirestore,
@@ -55,7 +53,6 @@ window.signOut = async function () {
 };
 
 // ─── Convert 12-hour time to 24-hour string ───────────────────────────────────
-// Handles "7am", "5pm", "7:30am", "5:30pm"
 function convertTo24Hour(timeStr, period) {
     const [hourStr, minuteStr] = timeStr.split(":");
     let hour   = parseInt(hourStr);
@@ -68,24 +65,18 @@ function convertTo24Hour(timeStr, period) {
 }
 
 // ─── Parse clinic opening_hours string ───────────────────────────────────────
-// Handles all variations found in the database:
-//   "Mon-Fri: 7am-7pm"
-//   "Mon-Fri : 9am-5pm"   
-//   "Mon-Fri: 7:30am-5:30pm"
+// Handles: "Mon-Fri: 7am-7pm", "Mon-Fri : 9am-5pm", "Mon-Sat: 2am-10pm"
 function parseClinicHours(openingHours) {
     if (!openingHours) return null;
 
     try {
-        // Normalise: collapse any spaces around the colon
-        // "Mon-Fri : 9am-5pm" → "Mon-Fri: 9am-5pm"
+        // Normalise spaces around colon
         const cleaned = openingHours
             .replace(/\s*:\s*/, ":")
             .trim();
 
         console.log("Parsing opening_hours:", openingHours, "→ cleaned:", cleaned);
 
-        // Match day range and time range
-        // Supports: "Mon-Fri:9am-5pm" after cleaning
         const match = cleaned.match(
             /^(\w+)-(\w+):(\d+(?::\d+)?)(am|pm)-(\d+(?::\d+)?)(am|pm)$/i
         );
@@ -123,26 +114,33 @@ function parseClinicHours(openingHours) {
     }
 }
 
-// ─── Fetch clinic operating hours from Firestore ──────────────────────────────
-async function fetchClinicHours(clinicID) {
+// ─── Fetch clinic operating hours by clinic name ──────────────────────────────
+// Matches using assignedClinic name from ApprovedStaff
+// Avoids int64 type mismatch when querying by numeric ID
+async function fetchClinicHours(clinicName) {
     try {
-        const q = query(
-            collection(db, "clinicsObjects"),
-            where("id", "==", clinicID)
-        );
+        const snapshot = await getDocs(collection(db, "clinicsObjects"));
 
-        const snapshot = await getDocs(q);
+        console.log("Searching", snapshot.size, "clinics for name:", clinicName);
 
-        console.log("fetchClinicHours → clinicID:", clinicID, "| results:", snapshot.size);
+        let foundHours = null;
 
-        if (snapshot.empty) {
-            console.warn("No clinic found for clinicID:", clinicID);
-            return null;
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            if (
+                (data.name || "").toLowerCase().trim() ===
+                (clinicName || "").toLowerCase().trim()
+            ) {
+                console.log("Matched clinic:", data.name, "| opening_hours:", data.opening_hours);
+                foundHours = data.opening_hours || null;
+            }
+        });
+
+        if (!foundHours) {
+            console.warn("No clinic matched for name:", clinicName);
         }
 
-        const clinicData = snapshot.docs[0].data();
-        console.log("Clinic opening_hours from DB:", clinicData.opening_hours);
-        return clinicData.opening_hours || null;
+        return foundHours;
 
     } catch (err) {
         console.error("Failed to fetch clinic hours:", err);
@@ -170,7 +168,14 @@ function applyClinicConstraints() {
             end.disabled    = true;
             row.classList.add("day-off");
             row.title = "Your clinic is closed on this day";
+
         } else {
+            // Clinic open this day — enable everything on load
+            toggle.checked  = true;
+            start.disabled  = false;
+            end.disabled    = false;
+            row.classList.remove("day-off");
+
             // Restrict time inputs to clinic hours
             start.min = clinicOpenTime;
             start.max = clinicCloseTime;
@@ -182,26 +187,34 @@ function applyClinicConstraints() {
             if (start.value > clinicCloseTime) start.value = clinicOpenTime;
             if (end.value   > clinicCloseTime) end.value   = clinicCloseTime;
             if (end.value   < clinicOpenTime)  end.value   = clinicCloseTime;
+
+            // Wire up toggle so time inputs enable/disable when staff clicks it
+            // This handles Saturday/Sunday which the inline script skips
+            toggle.addEventListener("change", () => {
+                const isOn     = toggle.checked;
+                start.disabled = !isOn;
+                end.disabled   = !isOn;
+                row.classList.toggle("day-off", !isOn);
+            });
         }
     });
 
-    // Show clinic hours info note under the card header
+    // ── Build working days display string ──
+    // e.g. "Monday, Tuesday, Wednesday, Thursday, Friday, Saturday"
+    const workDayLabels = clinicWorkDays.map(capitalise).join(", ");
+
+    // Show info note under the card header using CSS class (no inline styles)
     const headerEl = document.querySelector(".week-card-header");
     if (headerEl && !document.getElementById("clinicHoursNote")) {
-        const note = document.createElement("p");
-        note.id = "clinicHoursNote";
-        note.style.cssText = `
-            margin: 0;
-            padding: 10px 22px;
-            font-size: 13px;
-            color: #6c757d;
-            border-bottom: 1px solid #f0f2f5;
-            background: #f8f9fa;
-        `;
-        note.innerHTML = `
-            <i class="fa-solid fa-circle-info" style="color:#4584c4; margin-right:6px;"></i>
-            Clinic operating hours: <strong>${clinicOpenTime} – ${clinicCloseTime}</strong>. 
-            Your availability must fall within these times.
+        const note       = document.createElement("p");
+        note.id          = "clinicHoursNote";
+        note.className   = "clinic-hours-note";
+        note.innerHTML   = `
+            <i class="fa-solid fa-clock"></i>
+            <strong>Operating hours:</strong> ${clinicOpenTime} – ${clinicCloseTime}
+            &nbsp;&nbsp;
+            <i class="fa-solid fa-calendar-days"></i>
+            <strong>Open days:</strong> ${workDayLabels}
         `;
         headerEl.insertAdjacentElement("afterend", note);
     }
@@ -302,11 +315,11 @@ async function saveAvailability(uid, staffName, clinicID) {
         // Must stay within clinic hours
         if (clinicOpenTime && clinicCloseTime) {
             if (d.start < clinicOpenTime) {
-                showStatus(`${capitalise(day)}  ,clinic opens at ${clinicOpenTime}.`, "error");
+                showStatus(`${capitalise(day)} start time cannot be before clinic opens at ${clinicOpenTime}.`, "error");
                 return;
             }
             if (d.end > clinicCloseTime) {
-                showStatus(`${capitalise(day)} ,clinic closes at ${clinicCloseTime}.`, "error");
+                showStatus(`${capitalise(day)} end time cannot be after clinic closes at ${clinicCloseTime}.`, "error");
                 return;
             }
         }
@@ -359,8 +372,9 @@ onAuthStateChanged(auth, async (user) => {
         el.textContent = user.displayName || "Staff";
     });
 
-    let clinicID  = null;
-    let staffName = user.displayName || "Staff";
+    let clinicID       = null;
+    let staffName      = user.displayName || "Staff";
+    let assignedClinic = null;
 
     // 1. Get staff profile from ApprovedStaff
     try {
@@ -372,24 +386,25 @@ onAuthStateChanged(auth, async (user) => {
         const snapshot = await getDocs(staffQuery);
 
         if (!snapshot.empty) {
-            const data = snapshot.docs[0].data();
-            clinicID  = Number(data.clinicId) || null;
-            staffName = data.displayName      || staffName;
+            const data     = snapshot.docs[0].data();
+            clinicID       = Number(data.clinicId) || null;
+            staffName      = data.displayName      || staffName;
+            assignedClinic = data.assignedClinic   || null;
 
             document.querySelectorAll(".name-Surname").forEach(el => {
                 el.textContent = staffName;
             });
         }
 
-        console.log("Staff clinicID:", clinicID);
+        console.log("Staff clinicID:", clinicID, "| assignedClinic:", assignedClinic);
 
     } catch (err) {
         console.error("Failed to fetch staff profile:", err);
     }
 
-    // 2. Fetch clinic hours and apply constraints
-    if (clinicID) {
-        const openingHours = await fetchClinicHours(clinicID);
+    // 2. Fetch clinic hours by clinic name and apply constraints
+    if (assignedClinic) {
+        const openingHours = await fetchClinicHours(assignedClinic);
         const parsed       = parseClinicHours(openingHours);
 
         if (parsed) {
@@ -413,33 +428,22 @@ onAuthStateChanged(auth, async (user) => {
         });
     }
 
-
-    // ─── Sidebar footer (STAFF) ─────────────────────────────
-    const staffNameEl = document.getElementById("staffName");
-    const staffEmailEl = document.getElementById("staffEmail");
+    // 5. Populate sidebar footer
+    const staffNameEl   = document.getElementById("staffName");
+    const staffEmailEl  = document.getElementById("staffEmail");
     const staffAvatarEl = document.getElementById("staffAvatar");
 
-    if (staffNameEl) staffNameEl.textContent = staffName;
+    if (staffNameEl)  staffNameEl.textContent  = staffName;
     if (staffEmailEl) staffEmailEl.textContent = user.email;
 
-// create initials for avatar
     if (staffAvatarEl) {
         const initials = (staffName || "S")
             .split(" ")
             .map(n => n[0])
             .join("")
-            .toUpperCase();
+            .toUpperCase()
+            .slice(0, 2);
 
         staffAvatarEl.textContent = initials;
-    }  
+    }
 });
-
-export {
-    convertTo24Hour,
-    parseClinicHours,
-    readScheduleFromPage,
-    applyScheduleToPage,
-    capitalise,
-    showStatus,
-    applyClinicConstraints
-};
