@@ -150,13 +150,6 @@ QueueHistory
 
 This collection becomes the machine learning training dataset.
 
-Recommended dataset size:
-
-| Records | Quality |
-|---|---|
-| < 200 | Too small |
-| 200 – 1000 | Acceptable |
-| 1000+ | Recommended |
 
 ---
 
