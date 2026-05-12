@@ -134,28 +134,7 @@ pip install -r requirements.txt
 
 ## 2. Configure Firebase
 
-Download a Firebase service account key from:
 
-```text
-Firebase Console
-→ Project Settings
-→ Service Accounts
-→ Generate New Private Key
-```
-
-Save the file as:
-
-```text
-scripts/serviceAccountKey.json
-```
-
-Add the following to `.gitignore`:
-
-```text
-serviceAccountKey.json
-__pycache__/
-*.pkl
-```
 
 ---
 
