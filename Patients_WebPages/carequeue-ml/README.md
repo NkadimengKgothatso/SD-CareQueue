@@ -31,7 +31,7 @@ The system uses a Random Forest regression model trained on historical queue act
 
 # Real-Time ML Prediction Workflow
 
-```text
+
 1. Patient books an appointment
          ↓
 2. A new document is added to the Firestore Queues collection
