@@ -191,37 +191,7 @@ http://localhost:5000/predict
 
 ---
 
-## Phase 4 — Frontend Integration
 
-Update the API URL inside:
-
-```text
-js/waitTimeML.js
-```
-
-```js
-const ML_API_URL = "https://sd-carequeue.onrender.com/predict";
-```
-
-Import the ML loader:
-
-```js
-import { loadQueueStatusML } from "./waitTimeML.js";
-```
-
-Replace:
-
-```js
-loadQueueStatus(...)
-```
-
-With:
-
-```js
-loadQueueStatusML(...)
-```
-
----
 
 # API Example
 
