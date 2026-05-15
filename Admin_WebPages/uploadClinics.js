@@ -16,7 +16,7 @@ const db = getFirestore(app);
 
 async function uploadClinics() {
   try {
-    // ✅ Use fs instead of fetch — this is a Node.js script
+    // Use fs instead of fetch — this is a Node.js script
     const raw = fs.readFileSync("./Documentation/clinics_cleaned.json", "utf-8");
     const clinics = JSON.parse(raw);
 

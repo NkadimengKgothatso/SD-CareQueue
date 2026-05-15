@@ -1,5 +1,9 @@
 import { initAdminPage, db } from "/Admin_WebPages/admin.js";
-import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {collection,getDocs} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { auth } from "/Admin_WebPages/admin.js";
+import { signOut as firebaseSignOut } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 
 let clinics = [];
 let queues = [];
@@ -11,128 +15,286 @@ const dataLoaded = {
     appointments: false
 };
 
-// ================= LOADERS =================
-async function loadClinics() {
-    try {
-        const snap = await getDocs(collection(db, "clinicsObjects"));
-        clinics = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        dataLoaded.clinics = true;
-        checkAndRender();
-    } catch (e) {
-        console.error("Error loading clinics:", e);
-    }
-}
+/* =========================
+   INIT
+========================= */
 
-async function loadQueues() {
-    try {
-        const snap = await getDocs(collection(db, "Queues"));
-        queues = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        dataLoaded.queues = true;
-        checkAndRender();
-    } catch (e) {
-        console.error("Error loading queues:", e);
-    }
-}
-
-async function loadAppointments() {
-    try {
-        const snap = await getDocs(collection(db, "Appointments"));
-        appointments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        dataLoaded.appointments = true;
-        checkAndRender();
-    } catch (e) {
-        console.error("Error loading appointments:", e);
-    }
-}
-
-// ================= INIT =================
 document.addEventListener("DOMContentLoaded", () => {
+
     try {
+
         initAdminPage();
+
         loadClinics();
         loadQueues();
         loadAppointments();
+
         setSubtitle();
+        initSearch();
+
     } catch (err) {
         console.error("INIT ERROR:", err);
     }
 });
 
-function setSubtitle() {
-    const months = ["January","February","March","April","May","June",
-        "July","August","September","October","November","December"];
-    const now = new Date();
-    const label = `${months[now.getMonth()]} ${now.getFullYear()}`;
-    const el = document.getElementById("overviewSubtitle");
-    if (el) el.textContent = `All clinics overview · ${label}`;
-}
+/* =========================
+   LOAD CLINICS
+========================= */
 
-// ================= RENDER =================
-function checkAndRender() {
-    if (dataLoaded.clinics && dataLoaded.queues && dataLoaded.appointments) {
-        renderStats();
-        renderClinicStatus();
+async function loadClinics() {
+    try {
+        const snapshot = await getDocs(collection(db, "clinicsObjects"));
+
+        clinics = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        dataLoaded.clinics = true;
+        checkAndRender();
+
+    } catch (err) {
+        console.error("Error loading clinics:", err);
     }
 }
 
-function renderStats() {
-    // Active clinics — total number of clinic docs
-    document.getElementById("activeClinics").textContent = clinics.length;
+/* =========================
+   LOAD QUEUES
+========================= */
 
-    // Patients this month — completed appointments in current month
+async function loadQueues() {
+    try {
+        const snapshot = await getDocs(collection(db, "Queues"));
+
+        queues = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        dataLoaded.queues = true;
+        checkAndRender();
+
+    } catch (err) {
+        console.error("Error loading queues:", err);
+    }
+}
+
+/* =========================
+   LOAD APPOINTMENTS
+========================= */
+
+async function loadAppointments() {
+    try {
+        const snapshot = await getDocs(collection(db, "Appointments"));
+
+        appointments = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        dataLoaded.appointments = true;
+        checkAndRender();
+
+    } catch (err) {
+        console.error("Error loading appointments:", err);
+    }
+}
+
+/* =========================
+   CHECK READY
+========================= */
+
+function checkAndRender() {
+    if (
+        dataLoaded.clinics &&
+        dataLoaded.queues &&
+        dataLoaded.appointments
+    ) {
+        renderStats();
+        renderClinics();
+    }
+}
+
+/* =========================
+   SUBTITLE
+========================= */
+
+function setSubtitle() {
+    const months = [
+        "January","February","March","April","May","June",
+        "July","August","September","October","November","December"
+    ];
+
     const now = new Date();
-    const month = now.getMonth();
-    const year = now.getFullYear();
 
-    const patientsThisMonth = appointments.filter(a => {
-        if (a.status !== "completed" || !a.date) return false;
-        const d = new Date(a.date);
-        return d.getMonth() === month && d.getFullYear() === year;
-    }).length;
-
-    document.getElementById("patientsMonth").textContent =
-        patientsThisMonth.toLocaleString();
+    document.getElementById("overviewSubtitle").textContent =
+        `All clinics overview · ${months[now.getMonth()]} ${now.getFullYear()}`;
 }
 
-// Aggregate currently waiting per clinic
+/* =========================
+   STATS
+========================= */
+
+function renderStats() {
+
+    // Active clinics = Active or Busy
+    const activeClinics = clinics.filter(c =>
+        c.status === "Active" || c.status === "Busy"
+    ).length;
+
+    document.getElementById("activeClinics").textContent = activeClinics;
+
+    // Patients seen = completed appointments
+    const patientsSeen = appointments.filter(a =>
+        a.status === "completed"
+    ).length;
+
+    document.getElementById("patientsSeen").textContent = patientsSeen;
+
+    // Patients in queue = waiting status
+    const patientsQueue = queues.filter(q =>
+        q.status === "waiting"
+    ).length;
+
+    document.getElementById("patientsQueue").textContent = patientsQueue;
+}
+
+/* =========================
+   QUEUE MAP
+========================= */
+
 function getWaitingByClinic() {
-    const result = {};
+    const map = {};
+
     queues.forEach(q => {
-        const id = q.clinicID;
-        if (!id) return;
-        if (!result[id]) result[id] = 0;
-        if (q.status === "waiting") result[id] += 1;
+        if (!q.clinicID) return;
+
+        if (!map[q.clinicID]) {
+            map[q.clinicID] = 0;
+        }
+
+        if (q.status === "waiting") {
+            map[q.clinicID]++;
+        }
     });
-    return result;
+
+    return map;
 }
 
-function getStatusFor(queueCount) {
-    if (queueCount === 0) return { label: "Closed", cls: "closed" };
-    if (queueCount >= 10) return { label: "Busy",   cls: "busy"   };
-    return { label: "Open", cls: "open" };
-}
+/* =========================
+   RENDER CLINICS (SORTED)
+========================= */
 
-function renderClinicStatus() {
-    const tbody = document.getElementById("clinicStatusBody");
-    tbody.innerHTML = "";
+function renderClinics(filteredClinics = clinics) {
 
-    if (!clinics.length) {
-        tbody.innerHTML = `<tr class="loading-row"><td colspan="3">No clinics found</td></tr>`;
+    const container = document.getElementById("clinicCards");
+    container.innerHTML = "";
+
+    if (!filteredClinics.length) {
+        container.innerHTML = `<section class="empty-state">No clinics found</section>`;
         return;
     }
 
     const waitingMap = getWaitingByClinic();
 
-    clinics.forEach(clinic => {
-        const count = waitingMap[clinic.id] || 0;
-        const status = getStatusFor(count);
+    // SORT by queue size (descending)
+    const sorted = [...filteredClinics].sort((a, b) => {
+        return (waitingMap[b.id] || 0) - (waitingMap[a.id] || 0);
+    });
 
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${clinic.name || "Unnamed clinic"}</td>
-            <td><span class="queue-count">${count}</span></td>
-            <td><span class="status-pill ${status.cls}">${status.label}</span></td>
+    sorted.forEach(clinic => {
+
+        const waitingCount = waitingMap[clinic.id] || 0;
+
+        const statusClass = (clinic.status || "Closed").toLowerCase();
+
+        const card = document.createElement("section");
+        card.classList.add("clinic");
+
+        card.innerHTML = `
+            <section class="clinicHeader">
+
+                <i class="fa-solid fa-house-chimney-medical"></i>
+
+                <section class="clinicNameStatus">
+
+                    <p class="clinicName">
+                        ${clinic.name || "Unnamed Clinic"}
+                    </p>
+
+                    <p class="Location">
+                        ${clinic.address || "Unknown location"}
+                    </p>
+
+                </section>
+
+                <p class="status-pill ${statusClass}">
+                    ${clinic.status || "Closed"}
+                </p>
+
+            </section>
+
+            <section class="clinicContainer">
+
+                <section class="OpenTimes">
+                    <i class="fa-regular fa-clock"></i>
+                    <p>${clinic.opening_hours || "Hours not specified"}</p>
+                </section>
+
+                <section class="queueDisplay">
+                    <i class="fa-solid fa-users"></i>
+                    <p>
+                        ${waitingCount}
+                        patient${waitingCount !== 1 ? "s" : ""}
+                        in queue
+                    </p>
+                </section>
+
+            </section>
         `;
-        tbody.appendChild(row);
+
+        container.appendChild(card);
     });
 }
+
+/* =========================
+   SEARCH (NAME + ADDRESS + STATUS)
+========================= */
+
+function initSearch() {
+
+    const search = document.getElementById("clinicSearch");
+
+    search?.addEventListener("input", (e) => {
+
+        const value = e.target.value.toLowerCase().trim();
+
+        const filtered = clinics.filter(c => {
+
+            const name = (c.name || "").toLowerCase();
+            const address = (c.address || "").toLowerCase();
+            const status = (c.status || "").toLowerCase();
+
+            return (
+                name.includes(value) ||
+                address.includes(value) ||
+                status.includes(value)
+            );
+        });
+
+        renderClinics(filtered);
+    });
+}
+
+// ================= SIGN OUT =================
+window.signOut = async function () {
+    try {
+        await firebaseSignOut(auth);
+        window.location.href = "/index.html";
+    } catch (err) {
+        console.error("Sign out failed:", err);
+    }
+};
+document.getElementById("signOutBtn")?.addEventListener("click", () => {
+    window.signOut();
+});
