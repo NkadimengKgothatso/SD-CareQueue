@@ -28,9 +28,10 @@ As an admin, I want to export clinic reports as CSV or PDF files so that I can a
 
 <td>
 <ul>
-<li>Task 1</li>
-<li>Task 2</li>
-<li>Task 3</li>
+<li>Generate report data in CSV format</li>
+<li>Generate report data in PDF format</li>
+<li>Add “Export as CSV” button</li>
+<li>Add “Export as PDF” button</li>
 </ul>
 </td>
 </tr>
