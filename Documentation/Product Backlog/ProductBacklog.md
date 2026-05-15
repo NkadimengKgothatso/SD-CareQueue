@@ -69,13 +69,13 @@
 
   <tr>
     <td>11</td>
-    <td>As a patient, I want to view my upcoming and past appointments so that I can keep track of my medical visits.</td>
+    <td>As a patient, I want to view all my upcoming and past appointments so that I can be able to reschedule or cancel them if needed.</td>
     <td>9</td>
   </tr>
 
   <tr>
     <td>12</td>
-    <td>As clinic staff, I want to add walk-in patients to the queue so that all patients are managed in the system.</td>
+    <td>As a clinic staff member, I want to register walk-in patients and add them to the appointments system, so that they can be tracked and later managed in the queue.</td>
     <td>9</td>
   </tr>
 
@@ -147,7 +147,7 @@
 
   <tr>
     <td>24</td>
-    <td>As an admin, I generate reports (CSV/PDF) so that I can analyse clinic data and share insights easily.</td>
+    <td>As an admin, I want to export clinic reports as CSV or PDF files so that I can analyse data and share insights easily.</td>
     <td>7</td>
   </tr>
 
