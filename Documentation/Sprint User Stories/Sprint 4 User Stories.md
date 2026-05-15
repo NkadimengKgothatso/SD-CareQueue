@@ -41,22 +41,27 @@ As an admin, I want to export clinic reports as CSV or PDF files so that I can a
 <td>2</td>
 
 <td>
-As a __________, I want __________ so that __________.
+As an admin, I want to access a dashboard that shows key system information so that I can monitor clinic operations efficiently.
 </td>
 
 <td>
 <ul>
-<li>Given __________, when __________, then __________</li>
-<li>Given __________, when __________, then __________</li>
-<li>Given __________, when __________, then __________</li>
+<li>Given clinic, queue, and appointment data exist in Firestore, when the dashboard initializes, then it should correctly calculate and display all statistics.</li>
+
+<li>Given multiple clinics exist, when the dashboard renders, then clinics should be sorted by number of patients in queue (highest first).</li>
+
+<li>Given an admin types in the search bar, when they enter a keyword, then clinics should filter by name, address, or status in real time.</li>
 </ul>
 </td>
 
 <td>
 <ul>
-<li>Task 1</li>
-<li>Task 2</li>
-<li>Task 3</li>
+<ul>
+<li>Fetch clinics, queues, and appointments from Firestore using getDocs()</li>
+
+<li>Calculate and display main dashboard numbers (active clinics, patients seen, patients in queue)</li>
+
+<li>Display clinic cards sorted by number of patients in queue and allow searching by name, address, or status</li>
 </ul>
 </td>
 </tr>
