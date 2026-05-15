@@ -6,7 +6,8 @@ import {
   where,
   getDocs,
   doc,
-  updateDoc
+  updateDoc,
+  orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -295,7 +296,9 @@ onAuthStateChanged(auth, async (user) => {
 
         const q = query(
             collection(db, "Appointments"),
-            where("userID", "==", user.uid)
+            where("userID", "==", user.uid),
+            orderBy("date", "asc"),
+            orderBy("time", "asc")
         );
 
         const snapshot = await getDocs(q);
@@ -311,7 +314,7 @@ onAuthStateChanged(auth, async (user) => {
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
 
-            const apptDate = new Date(data.date);
+            
 
             const appointment = {
                 id: docSnap.id,
@@ -323,7 +326,9 @@ onAuthStateChanged(auth, async (user) => {
                 reason: data.reason
             };
 
-            if (apptDate >= today) {
+            const todayStr = new Date().toISOString().split("T")[0];
+
+            if (data.date >= todayStr) {
                 hasUpcoming = true;
                 renderAppointment(appointment);
             } else {
