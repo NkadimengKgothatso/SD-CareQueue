@@ -108,7 +108,7 @@ function getWaitingByClinic() {
 
 function getStatusFor(queueCount) {
     if (queueCount === 0) return { label: "Closed", cls: "closed" };
-    if (queueCount >= 30) return { label: "Busy",   cls: "busy"   };
+    if (queueCount >= 10) return { label: "Busy",   cls: "busy"   };
     return { label: "Open", cls: "open" };
 }
 
