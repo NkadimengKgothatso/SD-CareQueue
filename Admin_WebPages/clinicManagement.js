@@ -40,14 +40,33 @@ closeBtns.forEach(btn => {
         modal.style.display            = "none";
         manageModal.style.display      = "none";
         clinicHoursModal.style.display = "none";
+        document.getElementById("hoursError").classList.remove("visible");
+        document.getElementById("hoursDayError").classList.remove("visible");
     });
 });
 
 window.addEventListener("click", (e) => {
     if (e.target === modal)            modal.style.display            = "none";
     if (e.target === manageModal)      manageModal.style.display      = "none";
-    if (e.target === clinicHoursModal) clinicHoursModal.style.display = "none";
+    if (e.target === clinicHoursModal) {
+        clinicHoursModal.style.display = "none";
+        document.getElementById("hoursError").classList.remove("visible");
+        document.getElementById("hoursDayError").classList.remove("visible");
+    }
 });
+
+// =========================
+// HELPERS
+// =========================
+
+// Builds a readable hours string from the 4 separate fields
+function formatHours(startDay, endDay, startTime, endTime) {
+    if (!startDay && !endDay && !startTime && !endTime) return "Hours not specified";
+    if (startDay && endDay && startTime && endTime) {
+        return `${startDay}-${endDay}: ${startTime}-${endTime}`;
+    }
+    return "Hours not specified";
+}
 
 // =========================
 // LOAD & RENDER CLINICS
@@ -66,10 +85,15 @@ async function loadClinics() {
                 id:             docSnap.id,
                 name:           data.name,
                 address:        data.address,
-                province:       data.province ?? "",
-                status:         data.status ?? "Active",
-                service:        data.service ?? ["General"],
-                operatingHours: data.opening_hours ?? "Hours not specified"
+                province:       data.province        ?? "",
+                status:         data.status          ?? "Active",
+                service:        data.service         ?? ["General"],
+                latitude:       data.latitude        ?? null,
+                longitude:      data.longitude       ?? null,
+                startDay:       data.startDay        ?? "",
+                endDay:         data.endDay          ?? "",
+                startTime:      data.startTime       ?? "",
+                endTime:        data.endTime         ?? ""
             });
         });
 
@@ -83,15 +107,7 @@ async function loadClinics() {
 function renderClinics(list) {
     const container = document.querySelector(".clinics");
     container.innerHTML = "";
-    list.forEach(c => addClinicToUI(
-        c.id,
-        c.name,
-        c.address,
-        c.status,
-        c.service,
-        c.operatingHours,
-        c.province
-    ));
+    list.forEach(c => addClinicToUI(c));
 }
 
 loadClinics();
@@ -99,10 +115,12 @@ loadClinics();
 // =========================
 // BUILD CLINIC CARD
 // =========================
-function addClinicToUI(id, name, location, status = "Active", service, operatingHours, province) {
+function addClinicToUI(clinic) {
+    const { id, name, address, status = "Active", service, province, startDay, endDay, startTime, endTime } = clinic;
+
     const container = document.querySelector(".clinics");
-    const clinic    = document.createElement("section");
-    clinic.classList.add("clinic");
+    const card      = document.createElement("section");
+    card.classList.add("clinic");
 
     const statusColors = {
         Active: { background: "#DCFCE7", color: "#166534" },
@@ -110,30 +128,25 @@ function addClinicToUI(id, name, location, status = "Active", service, operating
         Busy:   { background: "#E5E7EB", color: "#374151" }
     };
 
-    const colors = statusColors[status] || statusColors["Active"];
+    const colors       = statusColors[status] || statusColors["Active"];
+    const hoursDisplay = formatHours(startDay, endDay, startTime, endTime);
+    const provinceDisplay = province && province.trim().toLowerCase() !== "unknown"
+        ? `, ${province}`
+        : "";
 
-    clinic.innerHTML = `
+    card.innerHTML = `
         <section class="clinicHeader">
             <i class="fa-solid fa-house-chimney-medical"></i>
             <section class="clinicNameStatus">
                 <p class="clinicName">${name}</p>
-            <p class="Location">
-                ${location}${
-                    province &&
-                    province.trim().toLowerCase() !== "unknown"
-                        ? `, ${province}`
-                        : ""
-                }
-            </p>
+                <p class="Location">${address}${provinceDisplay}</p>
             </section>
             <p id="status" style="background: ${colors.background}; color: ${colors.color};">${status}</p>
         </section>
         <section class="clinicContainer">
             <section class="OpenTimes">
                 <i class="fa-regular fa-clock"></i>
-                <p>${operatingHours && operatingHours !== "Hours not available"
-                    ? operatingHours
-                    : "Hours not specified"}</p>
+                <p>${hoursDisplay}</p>
             </section>
             <section class="clinicServices">
                 ${Array.isArray(service)
@@ -149,43 +162,32 @@ function addClinicToUI(id, name, location, status = "Active", service, operating
         </section>
     `;
 
-    container.appendChild(clinic);
+    container.appendChild(card);
 
     // Delete
-    clinic.querySelector(".delete-btn").addEventListener("click", async () => {
+    card.querySelector(".delete-btn").addEventListener("click", async () => {
         if (!confirm("Delete this clinic?")) return;
         try {
             await deleteDoc(doc(db, "clinicsObjects", id));
-            clinic.remove();
+            card.remove();
         } catch (error) {
             console.error("Error deleting clinic:", error);
         }
     });
 
     // Manage
-    clinic.querySelector(".manage-btn").addEventListener("click", () => {
-        openEditModal(id, name, location, status, service, province);
+    card.querySelector(".manage-btn").addEventListener("click", () => {
+        openEditModal(clinic);
     });
 
     // Hours
-    clinic.querySelector(".hours-btn").addEventListener("click", () => {
+    card.querySelector(".hours-btn").addEventListener("click", () => {
         editingHoursClinicId = id;
 
-        const match = (operatingHours || "").match(
-            /^(\w+)-(\w+):\s*([\w]+)\s*-\s*([\w]+)$/
-        );
-
-        if (match) {
-            document.getElementById("startDay").value  = match[1].trim();
-            document.getElementById("endDay").value    = match[2].trim();
-            document.getElementById("startTime").value = match[3].trim();
-            document.getElementById("endTime").value   = match[4].trim();
-        } else {
-            document.getElementById("startDay").value  = "";
-            document.getElementById("endDay").value    = "";
-            document.getElementById("startTime").value = "";
-            document.getElementById("endTime").value   = "";
-        }
+        document.getElementById("startDay").value  = startDay  || "";
+        document.getElementById("endDay").value    = endDay    || "";
+        document.getElementById("startTime").value = startTime || "";
+        document.getElementById("endTime").value   = endTime   || "";
 
         clinicHoursModal.style.display = "flex";
     });
@@ -200,8 +202,8 @@ addForm.addEventListener("submit", async (e) => {
     const name     = document.getElementById("clinicName").value.trim();
     const address  = document.getElementById("Location").value.trim();
     const status   = document.getElementById("clinicStatus").value;
-    const services = getSelectedServices("clinicServicesDropdown");
     const province = document.getElementById("province").value;
+    const services = getSelectedServices("clinicServicesDropdown");
 
     try {
         await addDoc(collection(db, "clinicsObjects"), {
@@ -209,9 +211,12 @@ addForm.addEventListener("submit", async (e) => {
             address,
             status,
             province,
-            opening_hours: "Hours not specified",
-            service:       services.length > 0 ? services : ["General"],
-            createdAt:     serverTimestamp()
+            service:   services.length > 0 ? services : ["General"],
+            startDay:  "",
+            endDay:    "",
+            startTime: "",
+            endTime:   "",
+            createdAt: serverTimestamp()
         });
 
         loadClinics();
@@ -232,16 +237,16 @@ manageForm.addEventListener("submit", async (e) => {
     const name     = document.getElementById("ManageClinicName").value.trim();
     const address  = document.getElementById("ManageLocation").value.trim();
     const status   = document.getElementById("ManageClinicStatus").value;
-    const services = getSelectedServices("manageClinicServicesDropdown");
     const province = document.getElementById("manageProvince").value;
+    const services = getSelectedServices("manageClinicServicesDropdown");
 
     try {
         await updateDoc(doc(db, "clinicsObjects", editingClinicId), {
             name,
             address,
             status,
-            service: services.length > 0 ? services : ["General"],
-            province
+            province,
+            service: services.length > 0 ? services : ["General"]
         });
 
         loadClinics();
@@ -259,6 +264,13 @@ manageForm.addEventListener("submit", async (e) => {
 hoursForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const hoursError   = document.getElementById("hoursError");
+    const hoursDayError = document.getElementById("hoursDayError");
+
+    // Clear both errors first
+    hoursError.classList.remove("visible");
+    hoursDayError.classList.remove("visible");
+
     if (!editingHoursClinicId) {
         alert("No clinic selected.");
         return;
@@ -268,15 +280,31 @@ hoursForm.addEventListener("submit", async (e) => {
     const endDay    = document.getElementById("endDay").value;
     const startTime = document.getElementById("startTime").value;
     const endTime   = document.getElementById("endTime").value;
-    const hoursStr  = `${startDay}-${endDay}: ${startTime}-${endTime}`;
+
+    // ✅ Validate all fields are filled
+    if (!startDay || !endDay || !startTime || !endTime) {
+        hoursError.classList.add("visible");
+        return;
+    }
+
+    // ✅ Validate start and end day are not the same
+    if (startDay === endDay) {
+        hoursDayError.classList.add("visible");
+        return;
+    }
 
     try {
         await updateDoc(doc(db, "clinicsObjects", editingHoursClinicId), {
-            opening_hours: hoursStr
+            startDay,
+            endDay,
+            startTime,
+            endTime
         });
 
         loadClinics();
         hoursForm.reset();
+        hoursError.classList.remove("visible");
+        hoursDayError.classList.remove("visible");
         clinicHoursModal.style.display = "none";
         editingHoursClinicId = null;
     } catch (error) {
@@ -287,16 +315,25 @@ hoursForm.addEventListener("submit", async (e) => {
 // =========================
 // OPEN EDIT MODAL
 // =========================
-function openEditModal(id, name, address, status, services, province) {
+function openEditModal(clinic) {
+    const { id, name, address, status, service, province } = clinic;
+
     editingClinicId = id;
     manageModal.style.display = "flex";
 
     document.getElementById("ManageClinicName").value   = name;
     document.getElementById("ManageLocation").value     = address;
     document.getElementById("ManageClinicStatus").value = status;
-    document.getElementById("manageProvince").value = province || "";
+    document.getElementById("manageProvince").value     = province || "";
 
-    preselectServices("manageClinicServicesDropdown", services);
+
+    // ✅ Only set province if it exists as a valid option, otherwise show placeholder
+    const provinceSelect  = document.getElementById("manageProvince");
+    const validProvinces  = Array.from(provinceSelect.options).map(opt => opt.value);
+    const provinceToSet   = province && validProvinces.includes(province) ? province : "";
+    provinceSelect.value  = provinceToSet;
+    
+    preselectServices("manageClinicServicesDropdown", service);
 }
 
 // =========================
@@ -306,9 +343,9 @@ searchInput.addEventListener("input", (e) => {
     const value = e.target.value.toLowerCase().trim();
 
     const filtered = clinics.filter(c =>
-        (c.name    || "").toLowerCase().includes(value) ||
-        (c.address || "").toLowerCase().includes(value) ||
-        (c.status  || "").toLowerCase().includes(value) ||
+        (c.name     || "").toLowerCase().includes(value) ||
+        (c.address  || "").toLowerCase().includes(value) ||
+        (c.status   || "").toLowerCase().includes(value) ||
         (c.province || "").toLowerCase().includes(value) ||
         (Array.isArray(c.service)
             ? c.service.join(" ").toLowerCase()
@@ -384,11 +421,12 @@ function preselectServices(dropdownId, services) {
 }
 
 export {
-  renderClinics,
-  addClinicToUI,
-  openEditModal,
-  updateTriggerLabel,
-  getSelectedServices,
-  clearServices,
-  preselectServices
+    renderClinics,
+    addClinicToUI,
+    openEditModal,
+    formatHours,
+    updateTriggerLabel,
+    getSelectedServices,
+    clearServices,
+    preselectServices
 };

@@ -188,6 +188,8 @@
     flex-wrap: wrap;
     gap: 8px;
     align-items: center;
+    border-bottom: 1px solid var(--color-border-tertiary);
+    padding-bottom: 12px;
 }
 
 .services {
@@ -505,4 +507,19 @@ select[multiple] option:checked {
     width: 16px;
     height: 16px;
     cursor: pointer;
+}
+
+.hours-error {
+    display: none;
+    color: #991B1B;
+    background: #FEE2E2;
+    border: 1px solid #FECACA;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.hours-error.visible {
+    display: block;
 }
