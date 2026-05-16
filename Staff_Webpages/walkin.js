@@ -371,7 +371,7 @@ addBtn?.addEventListener("click", async () => {
 
         console.log(" ASSIGNED TIME RESULT:", assignedTime);
 
-        const assignedTime = getNextAvailableTime(existingAppointments);
+        
 
         if (assignedTime === "FULL") {
             alert("No available slots for today. Patient cannot be added.");
