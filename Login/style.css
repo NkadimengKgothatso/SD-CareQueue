@@ -304,7 +304,7 @@ mark.rb-g { background: var(--brand-lightest); color: var(--brand-dark); }
 mark.rb-b { background: #E6F1FB; color: #0C447C; }
 mark.rb-p { background: #EEEDFE; color: #3C3489; }
 
-/* DIVIDER — semantic hr instead of decorative sections */
+/* DIVIDER 
 hr.divider {
   border: none;
   border-top: 0.5px solid var(--color-border-light);
