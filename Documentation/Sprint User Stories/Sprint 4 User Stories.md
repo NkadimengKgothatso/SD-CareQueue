@@ -41,7 +41,7 @@ As an admin, I want to export clinic reports as CSV or PDF files so that I can a
 <td>2</td>
 
 <td>
->As an admin, I want to access a dashboard that shows key system information so that I can monitor clinic operations efficiently.
+As an admin, I want to access a dashboard that shows key system information so that I can monitor clinic operations efficiently.
 </td>
 
 <td>
