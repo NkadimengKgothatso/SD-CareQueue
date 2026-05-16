@@ -60,7 +60,7 @@ onAuthStateChanged(auth, async (user) => {
             const data = docSnap.data();
 
             clinicID = Number(data.clinicId);
-            staffName = data.displayName || "Staff";
+            staffName = data.name || "Staff";
 
             // top bar name
             document.querySelectorAll(".name-Surname").forEach(el => {
