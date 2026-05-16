@@ -71,12 +71,12 @@ async function loadClinics() {
 
         const option = document.createElement("option");
         option.value = clinic.name;
-        option.setAttribute("data-id", docSnap.id);
+        option.setAttribute("data-id", clinic.id);
 
         dataList.appendChild(option);
 
         clinicsList.push({
-            id: docSnap.id,
+            id: clinic.id,
             name: clinic.name
         });
     });
@@ -106,7 +106,7 @@ window.addStaff = async function () {
     const name = document.getElementById("staffName").value;
     const email = document.getElementById("staffEmail").value;
     const clinicName = document.getElementById("staffClinicInput").value;
-    const clinicId = document.getElementById("staffClinicId").value;
+    const clinicId = parseInt(document.getElementById("staffClinicId").value);
 
     await addDoc(collection(db, STAFF_COLLECTION), {
         name,
