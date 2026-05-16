@@ -1,0 +1,400 @@
+/* =========================
+   MAIN LAYOUT
+========================= */
+
+.dashboard-main {
+    flex: 1;
+    margin-left: 240px;
+    padding: 32px 48px;
+}
+
+/* =========================
+   PAGE HEADER
+========================= */
+
+.page-header {
+    margin-bottom: 32px;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.page-subtitle {
+    margin-top: 4px;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+}
+
+/* =========================
+   STATS
+========================= */
+
+.stats-row {
+    display: flex;
+    gap: 64px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+}
+
+.stat-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.stat-value {
+    font-size: 34px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.stat-label {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+}
+
+/* =========================
+   SEARCH BAR
+========================= */
+
+.search-Bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    background-color: var(--color-brand-soft);
+
+    border-radius: 20px;
+
+    padding: 5px 10px;
+
+    margin-bottom: 20px;
+}
+
+.search-Bar i {
+    color: var(--color-brand);
+}
+
+.search-Bar input {
+    border: none;
+    outline: none;
+
+    flex: 1;
+
+    padding: 10px;
+
+    border-radius: 20px;
+
+    background-color: var(--color-background-secondary);
+
+    font-family: var(--font-sans);
+
+    font-size: 13px;
+
+    color: var(--color-text-primary);
+}
+
+.search-Bar input:focus {
+    outline: 2px solid var(--color-brand);
+}
+
+/* =========================
+   CLINICS CARD
+========================= */
+
+.clinicsCard {
+    background: var(--color-brand-soft);
+
+    border-radius: var(--border-radius-lg);
+
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 16px;
+
+    border: 1px solid var(--color-border-tertiary);
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+
+    min-height: 60vh;
+}
+
+.clinicCardHeader {
+    display: flex;
+    align-items: center;
+}
+
+.section-label {
+    font-size: 12px;
+    font-weight: 600;
+
+    color: var(--color-brand);
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.05em;
+}
+
+/* =========================
+   CLINICS GRID
+========================= */
+
+.clinics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+/* =========================
+   CLINIC CARD
+========================= */
+
+.clinic {
+    display: flex;
+    flex-direction: column;
+
+    flex: 1 1 calc(50% - 20px);
+
+    gap: 18px;
+
+    padding: 16px;
+
+    border-radius: var(--border-radius-lg);
+
+    background: var(--color-background-primary);
+
+    border: 1px solid var(--color-border-tertiary);
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+
+    transition: 0.25s ease;
+}
+
+.clinic:hover {
+    transform: translateY(-3px);
+
+    box-shadow: 0 8px 20px rgba(83,74,183,0.15);
+}
+
+/* =========================
+   CARD HEADER
+========================= */
+
+.clinicHeader {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    border-bottom: 1px solid var(--color-border-tertiary);
+
+    padding-bottom: 12px;
+}
+
+.clinicHeader i {
+    font-size: 20px;
+
+    color: var(--color-brand);
+
+    background: var(--color-brand-soft);
+
+    padding: 10px;
+
+    border-radius: 10px;
+}
+
+.clinicNameStatus {
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+
+    flex: 1;
+}
+
+.clinicName {
+    font-size: 15px;
+    font-weight: 500;
+
+    color: var(--color-text-primary);
+}
+
+.Location {
+    font-size: 12px;
+
+    color: var(--color-text-secondary);
+}
+
+/* =========================
+   STATUS
+========================= */
+
+#status {
+    font-size: 12px;
+
+    font-weight: 500;
+
+    padding: 8px 14px;
+
+    border-radius: 20px;
+
+    margin-left: auto;
+}
+
+/* =========================
+   CARD BODY
+========================= */
+
+.clinicContainer {
+    display: flex;
+    flex-direction: column;
+
+    gap: 16px;
+}
+
+.OpenTimes,
+.queueDisplay {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    font-size: 13px;
+
+    color: var(--color-text-secondary);
+}
+
+.OpenTimes i,
+.queueDisplay i {
+    color: var(--color-brand);
+
+    font-size: 16px;
+}
+
+/* =========================
+   EMPTY STATE
+========================= */
+
+.empty-state {
+    font-size: 14px;
+
+    color: var(--color-text-secondary);
+
+    padding: 24px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 768px) {
+
+    .dashboard-main {
+        margin-left: 72px;
+        padding: 20px;
+    }
+
+    .clinic {
+        flex: 1 1 100%;
+    }
+
+    .stats-row {
+        gap: 32px;
+    }
+}
+
+
+.status-pill {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 20px;
+    margin-left: auto;
+}
+
+/* Active */
+.status-pill.active {
+    background: #DCFCE7;
+    color: #166534;
+}
+
+/* Busy */
+.status-pill.busy {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+/* Closed */
+.status-pill.closed {
+    background: lightpink;
+    color: red;
+}
+/* ================= TOP BAR ================= */
+.top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 24px;
+    background: var(--color-background-primary);
+    border-bottom: 1px solid var(--color-border-tertiary);
+    z-index: 1000;
+}
+
+/* push main content down */
+.admin-container {
+    margin-top: 64px;
+}
+
+/* logo inside top bar */
+.top-bar .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.top-bar .logo-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: var(--color-brand);
+}
+
+.top-bar .logo-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+/* ── Sign Out Button ────────────────────────────────────── */
+.sign-out-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: transparent;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-tertiary);
+    padding: 7px 14px;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    transition: var(--transition-fast);
+}
+
+.sign-out-btn:hover {
+    background: #fef2f2;
+    color: #ef4444;
+    border-color: #fecaca;
+}

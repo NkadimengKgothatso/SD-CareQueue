@@ -1,48 +1,46 @@
-// =============================================================
-// staff.test.js  –  improved coverage for StaffManagement.js
-// =============================================================
-
-// ── Firebase mocks (must be declared before any import) ───────
-const mockGetDocs    = jest.fn();
-const mockAddDoc     = jest.fn();
-const mockDeleteDoc  = jest.fn();
-const mockCollection = jest.fn();
-const mockDoc        = jest.fn();
-
-jest.mock("/Admin_WebPages/admin.js", () => ({
-  initAdminPage: jest.fn(() =>
-    Promise.resolve({ email: "admin@test.com" })
-  ),
-  db: {}
-}));
+const mockInitAdminPage = jest.fn();
+const mockGetDocs = jest.fn();
+const mockAddDoc = jest.fn();
+const mockDeleteDoc = jest.fn();
+const mockCollection = jest.fn((_db, name) => name);
+const mockDoc = jest.fn((_db, collectionName, id) => `${collectionName}/${id}`);
+const mockServerTimestamp = jest.fn(() => "TIMESTAMP");
 
 jest.mock(
-  "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
+  "/Admin_WebPages/admin.js",
   () => ({
-    collection:      mockCollection,
-    getDocs:         mockGetDocs,
-    addDoc:          mockAddDoc,
-    deleteDoc:       mockDeleteDoc,
-    doc:             mockDoc,
-    serverTimestamp: jest.fn(() => "TIMESTAMP")
+    initAdminPage: mockInitAdminPage,
+    db: {}
   }),
   { virtual: true }
 );
 
-// ── DOM factory ───────────────────────────────────────────────
+jest.mock(
+  "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
+  () => ({
+    collection: mockCollection,
+    getDocs: mockGetDocs,
+    addDoc: mockAddDoc,
+    deleteDoc: mockDeleteDoc,
+    doc: mockDoc,
+    serverTimestamp: mockServerTimestamp
+  }),
+  { virtual: true }
+);
+
 function buildDOM() {
   document.body.innerHTML = `
-    <div id="inviteModal" style="display:none"></div>
-    <div id="toast" class="toast"></div>
+    <section id="inviteModal" style="display:none"></section>
+    <section id="toast" class="toast"></section>
 
     <table>
       <tbody id="staffTableBody"></tbody>
     </table>
 
-    <div id="staffCount"></div>
+    <section id="staffCount"></section>
 
-    <input  id="staffName"  value="" />
-    <input  id="staffEmail" value="" />
+    <input id="staffName" value="" />
+    <input id="staffEmail" value="" />
 
     <select id="staffClinic">
       <option value="">Select</option>
@@ -51,411 +49,337 @@ function buildDOM() {
   `;
 }
 
-// ── Shared beforeEach ─────────────────────────────────────────
-beforeEach(() => {
-  buildDOM();
-  jest.useFakeTimers();
-  jest.resetModules();
-  jest.clearAllMocks(); // reset call counts on all mocks between tests
+function makeSnapshot(items = []) {
+  const docs = items.map((item, index) => {
+    const { __docId, ...data } = item;
 
-  global.confirm = jest.fn(() => true);
-  global.alert   = jest.fn();
+    return {
+      id: __docId || item.id || `doc-${index}`,
+      data: () => data
+    };
+  });
 
-  // Default: Firestore calls succeed with empty snapshots
-  mockGetDocs.mockResolvedValue(makeSnapshot([]));
-  mockAddDoc.mockResolvedValue({ id: "new-doc-id" });
-  mockDeleteDoc.mockResolvedValue();
-  mockCollection.mockReturnValue("collection-ref");
-  mockDoc.mockReturnValue("doc-ref");
-
-  window.staffLogic = {
-    buildStaffTableHTML: jest.fn(() => "<tr id='rendered'></tr>"),
-    buildClinicOption:   jest.fn((id, name) =>
-      name ? { value: id, label: name } : null
-    ),
-    validateStaffForm:   jest.fn(() => null),        // valid by default
-    buildStaffPayload:   jest.fn(() => ({
-      displayName: "Test User",
-      email:       "test@test.com"
-    }))
+  return {
+    size: docs.length,
+    forEach: (callback) => docs.forEach(callback)
   };
+}
+
+async function flushPromises(times = 6) {
+  for (let i = 0; i < times; i++) {
+    await Promise.resolve();
+  }
+}
+
+async function load() {
+  const mod = await import("./StaffManagement.js");
+  await flushPromises();
+  return mod;
+}
+
+beforeEach(() => {
+  jest.resetModules();
+  jest.clearAllMocks();
+  jest.useFakeTimers();
+  buildDOM();
+
+  mockInitAdminPage.mockResolvedValue({ email: "admin@test.com" });
+  mockGetDocs.mockResolvedValue(makeSnapshot([]));
+  mockAddDoc.mockResolvedValue({ id: "new-staff" });
+  mockDeleteDoc.mockResolvedValue();
+  global.confirm = jest.fn(() => true);
 });
 
 afterEach(() => {
   jest.useRealTimers();
+  jest.restoreAllMocks();
 });
 
-// ── Snapshot helper ───────────────────────────────────────────
-function makeSnapshot(items) {
-  return {
-    size: items.length,
-    forEach: (cb) =>
-      items.forEach((item) =>
-        cb({ id: item.id, data: () => item })
-      )
-  };
-}
+test("buildStaffTableHTML renders an empty row when no staff exist", async () => {
+  const { buildStaffTableHTML } = await load();
 
-// ── Load module (reset each time so mocks take effect) ────────
-async function load() {
-  const mod = await import("./StaffManagement.js");
-  // initAdminPage().then() is async — let it settle
-  await Promise.resolve();
-  await Promise.resolve();
-  return mod;
-}
+  const html = buildStaffTableHTML([]);
 
-// =============================================================
-// 1. Modal helpers
-// =============================================================
-test("openInviteModal shows modal", async () => {
-  await load();
-  window.openInviteModal();
-  expect(document.getElementById("inviteModal").style.display).toBe("flex");
+  expect(html).toContain("No staff members found");
+  expect(html).toContain('colspan="4"');
 });
 
-test("closeInviteModal hides modal", async () => {
-  await load();
-  document.getElementById("inviteModal").style.display = "flex";
-  window.closeInviteModal();
-  expect(document.getElementById("inviteModal").style.display).toBe("none");
+test("buildStaffTableHTML renders staff rows with fallbacks and remove handlers", async () => {
+  const { buildStaffTableHTML } = await load();
+
+  const html = buildStaffTableHTML([
+    { id: "s1", name: "Alice", email: "alice@test.com", clinicName: "Clinic A" },
+    { id: "s2" }
+  ]);
+
+  expect(html).toContain("Alice");
+  expect(html).toContain("alice@test.com");
+  expect(html).toContain("Clinic A");
+  expect(html).toContain("removeStaff('s1')");
+  expect(html).toContain("Unassigned");
+  expect(html).toContain("<td>-</td>");
 });
 
-// =============================================================
-// 2. showToast
-// =============================================================
-test("showToast displays message with type class", async () => {
-  const { showToast } = await load();
-  showToast("Saved successfully", "success");
+test("buildClinicOption returns null for blank names and an option model for valid names", async () => {
+  const { buildClinicOption } = await load();
 
-  const toast = document.getElementById("toast");
-  expect(toast.textContent).toBe("Saved successfully");
-  expect(toast.className).toContain("success");
-  expect(toast.className).toContain("show");
+  expect(buildClinicOption("")).toBeNull();
+  expect(buildClinicOption("Clinic A")).toEqual({
+    value: "Clinic A",
+    label: "Clinic A"
+  });
 });
 
-test("showToast resets className after 3 s", async () => {
-  const { showToast } = await load();
-  showToast("Done", "success");
+test("validateStaffForm reports missing fields, invalid emails, and accepts valid input", async () => {
+  const { validateStaffForm } = await load();
 
-  jest.advanceTimersByTime(3000);
-
-  expect(document.getElementById("toast").className).toBe("toast");
+  expect(validateStaffForm("", "staff@test.com", "1")).toBe("Please fill in all fields");
+  expect(validateStaffForm("Staff", "not-an-email", "1")).toBe("Please enter a valid email address");
+  expect(validateStaffForm("Staff", "staff@test.com", "1")).toBeNull();
 });
 
-test("showToast does nothing when toast element is absent", async () => {
-  const { showToast } = await load();
-  document.getElementById("toast").remove();
+test("buildStaffPayload normalizes email and includes clinic/admin metadata", async () => {
+  const { buildStaffPayload } = await load();
 
-  // Must not throw
-  expect(() => showToast("msg", "error")).not.toThrow();
+  expect(buildStaffPayload("Jane", "JANE@TEST.COM", "Clinic A", "1", "admin@test.com")).toEqual({
+    name: "Jane",
+    email: "jane@test.com",
+    clinicName: "Clinic A",
+    clinicId: "1",
+    addedBy: "admin@test.com"
+  });
 });
 
-// =============================================================
-// 3. loadStaff — called automatically on init
-// =============================================================
-test("loadStaff populates staffCount and calls buildStaffTableHTML", async () => {
-  mockGetDocs.mockResolvedValueOnce(
-    makeSnapshot([
-      { id: "s1", displayName: "Alice", email: "alice@test.com", clinicName: "Clinic A" },
-      { id: "s2", displayName: "Bob",   email: "bob@test.com",   clinicName: "Clinic B" }
-    ])
-  );
-
-  await load();
-
-  // Wait for the async chain inside initAdminPage().then() to finish
-  await Promise.resolve();
-  await Promise.resolve();
-
-  expect(document.getElementById("staffCount").textContent).toBe("2");
-  expect(window.staffLogic.buildStaffTableHTML).toHaveBeenCalledWith(
-    expect.arrayContaining([
-      expect.objectContaining({ id: "s1", displayName: "Alice" }),
-      expect.objectContaining({ id: "s2", displayName: "Bob" })
-    ])
-  );
-});
-
-test("loadStaff renders the HTML returned by buildStaffTableHTML", async () => {
-  window.staffLogic.buildStaffTableHTML.mockReturnValue(
-    "<tr><td>Alice</td></tr>"
-  );
-  mockGetDocs.mockResolvedValueOnce(
-    makeSnapshot([{ id: "s1", displayName: "Alice" }])
-  );
-
-  await load();
-  await Promise.resolve();
-  await Promise.resolve();
-
-  expect(document.getElementById("staffTableBody").innerHTML).toBe(
-    "<tr><td>Alice</td></tr>"
-  );
-});
-
-test("loadStaff shows error toast when getDocs rejects", async () => {
-  mockGetDocs.mockRejectedValueOnce(new Error("Firestore down"));
-
-  await load();
-  await Promise.resolve();
-  await Promise.resolve();
-
-  const toast = document.getElementById("toast");
-  expect(toast.textContent).toContain("Failed to load staff");
-  expect(toast.className).toContain("error");
-});
-
-// =============================================================
-// 4. loadClinics — called automatically on init
-// =============================================================
-test("loadClinics appends options for each valid clinic", async () => {
-  // First getDocs call → loadStaff (empty); second → loadClinics
+test("init loads staff and clinics", async () => {
   mockGetDocs
-    .mockResolvedValueOnce(makeSnapshot([]))               // loadStaff
-    .mockResolvedValueOnce(
-      makeSnapshot([
-        { id: "c1", name: "Clinic Alpha" },
-        { id: "c2", name: "Clinic Beta"  }
-      ])
-    );                                                     // loadClinics
+    .mockResolvedValueOnce(makeSnapshot([
+      { __docId: "s1", name: "Alice", email: "alice@test.com", clinicName: "Clinic A" },
+      { __docId: "s2", name: "Bob", email: "bob@test.com", clinicName: "Clinic B" }
+    ]))
+    .mockResolvedValueOnce(makeSnapshot([
+      { __docId: "c1", name: "Clinic Alpha" },
+      { __docId: "c2", name: "Clinic Beta" }
+    ]));
 
   await load();
-  await Promise.resolve();
-  await Promise.resolve();
 
-  const select = document.getElementById("staffClinic");
-  // The two clinic options should have been appended (on top of the
-  // existing placeholder option already in the DOM)
-  expect(select.options.length).toBeGreaterThanOrEqual(2);
-  expect(
-    Array.from(select.options).map((o) => o.textContent)
-  ).toEqual(expect.arrayContaining(["Clinic Alpha", "Clinic Beta"]));
+  expect(mockInitAdminPage).toHaveBeenCalledTimes(1);
+  expect(mockCollection).toHaveBeenCalledWith({}, "ApprovedStaff");
+  expect(mockCollection).toHaveBeenCalledWith({}, "clinicsObjects");
+  expect(document.getElementById("staffCount").textContent).toBe("2");
+  expect(document.getElementById("staffTableBody").textContent).toContain("Alice");
+  expect(document.getElementById("staffTableBody").textContent).toContain("Bob");
+
+  const clinicOptions = Array.from(document.getElementById("staffClinic").options).map((option) => ({
+    value: option.value,
+    text: option.textContent
+  }));
+  expect(clinicOptions).toEqual(expect.arrayContaining([
+    { value: "c1", text: "Clinic Alpha" },
+    { value: "c2", text: "Clinic Beta" }
+  ]));
 });
 
-test("loadClinics skips clinics where buildClinicOption returns null", async () => {
-  window.staffLogic.buildClinicOption.mockReturnValue(null); // all invalid
+test("loadStaff renders the empty-state row for an empty snapshot", async () => {
+  const { loadStaff } = await load();
 
+  await loadStaff();
+
+  expect(document.getElementById("staffCount").textContent).toBe("0");
+  expect(document.getElementById("staffTableBody").textContent).toContain("No staff members found");
+});
+
+test("loadStaff logs and shows an error toast when Firestore fails", async () => {
+  const error = new Error("Firestore down");
+  const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  mockGetDocs.mockRejectedValueOnce(error);
+
+  await load();
+
+  expect(consoleSpy).toHaveBeenCalledWith("loadStaff error:", error);
+  expect(document.getElementById("toast").textContent).toBe("Failed to load staff");
+  expect(document.getElementById("toast").className).toContain("error");
+});
+
+test("loadClinics skips clinics without a name", async () => {
   mockGetDocs
     .mockResolvedValueOnce(makeSnapshot([]))
-    .mockResolvedValueOnce(
-      makeSnapshot([{ id: "c1", name: "Bad Clinic" }])
-    );
+    .mockResolvedValueOnce(makeSnapshot([
+      { __docId: "c1", name: "" },
+      { __docId: "c2", name: "Clinic Beta" }
+    ]));
 
   await load();
-  await Promise.resolve();
-  await Promise.resolve();
 
-  // No extra options should have been added
-  const select = document.getElementById("staffClinic");
-  // Only the original placeholder + "Clinic A" from the static DOM
-  expect(
-    Array.from(select.options).map((o) => o.textContent)
-  ).not.toContain("Bad Clinic");
+  const options = Array.from(document.getElementById("staffClinic").options).map((option) => option.textContent);
+
+  expect(options).not.toContain("");
+  expect(options).toContain("Clinic Beta");
 });
 
-// =============================================================
-// 5. addStaff — window.addStaff
-// =============================================================
-test("addStaff saves to Firestore and reloads staff", async () => {
+test("loadClinics logs errors without crashing", async () => {
+  const error = new Error("Clinics unavailable");
+  const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  mockGetDocs
+    .mockResolvedValueOnce(makeSnapshot([]))
+    .mockRejectedValueOnce(error);
+
   await load();
-  await Promise.resolve();
-  await Promise.resolve();
 
-  document.getElementById("staffName").value  = "Jane Doe";
-  document.getElementById("staffEmail").value = "jane@test.com";
-  document.getElementById("staffClinic").value = "1"; // Clinic A
-
-  mockGetDocs.mockResolvedValue(makeSnapshot([])); // reload after add
-
-  await window.addStaff();
-
-  expect(mockAddDoc).toHaveBeenCalledWith(
-    expect.anything(),
-    expect.objectContaining({ addedAt: "TIMESTAMP" })
-  );
+  expect(consoleSpy).toHaveBeenCalledWith("loadClinics error:", error);
 });
 
-test("addStaff clears form fields after successful save", async () => {
+test("addStaff validates missing fields and invalid email before saving", async () => {
   await load();
-  await Promise.resolve();
-  await Promise.resolve();
-
-  document.getElementById("staffName").value   = "Jane Doe";
-  document.getElementById("staffEmail").value  = "jane@test.com";
-  document.getElementById("staffClinic").value = "1";
-
-  mockGetDocs.mockResolvedValue(makeSnapshot([]));
-
-  await window.addStaff();
-
-  expect(document.getElementById("staffName").value).toBe("");
-  expect(document.getElementById("staffEmail").value).toBe("");
-});
-
-test("addStaff closes invite modal after successful save", async () => {
-  await load();
-  await Promise.resolve();
-  await Promise.resolve();
-
-  document.getElementById("inviteModal").style.display = "flex";
-  document.getElementById("staffName").value           = "Jane";
-  document.getElementById("staffEmail").value          = "j@test.com";
-  document.getElementById("staffClinic").value         = "1";
-
-  mockGetDocs.mockResolvedValue(makeSnapshot([]));
-
-  await window.addStaff();
-
-  expect(document.getElementById("inviteModal").style.display).toBe("none");
-});
-
-test("addStaff shows success toast after saving", async () => {
-  await load();
-  await Promise.resolve();
-  await Promise.resolve();
-
-  document.getElementById("staffName").value   = "Jane";
-  document.getElementById("staffEmail").value  = "j@test.com";
-  document.getElementById("staffClinic").value = "1";
-
-  mockGetDocs.mockResolvedValue(makeSnapshot([]));
-
-  await window.addStaff();
-
-  const toast = document.getElementById("toast");
-  expect(toast.textContent).toContain("Staff member added successfully");
-  expect(toast.className).toContain("success");
-});
-
-test("addStaff shows error toast and returns when validateStaffForm fails", async () => {
-  window.staffLogic.validateStaffForm.mockReturnValue("Email is required");
-
-  await load();
-  await Promise.resolve();
-  await Promise.resolve();
 
   await window.addStaff();
 
   expect(mockAddDoc).not.toHaveBeenCalled();
+  expect(document.getElementById("toast").textContent).toBe("Please fill in all fields");
 
-  const toast = document.getElementById("toast");
-  expect(toast.textContent).toContain("Email is required");
-  expect(toast.className).toContain("error");
-});
-
-test("addStaff shows error toast when addDoc rejects", async () => {
-  mockAddDoc.mockRejectedValueOnce(new Error("Firestore error"));
-
-  await load();
-  await Promise.resolve();
-  await Promise.resolve();
-
-  document.getElementById("staffName").value   = "Jane";
-  document.getElementById("staffEmail").value  = "j@test.com";
+  document.getElementById("staffName").value = "Jane";
+  document.getElementById("staffEmail").value = "bad-email";
   document.getElementById("staffClinic").value = "1";
 
   await window.addStaff();
 
-  const toast = document.getElementById("toast");
-  expect(toast.textContent).toContain("Failed to add staff member");
-  expect(toast.className).toContain("error");
+  expect(mockAddDoc).not.toHaveBeenCalled();
+  expect(document.getElementById("toast").textContent).toBe("Please enter a valid email address");
 });
 
-test("addStaff passes currentAdmin email to buildStaffPayload", async () => {
+test("addStaff saves normalized payload, clears the form, closes modal, reloads staff, and shows success", async () => {
   await load();
-  await Promise.resolve();
-  await Promise.resolve();
 
-  document.getElementById("staffName").value   = "Jane";
-  document.getElementById("staffEmail").value  = "j@test.com";
+  document.getElementById("inviteModal").style.display = "flex";
+  document.getElementById("staffName").value = " Jane Doe ";
+  document.getElementById("staffEmail").value = " JANE@TEST.COM ";
   document.getElementById("staffClinic").value = "1";
-
   mockGetDocs.mockResolvedValue(makeSnapshot([]));
 
   await window.addStaff();
 
-  expect(window.staffLogic.buildStaffPayload).toHaveBeenCalledWith(
-    "Jane", "j@test.com", "Clinic A", 1, "admin@test.com"
+  expect(mockAddDoc).toHaveBeenCalledWith(
+    "ApprovedStaff",
+    {
+      name: "Jane Doe",
+      email: "jane@test.com",
+      clinicName: "Clinic A",
+      clinicId: "1",
+      addedBy: "admin@test.com",
+      addedAt: "TIMESTAMP"
+    }
+  );
+  expect(document.getElementById("staffName").value).toBe("");
+  expect(document.getElementById("staffEmail").value).toBe("");
+  expect(document.getElementById("staffClinic").value).toBe("");
+  expect(document.getElementById("inviteModal").style.display).toBe("none");
+  expect(document.getElementById("toast").textContent).toBe("Staff member added successfully");
+  expect(document.getElementById("toast").className).toContain("success");
+});
+
+test("addStaff falls back to a blank clinic name if the selected option is missing", async () => {
+  await load();
+
+  document.getElementById("staffName").value = "Jane";
+  document.getElementById("staffEmail").value = "jane@test.com";
+  const getElementById = document.getElementById.bind(document);
+  const fakeSelect = {
+    value: "clinic-without-option",
+    options: [],
+    selectedIndex: 0
+  };
+  jest.spyOn(document, "getElementById").mockImplementation((id) => (
+    id === "staffClinic" ? fakeSelect : getElementById(id)
+  ));
+
+  await window.addStaff();
+
+  expect(mockAddDoc).toHaveBeenCalledWith(
+    "ApprovedStaff",
+    expect.objectContaining({
+      clinicId: "clinic-without-option",
+      clinicName: ""
+    })
   );
 });
 
-// =============================================================
-// 6. removeStaff — window.removeStaff
-// =============================================================
-test("removeStaff calls deleteDoc with the correct id", async () => {
-  global.confirm = jest.fn(() => true);
-
+test("addStaff logs and shows an error toast when saving fails", async () => {
+  const error = new Error("Save failed");
+  const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  mockAddDoc.mockRejectedValueOnce(error);
   await load();
-  await Promise.resolve();
-  await Promise.resolve();
 
-  mockGetDocs.mockResolvedValue(makeSnapshot([]));
+  document.getElementById("staffName").value = "Jane";
+  document.getElementById("staffEmail").value = "jane@test.com";
+  document.getElementById("staffClinic").value = "1";
 
-  await window.removeStaff("staff-123");
+  await window.addStaff();
 
-  expect(mockDeleteDoc).toHaveBeenCalledWith("doc-ref");
-  expect(mockDoc).toHaveBeenCalledWith(
-    expect.anything(), "ApprovedStaff", "staff-123"
-  );
+  expect(consoleSpy).toHaveBeenCalledWith("addStaff error:", error);
+  expect(document.getElementById("toast").textContent).toBe("Failed to add staff member");
+  expect(document.getElementById("toast").className).toContain("error");
 });
 
-test("removeStaff reloads staff after deletion", async () => {
-  global.confirm = jest.fn(() => true);
-
-  await load();
-  await Promise.resolve();
-  await Promise.resolve();
-
-  // Track getDocs calls: first two are from init (loadStaff + loadClinics)
-  const callsBefore = mockGetDocs.mock.calls.length;
-  mockGetDocs.mockResolvedValue(makeSnapshot([]));
-
-  await window.removeStaff("staff-123");
-
-  expect(mockGetDocs.mock.calls.length).toBeGreaterThan(callsBefore);
-});
-
-test("removeStaff shows success toast after deletion", async () => {
-  global.confirm = jest.fn(() => true);
-  mockGetDocs.mockResolvedValue(makeSnapshot([]));
-
-  await load();
-  await Promise.resolve();
-  await Promise.resolve();
-
-  await window.removeStaff("staff-abc");
-
-  const toast = document.getElementById("toast");
-  expect(toast.textContent).toContain("Staff member removed");
-  expect(toast.className).toContain("success");
-});
-
-test("removeStaff does NOT delete when confirm returns false", async () => {
+test("removeStaff does nothing when confirmation is cancelled", async () => {
   global.confirm = jest.fn(() => false);
-
   await load();
-  await Promise.resolve();
-  await Promise.resolve();
 
-  const callsBefore = mockDeleteDoc.mock.calls.length;
+  await window.removeStaff("s1");
 
-  await window.removeStaff("staff-xyz");
-
-  expect(mockDeleteDoc.mock.calls.length).toBe(callsBefore);
+  expect(mockDeleteDoc).not.toHaveBeenCalled();
 });
 
-test("removeStaff shows error toast when deleteDoc rejects", async () => {
-  global.confirm = jest.fn(() => true);
-  mockDeleteDoc.mockRejectedValueOnce(new Error("delete failed"));
-
+test("removeStaff deletes the selected record, reloads staff, and shows success", async () => {
   await load();
-  await Promise.resolve();
-  await Promise.resolve();
+  const callsBefore = mockGetDocs.mock.calls.length;
 
-  await window.removeStaff("staff-bad");
+  await window.removeStaff("s1");
 
-  const toast = document.getElementById("toast");
-  expect(toast.textContent).toContain("Failed to remove staff member");
-  expect(toast.className).toContain("error");
+  expect(global.confirm).toHaveBeenCalledWith("Remove this staff member? This cannot be undone.");
+  expect(mockDoc).toHaveBeenCalledWith({}, "ApprovedStaff", "s1");
+  expect(mockDeleteDoc).toHaveBeenCalledWith("ApprovedStaff/s1");
+  expect(mockGetDocs.mock.calls.length).toBeGreaterThan(callsBefore);
+  expect(document.getElementById("toast").textContent).toBe("Staff member removed");
+  expect(document.getElementById("toast").className).toContain("success");
+});
+
+test("removeStaff logs and shows an error toast when deletion fails", async () => {
+  const error = new Error("Delete failed");
+  const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  mockDeleteDoc.mockRejectedValueOnce(error);
+  await load();
+
+  await window.removeStaff("s1");
+
+  expect(consoleSpy).toHaveBeenCalledWith("removeStaff error:", error);
+  expect(document.getElementById("toast").textContent).toBe("Failed to remove staff member");
+  expect(document.getElementById("toast").className).toContain("error");
+});
+
+test("openInviteModal and closeInviteModal toggle the modal display", async () => {
+  await load();
+
+  window.openInviteModal();
+  expect(document.getElementById("inviteModal").style.display).toBe("flex");
+
+  window.closeInviteModal();
+  expect(document.getElementById("inviteModal").style.display).toBe("none");
+});
+
+test("showToast displays a message, resets after three seconds, and tolerates a missing toast", async () => {
+  const { showToast } = await load();
+
+  showToast("Saved", "success");
+
+  expect(document.getElementById("toast").textContent).toBe("Saved");
+  expect(document.getElementById("toast").className).toBe("toast show success");
+
+  jest.advanceTimersByTime(3000);
+  expect(document.getElementById("toast").className).toBe("toast");
+
+  showToast("Plain");
+  expect(document.getElementById("toast").className).toBe("toast show ");
+
+  document.getElementById("toast").remove();
+  expect(() => showToast("Ignored", "error")).not.toThrow();
 });

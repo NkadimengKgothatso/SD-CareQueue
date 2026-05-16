@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Care Queue | Admin Dashboard</title>
+
+    <!-- Shared styles -->
+    <link rel="stylesheet" href="/Admin_WebPages/admin.css" />
+
+    <!-- Dashboard styles -->
+    <link rel="stylesheet" href="/Admin_WebPages/dashboard.css" />
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+</head>
+
+<body>
+  
+<section class="admin-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <section class="sidebar-header">
+                <section class="logo">
+                    <section class="logo-icon"></section>
+                    <section class="logo-name">Care Queue</section>
+                </section>
+
+                <button class="sign-out-btn" id="signOutBtn">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                </button>
+            </section>    
+        
+
+        <nav class="sidebar-nav">
+
+            <section
+                class="nav-item active"
+                onclick="window.location.href='/Admin_WebPages/dashboard.html'"
+            >
+                <section class="nav-dot"></section>
+                <section>Dashboard</section>
+            </section>
+
+            <section
+                class="nav-item"
+                onclick="window.location.href='/Admin_WebPages/clinicManagement.html'"
+            >
+                <section class="nav-dot"></section>
+                <section>Clinic Management</section>
+            </section>
+
+            <section
+                class="nav-item"
+                onclick="window.location.href='/Admin_WebPages/StaffManagement.html'"
+            >
+                <section class="nav-dot"></section>
+                <section>Staff Management</section>
+            </section>
+
+            <section
+                class="nav-item"
+                onclick="window.location.href='/Admin_WebPages/analytics.html'"
+            >
+                <section class="nav-dot"></section>
+                <section>Analytics</section>
+            </section>
+
+        </nav>
+
+        <section class="sidebar-footer">
+            <section class="user-info">
+
+                <section
+                    class="user-avatar"
+                    id="adminAvatar"
+                ></section>
+
+                <section class="user-details">
+                    <section
+                        class="user-name"
+                        id="adminName"
+                    ></section>
+
+                    <section
+                        class="user-email"
+                        id="adminEmail"
+                    ></section>
+                </section>
+
+            </section>
+        </section>
+
+    </aside>
+
+    <!-- MAIN -->
+    <main class="dashboard-main">
+
+        <!-- HEADER -->
+        <section class="page-header">
+
+            <h1 class="page-title">
+                Admin Dashboard
+            </h1>
+
+            <p
+                class="page-subtitle"
+                id="overviewSubtitle"
+            >
+                All clinics overview
+            </p>
+
+        </section>
+
+        <!-- STATS -->
+        <section class="stats-row">
+
+            <article class="stat-block">
+                <h2
+                    class="stat-value"
+                    id="activeClinics"
+                >
+                    —
+                </h2>
+
+                <p class="stat-label">
+                    Active clinics
+                </p>
+            </article>
+
+            <article class="stat-block">
+                <h2
+                    class="stat-value"
+                    id="patientsSeen"
+                >
+                    —
+                </h2>
+
+                <p class="stat-label">
+                    Patients seen
+                </p>
+            </article>
+
+            <article class="stat-block">
+                <h2
+                    class="stat-value"
+                    id="patientsQueue"
+                >
+                    —
+                </h2>
+
+                <p class="stat-label">
+                    Patients in queue
+                </p>
+            </article>
+
+        </section>
+
+        <!-- SEARCH -->
+        <section class="search-Bar">
+
+            <i
+                class="fa-solid fa-magnifying-glass-location"
+            ></i>
+
+            <input
+                type="search"
+                id="clinicSearch"
+                placeholder="Search clinic by name or location or status"
+            />
+
+        </section>
+
+        <!-- CLINICS CARD -->
+        <section class="clinicsCard">
+
+            <section class="clinicCardHeader">
+
+                <p class="section-label">
+                    CLINIC STATUS
+                </p>
+
+            </section>
+
+            <section
+                class="clinics"
+                id="clinicCards"
+            ></section>
+
+        </section>
+
+    </main>
+
+</section>
+
+<script
+    type="module"
+    src="dashboard.js"
+></script>
+
+</body>
+</html>

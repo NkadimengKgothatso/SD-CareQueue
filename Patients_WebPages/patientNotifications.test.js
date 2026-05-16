@@ -47,19 +47,19 @@ jest.mock(
 // runs document.getElementById and addEventListener at the top level.
 function buildDOM() {
   document.body.innerHTML = `
-    <div id="userName"></div>
-    <div id="userEmail"></div>
-    <div id="notifList"></div>
-    <div id="toast"></div>
-    <div id="count-all"></div>
-    <div id="count-unread"></div>
+    <section id="userName"></section>
+    <section id="userEmail"></section>
+    <section id="notifList"></section>
+    <section id="toast"></section>
+    <section id="count-all"></section>
+    <section id="count-unread"></section>
 
-    <div id="filters">
+    <section id="filters">
       <button class="filter-btn active" data-filter="all"></button>
       <button class="filter-btn" data-filter="unread"></button>
       <button class="filter-btn" data-filter="appointment"></button>
       <button class="filter-btn" data-filter="queue"></button>
-    </div>
+    </section>
 
     <button id="markAllBtn"></button>
     <button id="clearBtn"></button>

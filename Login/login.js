@@ -88,7 +88,7 @@ function handleRedirect(role) {
   } else if (role === "staff") {
     window.location.href = "../Staff_Webpages/StaffDashboard.html";
   } else {
-    window.location.href = "/Admin_WebPages/StaffManagement.html";
+    window.location.href = "../Admin_WebPages/dashboard.html";
   }
 }
 

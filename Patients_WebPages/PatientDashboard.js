@@ -127,7 +127,6 @@ async function loadAppointments(userId) {
         if (upcoming.length === 0) { showEmpty(); return; }
 
         const next = upcoming[0];
-        if (!next) { showEmpty(); return; }
 
         showFilled();
 
@@ -279,15 +278,10 @@ document.querySelectorAll("aside nav ul li a").forEach(link => {
     if (link.getAttribute("href") === currentPage) link.classList.add("active");
 });
 
-function __setDashboardElementsForTest() {
-  emptyStates = document.getElementById("emptyStates");
-  filledStates = document.getElementById("filledStates");
-}
 
 export {
-  showEmpty,
-  showFilled,
-  setAvatarInitial,
-  loadVisitsCount,
-  __setDashboardElementsForTest
+    showEmpty,
+    showFilled,
+    setAvatarInitial,
+    loadVisitsCount,
 };

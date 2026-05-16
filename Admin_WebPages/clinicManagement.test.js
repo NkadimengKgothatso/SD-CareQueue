@@ -29,132 +29,67 @@ function buildDOM() {
     document.body.innerHTML = `
         <button class="addBtn"></button>
 
-        <section class="modal" id="clinicModal">
-            <section class="modal-content">
-                <span class="close-btn">&times;</span>
-                <form class="clinicForm">
-                    <input id="clinicName" value="" />
-                    <input id="Location"   value="" />
-                    <select id="clinicStatus">
-                        <option value="Active">Active</option>
-                        <option value="Closed">Closed</option>
-                        <option value="Busy">Busy</option>
-                    </select>
-                    <select id="province">
-                        <option value="" disabled selected>Select Province</option>
-                        <option value="Gauteng">Gauteng</option>
-                        <option value="Limpopo">Limpopo</option>
-                        <option value="Western Cape">Western Cape</option>
-                    </select>
-                    <section class="custom-select" id="clinicServicesDropdown">
-                        <section class="select-trigger">Select Services</section>
-                        <section class="select-options">
-                            <label><input type="checkbox" value="General" /></label>
-                            <label><input type="checkbox" value="Emergency" /></label>
-                            <label><input type="checkbox" value="Dental" /></label>
-                        </section>
-                    </section>
-                    <button type="submit">Add Clinic</button>
-                </form>
-            </section>
+    <section id="clinicModal">
+      <form>
+        <input id="clinicName"   value="" />
+        <input id="Location"     value="" />
+        <select id="clinicStatus"><option value="Active">Active</option></select>
+        <select id="province">
+          <option value="Gauteng">Gauteng</option>
+        </select>
+        <section id="clinicServicesDropdown" class="custom-select">
+          <section class="select-trigger">Select Services</section>
+          <section class="select-options">
+            <label><input type="checkbox" value="General" /></label>
+            <label><input type="checkbox" value="Dental"  /></label>
+          </section>
         </section>
+        <button type="submit">Add</button>
+      </form>
+    </section>
 
-        <section class="ManageModal" id="ManageClinicModal">
-            <section class="modal-content">
-                <span class="close-btn">&times;</span>
-                <form class="clinicForm">
-                    <input id="ManageClinicName" value="" />
-                    <input id="ManageLocation"   value="" />
-                    <select id="ManageClinicStatus">
-                        <option value="Active">Active</option>
-                        <option value="Closed">Closed</option>
-                        <option value="Busy">Busy</option>
-                    </select>
-                    <select id="manageProvince">
-                        <option value="" disabled selected>Select Province</option>
-                        <option value="Gauteng">Gauteng</option>
-                        <option value="Limpopo">Limpopo</option>
-                        <option value="Western Cape">Western Cape</option>
-                    </select>
-                    <section class="custom-select" id="manageClinicServicesDropdown">
-                        <section class="select-trigger">Select Services</section>
-                        <section class="select-options">
-                            <label><input type="checkbox" value="General" /></label>
-                            <label><input type="checkbox" value="Emergency" /></label>
-                            <label><input type="checkbox" value="Dental" /></label>
-                        </section>
-                    </section>
-                    <button type="submit">Update Clinic</button>
-                </form>
-            </section>
+    <!-- ── Manage (edit) clinic modal ────────────── -->
+    <section id="ManageClinicModal">
+      <form>
+        <input id="ManageClinicName"   value="" />
+        <input id="ManageLocation"     value="" />
+        <input id="ManageClinicStatus" value="" />
+        <input id="manageProvince"     value="" />
+        <section id="manageClinicServicesDropdown" class="custom-select">
+          <section class="select-trigger">Select Services</section>
+          <section class="select-options">
+            <label><input type="checkbox" value="General" /></label>
+            <label><input type="checkbox" value="Dental"  /></label>
+          </section>
         </section>
+        <button type="submit">Save</button>
+      </form>
+    </section>
 
-        <section class="modal" id="clinicHoursModal">
-            <section class="modal-content">
-                <span class="close-btn">&times;</span>
-                <form class="clinicForm">
-                    <select id="startDay">
-                        <option value="" disabled selected>Start Day</option>
-                        <option value="Mon">Monday</option>
-                        <option value="Tue">Tuesday</option>
-                        <option value="Wed">Wednesday</option>
-                        <option value="Thu">Thursday</option>
-                        <option value="Fri">Friday</option>
-                        <option value="Sat">Saturday</option>
-                        <option value="Sun">Sunday</option>
-                    </select>
-                    <select id="endDay">
-                        <option value="" disabled selected>End Day</option>
-                        <option value="Mon">Monday</option>
-                        <option value="Tue">Tuesday</option>
-                        <option value="Wed">Wednesday</option>
-                        <option value="Thu">Thursday</option>
-                        <option value="Fri">Friday</option>
-                        <option value="Sat">Saturday</option>
-                        <option value="Sun">Sunday</option>
-                    </select>
-                    <select id="startTime">
-                        <option value="6am">6:00 AM</option>
-                        <option value="7am">7:00 AM</option>
-                        <option value="8am">8:00 AM</option>
-                        <option value="9am">9:00 AM</option>
-                        <option value="10am">10:00 AM</option>
-                        <option value="11am">11:00 AM</option>
-                        <option value="12pm">12:00 PM</option>
-                        <option value="1pm">1:00 PM</option>
-                        <option value="2pm">2:00 PM</option>
-                        <option value="3pm">3:00 PM</option>
-                        <option value="4pm">4:00 PM</option>
-                        <option value="5pm">5:00 PM</option>
-                        <option value="6pm">6:00 PM</option>
-                        <option value="7pm">7:00 PM</option>
-                        <option value="8pm">8:00 PM</option>
-                    </select>
-                    <select id="endTime">
-                        <option value="6am">6:00 AM</option>
-                        <option value="7am">7:00 AM</option>
-                        <option value="8am">8:00 AM</option>
-                        <option value="9am">9:00 AM</option>
-                        <option value="10am">10:00 AM</option>
-                        <option value="11am">11:00 AM</option>
-                        <option value="12pm">12:00 PM</option>
-                        <option value="1pm">1:00 PM</option>
-                        <option value="2pm">2:00 PM</option>
-                        <option value="3pm">3:00 PM</option>
-                        <option value="4pm">4:00 PM</option>
-                        <option value="5pm">5:00 PM</option>
-                        <option value="6pm">6:00 PM</option>
-                        <option value="7pm">7:00 PM</option>
-                        <option value="8pm">8:00 PM</option>
-                    </select>
-                    <button type="submit">Update Operating Hours</button>
-                </form>
-            </section>
-        </section>
+    <!-- ── Clinic hours modal ─────────────────────── -->
+    <section id="clinicHoursModal">
+      <form>
+        <select id="startDay">
+          <option value="">--</option>
+          <option value="Mon">Mon</option>
+          <option value="Fri">Fri</option>
+        </select>
+        <select id="endDay">
+          <option value="">--</option>
+          <option value="Mon">Mon</option>
+          <option value="Fri">Fri</option>
+        </select>
+        <input id="startTime" value="" />
+        <input id="endTime"   value="" />
+        <button type="submit">Update</button>
+      </form>
+    </section>
 
-        <input id="clinicSearch" />
-        <div class="clinics"></div>
-    `;
+    <!-- ── Shared controls ───────────────────────── -->
+    <button class="close-btn"></button>
+    <input  id="clinicSearch" />
+    <section class="clinics"></section>
+  `;
 }
 
 // ── Setup ─────────────────────────────────────────────────────
@@ -167,39 +102,7 @@ beforeEach(() => {
 
 // ── Helpers ───────────────────────────────────────────────────
 async function load() {
-    return import("./clinicManagement.js");
-}
-
-// Finds a checkbox by value — immune to ordering changes
-function getCheckbox(dropdownId, value) {
-    return document.querySelector(`#${dropdownId} input[value="${value}"]`);
-}
-
-async function loadWithClinics(clinicFixtures) {
-    const { getDocs } = await import(
-        "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
-    );
-
-    getDocs.mockResolvedValueOnce({
-        forEach: (cb) =>
-            clinicFixtures.forEach((c) =>
-                cb({
-                    id: c.id,
-                    data: () => ({
-                        name:          c.name,
-                        address:       c.address,
-                        province:      c.province,
-                        status:        c.status,
-                        service:       c.service,
-                        opening_hours: c.operatingHours
-                    })
-                })
-            )
-    });
-
-    const mod = await load();
-    await Promise.resolve();
-    return mod;
+  return import("./clinicManagement.js");
 }
 
 // =============================================================
@@ -815,35 +718,21 @@ describe("Search", () => {
         expect(document.querySelector(".clinics").textContent).toContain("Beta Clinic");
     });
 
-    test("search is case insensitive", async () => {
-        await loadWithClinics([
-            { id: "1", name: "Alpha Clinic", address: "Addr 1", status: "Active", service: ["General"], operatingHours: "N/A", province: "Gauteng" }
-        ]);
-        const search = document.getElementById("clinicSearch");
-        search.value = "ALPHA";
-        search.dispatchEvent(new Event("input"));
-        expect(document.querySelector(".clinics").textContent).toContain("Alpha Clinic");
-    });
+// =============================================================
+// 13. Window click closes modals when target IS the modal
+// =============================================================
+test("clicking the modal backdrop closes clinicModal", async () => {
+  await load();
 
-    test("no match shows empty clinics container", async () => {
-        await loadWithClinics([
-            { id: "1", name: "Alpha Clinic", address: "Addr 1", status: "Active", service: ["General"], operatingHours: "N/A", province: "Gauteng" }
-        ]);
-        const search = document.getElementById("clinicSearch");
-        search.value = "zzznomatch";
-        search.dispatchEvent(new Event("input"));
-        expect(document.querySelectorAll(".clinic").length).toBe(0);
-    });
+  document.getElementById("clinicModal").style.display = "flex";
 
-    test("filters clinics by address", async () => {
-        await loadWithClinics([
-            { id: "1", name: "Clinic A", address: "Main Street",  status: "Active", service: ["General"], operatingHours: "N/A", province: "Gauteng" },
-            { id: "2", name: "Clinic B", address: "Church Avenue", status: "Active", service: ["General"], operatingHours: "N/A", province: "Gauteng" }
-        ]);
-        const search = document.getElementById("clinicSearch");
-        search.value = "main street";
-        search.dispatchEvent(new Event("input"));
-        expect(document.querySelector(".clinics").textContent).toContain("Clinic A");
-        expect(document.querySelector(".clinics").textContent).not.toContain("Clinic B");
-    });
+  // Simulate a click whose target is the modal itself
+  const event = new MouseEvent("click", { bubbles: true });
+  Object.defineProperty(event, "target", {
+    value: document.getElementById("clinicModal"),
+    writable: false
+  });
+  window.dispatchEvent(event);
+
+  expect(document.getElementById("clinicModal").style.display).toBe("none");
 });

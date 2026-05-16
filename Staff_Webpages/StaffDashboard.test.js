@@ -1,19 +1,19 @@
 beforeEach(() => {
   document.body.innerHTML = `
-    <div class="appointments"></div>
+    <section class="appointments"></section>
 
-    <div id="totalToday"></div>
-    <div id="inQueue"></div>
-    <div id="completed"></div>
-    <div id="avgWait"></div>
+    <section id="totalToday"></section>
+    <section id="inQueue"></section>
+    <section id="completed"></section>
+    <section id="avgWait"></section>
 
-    <div id="clinicAndTime"></div>
+    <section id="clinicAndTime"></section>
 
-    <div class="name-Surname"></div>
+    <section class="name-Surname"></section>
 
-    <div id="staffName"></div>
-    <div id="staffEmail"></div>
-    <div id="staffAvatar"></div>
+    <section id="staffName"></section>
+    <section id="staffEmail"></section>
+    <section id="staffAvatar"></section>
   `;
 
   global.alert = jest.fn();

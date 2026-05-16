@@ -82,7 +82,7 @@ async function sendPositionTwoNotification(appointment) {
         await updateDoc(doc(db, "Queues", appointment.id), {
             emailSent: true
         });
-
+/*
         emailjs.init("jWEiS_k1FnVa1Zz5S");
 
         await emailjs.send("service_j8zb3jh", "template_neu0ubc", {
@@ -92,7 +92,7 @@ async function sendPositionTwoNotification(appointment) {
             appointment_reason: appointment.reason || "Appointment",
             appointment_date: appointment.date || "",
             appointment_time: appointment.time || ""
-        });
+        });*/
 
         await addDoc(collection(db, "Notifications"), {
             userID: appointment.userID,

@@ -107,22 +107,22 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // ================= EXPORT BUTTONS =================
-//         const csvBtn = document.getElementById("exportCSV");
-//         const pdfBtn = document.getElementById("exportPDF");
+        const csvBtn = document.getElementById("exportCSV");
+        const pdfBtn = document.getElementById("exportPDF");
 
-//         csvBtn?.addEventListener("click", () => {
-//             const from = document.getElementById("dateFrom").value;
-//             const to = document.getElementById("dateTo").value;
+        csvBtn?.addEventListener("click", () => {
+            const from = document.getElementById("dateFrom").value;
+            const to = document.getElementById("dateTo").value;
 
-//             exportCSV(getCurrentExportData(from, to));
-//         });
+            exportCSV(getCurrentExportData(from, to));
+        });
 
-//         pdfBtn?.addEventListener("click", () => {
-//     const from = document.getElementById("dateFrom").value;
-//     const to = document.getElementById("dateTo").value;
+        pdfBtn?.addEventListener("click", () => {
+    const from = document.getElementById("dateFrom").value;
+    const to = document.getElementById("dateTo").value;
 
-//     exportPDF(getCurrentExportData(from, to), from, to);
-// });
+    exportPDF(getCurrentExportData(from, to), from, to);
+});
 
         // ================= SEARCH =================
         const search = document.getElementById("clinicSearch");
@@ -299,8 +299,145 @@ function getRateColor(rate) {
 }
 
 
+function getCurrentExportData(from, to) {
+
+    const filteredAppointments = (from && to)
+        ? appointments.filter(a => inDateRange(a.date, from, to))
+        : appointments;
+
+    const queueStats = getQueueAnalytics(
+        (from && to)
+            ? queues.filter(q => inDateRange(q.date, from, to))
+            : queues
+    );
+
+    const noShowStats = getNoShowRateByClinic(filteredAppointments);
+
+    return clinics.map(clinic => {
+
+        const q = queueStats[clinic.id] || {
+            total: 0,
+            totalWait: 0
+        };
+
+        const n = noShowStats[clinic.id] || { rate: "0.0" };
+
+        return {
+            clinic: clinic.name,
+            avgWait: q.total > 0 ? (q.totalWait / q.total).toFixed(1) : "0.0",
+            volume: q.total,
+            noShowRate: n.rate + "%"
+        };
+    });
+}
 
 
+function exportCSV(data) {
+
+    const headers = ["Clinic", "Avg Wait", "Volume", "No-Show Rate"];
+
+    const rows = data.map(d => [
+        d.clinic,
+        d.avgWait,
+        d.volume,
+        d.noShowRate
+    ]);
+
+    const csv = [
+        headers.join(","),
+        ...rows.map(r => r.join(","))
+    ].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "clinic-analytics.csv";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
+function exportPDF(data, from = null, to = null) {
+
+    const win = window.open("", "_blank");
+
+    const formatDate = (d) => {
+        if (!d) return null;
+        return new Date(d).toLocaleDateString();
+    };
+
+    const dateRangeText =
+        (from && to)
+            ? `${formatDate(from)} → ${formatDate(to)}`
+            : "All time";
+
+    win.document.write(`
+        <html>
+        <head>
+            <title>Clinic Analytics Report</title>
+            <style>
+                body { font-family: Arial; padding: 20px; }
+                h2 { margin-bottom: 5px; }
+
+                .date-range {
+                    margin-bottom: 20px;
+                    color: #555;
+                    font-size: 14px;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+
+                th, td {
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                }
+
+                th {
+                    background: #f3f4f6;
+                }
+            </style>
+        </head>
+
+        <body>
+            <h2>Clinic Analytics Report</h2>
+
+            <div class="date-range">
+                <strong>Date Range:</strong> ${dateRangeText}
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Clinic</th>
+                        <th>Avg Wait</th>
+                        <th>Volume</th>
+                        <th>No-Show Rate</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    ${data.map(d => `
+                        <tr>
+                            <td>${d.clinic}</td>
+                            <td>${d.avgWait}</td>
+                            <td>${d.volume}</td>
+                            <td>${d.noShowRate}</td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
+        </body>
+        </html>
+    `);
+
+    win.document.close();
+    win.print();
+}
 
 // ================= RENDER DASHBOARD =================
 function renderDashboard(from = null, to = null) {
@@ -405,16 +542,3 @@ function setActiveRow(rows, index) {
         activeRowIndex = index;
     }
 }
-
-export {
-  inDateRange,
-  buildDashboard,
-  getGlobalNoShowRate,
-  getQueueAnalytics,
-  getNoShowRateByClinic,
-  getRateColor,
-  getPreviousPeriod,
-  countPatients,
-  calculatePatientsTrend,
-  setActiveRow
-};

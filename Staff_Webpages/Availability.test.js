@@ -42,21 +42,21 @@ beforeEach(() => {
   jest.resetModules();
 
   document.body.innerHTML = `
-    <div id="saveStatus"></div>
-    <div class="week-card-header"></div>
+    <section id="saveStatus"></section>
+    <section class="week-card-header"></section>
 
     ${DAYS.map(day => `
-      <div id="row-${day}"></div>
+      <section id="row-${day}"></section>
       <input type="checkbox" id="toggle-${day}" />
       <input id="start-${day}" value="08:00" />
       <input id="end-${day}"   value="17:00" />
     `).join("")}
 
     <button id="saveBtn"></button>
-    <div id="staffName"></div>
-    <div id="staffEmail"></div>
-    <div id="staffAvatar"></div>
-    <div class="name-Surname"></div>
+    <section id="staffName"></section>
+    <section id="staffEmail"></section>
+    <section id="staffAvatar"></section>
+    <section class="name-Surname"></section>
   `;
 });
 

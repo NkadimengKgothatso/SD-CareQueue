@@ -55,28 +55,105 @@ let nearMeActive = false;   // Tracks if "Near Me" filter is active
 let openNowActive = false;  // Tracks if "Open Now" filter is active
 let userLocation = null;    // Stores user's coordinates
 
-async function renderTimeSlots(selectedDate, selectedClinic) {
-    
-    timeSlotsContainer.innerHTML = "";
-  
-    const bookedSlots = [];
 
+//Count Number Of Staff
+async function getStaffAvailableForDay(db, clinicId, dayName) {
     const q = query(
-        collection(db, "Appointments"),
-        where("date", "==", selectedDate),
-        where("clinicID", "==", selectedClinic)
+        collection(db, "StaffAvailability"),
+        where("clinicID", "==", Number(clinicId))
     );
 
     const snapshot = await getDocs(q);
 
-    snapshot.forEach(doc => {
+    let availableStaff = 0;
+
+    snapshot.forEach((doc) => {
         const data = doc.data();
-        bookedSlots.push(data.time);
+
+        if (data.schedule?.[dayName]?.isWorking === true) {
+            availableStaff++;
+        }
     });
 
-    //  Get current date & time
+    return availableStaff;
+}
+
+async function getBookedSlots(db, selectedDate, selectedClinic) {
+    const dateObj = new Date(selectedDate);
+    const dayName = dateObj
+        .toLocaleDateString("en-US", { weekday: "long" })
+        .toLowerCase();
+
+    const availableStaff = await getStaffAvailableForDay(
+        db,
+        selectedClinic,
+        dayName
+    );
+
+    const q = query(
+        collection(db, "Appointments"),
+        where("date", "==", selectedDate),
+        where("clinicID", "==", Number(selectedClinic))
+    );
+
+    const snapshot = await getDocs(q);
+
+    const slotCounts = {};
+
+    snapshot.forEach((doc) => {
+        const data = doc.data();
+
+        if (data.status !== "cancelled") {
+            slotCounts[data.time] = (slotCounts[data.time] || 0) + 1;
+        }
+    });
+
+    const fullyBookedSlots = [];
+
+    Object.keys(slotCounts).forEach((time) => {
+        if (slotCounts[time] >= availableStaff) {
+            fullyBookedSlots.push(time);
+        }
+    });
+
+    return fullyBookedSlots;
+}
+
+
+async function renderTimeSlots(selectedDate, selectedClinic) {
+    timeSlotsContainer.innerHTML = "";
+
+    const dateObj = new Date(selectedDate);
+    const dayName = dateObj
+        .toLocaleDateString("en-US", { weekday: "long" })
+        .toLowerCase();
+
+    const availableStaff = await getStaffAvailableForDay(
+        db,
+        selectedClinic,
+        dayName
+    );
+
+    const q = query(
+        collection(db, "Appointments"),
+        where("date", "==", selectedDate),
+        where("clinicID", "==", Number(selectedClinic))
+    );
+
+    const snapshot = await getDocs(q);
+
+    const slotCounts = {};
+
+    snapshot.forEach(doc => {
+        const data = doc.data();
+
+        if ((data.status || "").toLowerCase() !== "cancelled") {
+            slotCounts[data.time] = (slotCounts[data.time] || 0) + 1;
+        }
+    });
+
     const now = new Date();
-    const today = now.toISOString().split("T")[0]; // format: YYYY-MM-DD
+    const today = now.toISOString().split("T")[0];
 
     for (let hour = 8; hour <= 17; hour++) {
         for (let minute of [0, 30]) {
@@ -90,7 +167,6 @@ async function renderTimeSlots(selectedDate, selectedClinic) {
 
             let isPast = false;
 
-            //Check if selected date is today
             if (selectedDate === today) {
                 const slotTime = new Date();
                 slotTime.setHours(hour, minute, 0, 0);
@@ -100,17 +176,19 @@ async function renderTimeSlots(selectedDate, selectedClinic) {
                 }
             }
 
-            //If booked OR past → disable
-            if (bookedSlots.includes(formattedTime) || isPast) {
+            const bookingsForThisSlot = slotCounts[formattedTime] || 0;
+            const isFullyBooked = bookingsForThisSlot >= availableStaff;
+
+            if (isFullyBooked || isPast || availableStaff === 0) {
                 slotBtn.style.textDecoration = "line-through";
                 slotBtn.style.color = "#999";
                 slotBtn.style.backgroundColor = "#f2f2f2";
                 slotBtn.style.cursor = "not-allowed";
-                slotBtn.disabled = true; // important
+                slotBtn.disabled = true;
             }
 
             slotBtn.addEventListener("click", () => {
-                if (slotBtn.disabled) return; // extra safety
+                if (slotBtn.disabled) return;
 
                 document.querySelectorAll(".time-slot")
                     .forEach(btn => btn.classList.remove("selected"));
@@ -482,6 +560,7 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         nameSurnameEl.textContent = user.displayName;
         emailEl.textContent = user.email;
+        setAvatarInitial(user.displayName, user.email);
     } else {
         nameSurnameEl.textContent = "Guest";
     }
@@ -547,21 +626,41 @@ confirmBtn.addEventListener("click", async () => {
         return;
     }
 
-   
+  
 
-    const q = query(
-        collection(db, "Appointments"),
-        where("clinicID", "==", clinicIdNum),
-        where("date", "==", date),
-        where("time", "==", time)
-    );
+        const bookingQuery = query(
+            collection(db, "Appointments"),
+            where("clinicID", "==", clinicIdNum),
+            where("date", "==", date),
+            where("time", "==", time)
+        );
 
-    const existing = await getDocs(q);
+        const bookingSnapshot = await getDocs(bookingQuery);
 
-    if (!existing.empty) {
-        alert("This time slot is already booked. Please choose another.");
-        return;
-    }
+        const selectedDay = new Date(date)
+            .toLocaleDateString("en-US", { weekday: "long" })
+            .toLowerCase();
+
+        const availableStaff = await getStaffAvailableForDay(
+            db,
+            clinicIdNum,
+            selectedDay
+        );
+
+        let currentBookings = 0;
+
+        bookingSnapshot.forEach(doc => {
+            const data = doc.data();
+
+            if ((data.status || "").toLowerCase() !== "cancelled") {
+                currentBookings++;
+            }
+        });
+
+        if (availableStaff === 0 || currentBookings >= availableStaff) {
+            alert("This time slot is fully booked.");
+            return;
+        }
 
    
 
@@ -590,7 +689,7 @@ confirmBtn.addEventListener("click", async () => {
             createdAt: serverTimestamp()
         });
 
-        emailjs.init("jWEiS_k1FnVa1Zz5S");
+/*        emailjs.init("jWEiS_k1FnVa1Zz5S");
 
         await emailjs.send("service_j8zb3jh", "template_4onbz1h", {
             email: user.email,
@@ -599,7 +698,7 @@ confirmBtn.addEventListener("click", async () => {
             appointment_reason: reason,
             appointment_date: date,
             appointment_time: time
-        });
+        });*/
 
 
         alert("Appointment booked successfully!");
@@ -654,6 +753,19 @@ dateInput.addEventListener("change", () => {
         renderTimeSlots(dateInput.value, selectedClinicId);
     }
 });
+
+
+function setAvatarInitial(name, email) {
+    let initials = "";
+    if (name && name.trim().length > 0) {
+        const parts = name.trim().split(" ");
+        initials += parts[0].charAt(0);
+        if (parts.length > 1) initials += parts[parts.length - 1].charAt(0);
+    } else if (email && email.length > 0) {
+        initials = email.charAt(0);
+    }
+    document.getElementById("patientAvatar").textContent = initials.toUpperCase();
+}
 
 export {
     formatTime,
