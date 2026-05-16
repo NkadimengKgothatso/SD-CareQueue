@@ -238,7 +238,7 @@ function renderClinics(filteredClinics = clinics) {
 
                 <section class="OpenTimes">
                     <i class="fa-regular fa-clock"></i>
-                    <p>${clinic.opening_hours || "Hours not specified"}</p>
+                    <p>${clinic.startDay || "?"} – ${clinic.endDay || "?"} · ${clinic.startTime || "?"} – ${clinic.endTime || "?"}</p>
                 </section>
 
                 <section class="queueDisplay">
