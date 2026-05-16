@@ -373,7 +373,7 @@ addBtn?.addEventListener("click", async () => {
 
         
 
-        if (assignedTime === "FULL") {
+        if (assignedTime === "FULL") {   //full slots
             alert("No available slots for today. Patient cannot be added.");
             return;
         }
