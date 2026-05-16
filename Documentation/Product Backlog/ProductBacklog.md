@@ -129,7 +129,7 @@
 
   <tr>
     <td>21</td>
-    <td>As an admin, I want to access a dashboard that shows key system information so that I can monitor and manage clinic operations efficiently.</td>
+    <td>As an admin, I want to access a dashboard that shows key system information so that I can monitor clinic operations efficiently.</td>
     <td>7</td>
   </tr>
 
