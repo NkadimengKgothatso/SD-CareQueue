@@ -31,14 +31,10 @@ const db   = getFirestore(app);
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 const DAY_ORDER_FULL = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
-const DAY_NAME_MAP = {
-    mon: "monday",
-    tue: "tuesday",
-    wed: "wednesday",
-    thu: "thursday",
-    fri: "friday",
-    sat: "saturday",
-    sun: "sunday"
+// Maps full day names to index for range comparison
+const DAY_INDEX = {
+    monday: 0, tuesday: 1, wednesday: 2,
+    thursday: 3, friday: 4, saturday: 5, sunday: 6
 };
 
 // ─── Clinic hours state ───────────────────────────────────────────────────────
@@ -52,95 +48,59 @@ window.signOut = async function () {
     window.location.href = "/index.html";
 };
 
-// ─── Convert 12-hour time to 24-hour string ───────────────────────────────────
-function convertTo24Hour(timeStr, period) {
-    const [hourStr, minuteStr] = timeStr.split(":");
-    let hour   = parseInt(hourStr);
-    const mins = minuteStr ? parseInt(minuteStr) : 0;
+// ─── Build working days array from startDay and endDay ───────────────────────
+// e.g. startDay="Monday", endDay="Friday"
+// returns ["monday","tuesday","wednesday","thursday","friday"]
+function buildWorkDays(startDay, endDay) {
+    if (!startDay || !endDay) return [];
 
-    if (period.toLowerCase() === "am" && hour === 12) hour = 0;
-    if (period.toLowerCase() === "pm" && hour !== 12) hour += 12;
+    const start = DAY_INDEX[startDay.toLowerCase()];
+    const end   = DAY_INDEX[endDay.toLowerCase()];
 
-    return `${String(hour).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+    if (start === undefined || end === undefined) return [];
+
+    return DAY_ORDER_FULL.filter((_, i) => i >= start && i <= end);
 }
 
-// ─── Parse clinic opening_hours string ───────────────────────────────────────
-// Handles: "Mon-Fri: 7am-7pm", "Mon-Fri : 9am-5pm", "Mon-Sat: 2am-10pm"
-function parseClinicHours(openingHours) {
-    if (!openingHours) return null;
-
-    try {
-        // Normalise spaces around colon
-        const cleaned = openingHours
-            .replace(/\s*:\s*/, ":")
-            .trim();
-
-        console.log("Parsing opening_hours:", openingHours, "→ cleaned:", cleaned);
-
-        const match = cleaned.match(
-            /^(\w+)-(\w+):(\d+(?::\d+)?)(am|pm)-(\d+(?::\d+)?)(am|pm)$/i
-        );
-
-        if (!match) {
-            console.warn("opening_hours format not recognised:", cleaned);
-            return null;
-        }
-
-        const [, startDay, endDay, openRaw, openPeriod, closeRaw, closePeriod] = match;
-
-        const openTime  = convertTo24Hour(openRaw,  openPeriod);
-        const closeTime = convertTo24Hour(closeRaw, closePeriod);
-
-        const startDayFull = DAY_NAME_MAP[startDay.toLowerCase()];
-        const endDayFull   = DAY_NAME_MAP[endDay.toLowerCase()];
-
-        if (!startDayFull || !endDayFull) {
-            console.warn("Could not map day names:", startDay, endDay);
-            return null;
-        }
-
-        const startIdx = DAY_ORDER_FULL.indexOf(startDayFull);
-        const endIdx   = DAY_ORDER_FULL.indexOf(endDayFull);
-
-        const workDays = DAY_ORDER_FULL.filter((_, i) => i >= startIdx && i <= endIdx);
-
-        console.log("Parsed →", openTime, "to", closeTime, "| workDays:", workDays);
-
-        return { openTime, closeTime, workDays };
-
-    } catch (err) {
-        console.error("Failed to parse opening_hours:", openingHours, err);
-        return null;
-    }
-}
-
-// ─── Fetch clinic operating hours by clinic name ──────────────────────────────
+// ─── Fetch clinic data by clinic name ────────────────────────────────────────
 // Matches using assignedClinic name from ApprovedStaff
-// Avoids int64 type mismatch when querying by numeric ID
+// Returns { openTime, closeTime, startDay, endDay } or null
 async function fetchClinicHours(clinicName) {
     try {
         const snapshot = await getDocs(collection(db, "clinicsObjects"));
 
         console.log("Searching", snapshot.size, "clinics for name:", clinicName);
 
-        let foundHours = null;
+        let result = null;
 
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
+
             if (
                 (data.name || "").toLowerCase().trim() ===
                 (clinicName || "").toLowerCase().trim()
             ) {
-                console.log("Matched clinic:", data.name, "| opening_hours:", data.opening_hours);
-                foundHours = data.opening_hours || null;
+                console.log("Matched clinic:", data.name, 
+                    "| startTime:", data.startTime, 
+                    "| endTime:", data.endTime,
+                    "| startDay:", data.startDay,
+                    "| endDay:", data.endDay
+                );
+
+                result = {
+                    openTime:  data.startTime || null,
+                    closeTime: data.endTime   || null,
+                    startDay:  data.startDay  || null,
+                    endDay:    data.endDay    || null
+                };
             }
         });
 
-        if (!foundHours) {
+        if (!result) {
             console.warn("No clinic matched for name:", clinicName);
         }
 
-        return foundHours;
+        return result;
 
     } catch (err) {
         console.error("Failed to fetch clinic hours:", err);
@@ -189,7 +149,6 @@ function applyClinicConstraints() {
             if (end.value   < clinicOpenTime)  end.value   = clinicCloseTime;
 
             // Wire up toggle so time inputs enable/disable when staff clicks it
-            // This handles Saturday/Sunday which the inline script skips
             toggle.addEventListener("change", () => {
                 const isOn     = toggle.checked;
                 start.disabled = !isOn;
@@ -199,17 +158,16 @@ function applyClinicConstraints() {
         }
     });
 
-    // ── Build working days display string ──
-    // e.g. "Monday, Tuesday, Wednesday, Thursday, Friday, Saturday"
+    // Build working days display string
     const workDayLabels = clinicWorkDays.map(capitalise).join(", ");
 
-    // Show info note under the card header using CSS class (no inline styles)
+    // Show info note under the card header using CSS class
     const headerEl = document.querySelector(".week-card-header");
     if (headerEl && !document.getElementById("clinicHoursNote")) {
-        const note       = document.createElement("p");
-        note.id          = "clinicHoursNote";
-        note.className   = "clinic-hours-note";
-        note.innerHTML   = `
+        const note     = document.createElement("p");
+        note.id        = "clinicHoursNote";
+        note.className = "clinic-hours-note";
+        note.innerHTML = `
             <i class="fa-solid fa-clock"></i>
             <strong>Operating hours:</strong> ${clinicOpenTime} – ${clinicCloseTime}
             &nbsp;&nbsp;
@@ -315,11 +273,11 @@ async function saveAvailability(uid, staffName, clinicID) {
         // Must stay within clinic hours
         if (clinicOpenTime && clinicCloseTime) {
             if (d.start < clinicOpenTime) {
-                showStatus(`${capitalise(day)}  clinic opens at ${clinicOpenTime}.`, "error");
+                showStatus(`${capitalise(day)} start time cannot be before clinic opens at ${clinicOpenTime}.`, "error");
                 return;
             }
             if (d.end > clinicCloseTime) {
-                showStatus(`${capitalise(day)}  clinic closes at ${clinicCloseTime}.`, "error");
+                showStatus(`${capitalise(day)} end time cannot be after clinic closes at ${clinicCloseTime}.`, "error");
                 return;
             }
         }
@@ -402,15 +360,14 @@ onAuthStateChanged(auth, async (user) => {
         console.error("Failed to fetch staff profile:", err);
     }
 
-    // 2. Fetch clinic hours by clinic name and apply constraints
+    // 2. Fetch clinic hours by name and apply constraints
     if (assignedClinic) {
-        const openingHours = await fetchClinicHours(assignedClinic);
-        const parsed       = parseClinicHours(openingHours);
+        const clinicData = await fetchClinicHours(assignedClinic);
 
-        if (parsed) {
-            clinicOpenTime  = parsed.openTime;
-            clinicCloseTime = parsed.closeTime;
-            clinicWorkDays  = parsed.workDays;
+        if (clinicData && clinicData.openTime && clinicData.closeTime) {
+            clinicOpenTime  = clinicData.openTime;
+            clinicCloseTime = clinicData.closeTime;
+            clinicWorkDays  = buildWorkDays(clinicData.startDay, clinicData.endDay);
             applyClinicConstraints();
         } else {
             showStatus("Warning: Your clinic has no valid operating hours set. Please contact your admin.", "error");
@@ -448,11 +405,12 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
+// ─── Exports for unit testing ─────────────────────────────────────────────────
 export {
-    convertTo24Hour,
-    parseClinicHours,
+    buildWorkDays,
     capitalise,
     showStatus,
     readScheduleFromPage,
-    applyScheduleToPage
+    applyScheduleToPage,
+    applyClinicConstraints
 };

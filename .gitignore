@@ -2,3 +2,4 @@ node_modules/
 coverage/
 *.lcov
 Patients_WebPages/carequeue-ml/scripts/serviceAccountKey.json
+coverage/

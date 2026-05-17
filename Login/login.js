@@ -88,7 +88,7 @@ function handleRedirect(role) {
   } else if (role === "staff") {
     window.location.href = "../Staff_Webpages/StaffDashboard.html";
   } else {
-    window.location.href = "/Admin_WebPages/StaffManagement.html";
+    window.location.href = "../Admin_WebPages/dashboard.html";
   }
 }
 
@@ -165,27 +165,11 @@ window.signInWithGoogle = async function () {
 };
 
 // ================= SESSION RESTORE =================
-// On page load, sign out any leftover session so users must log in fresh.
-// After that first check, the listener does nothing so it never
-// interferes with an active login attempt.
-let initialCheckDone = false;
+onAuthStateChanged(auth, (user) => {
 
-onAuthStateChanged(auth, async (user) => {
-  // Never interrupt an active login or redirect
+  // Ignore auth changes during redirects
   if (isRedirecting) return;
 
-  if (!initialCheckDone) {
-    // This is the first time the listener fires (page load)
-    // If someone was already logged in, clear their session
-    initialCheckDone = true;
-    if (user) {
-      await signOut(auth);
-    }
-    return;
-  }
-
-  // After the initial check, do nothing
-  // signInWithGoogle() handles everything from here
 });
 
 // ================= HELPERS =================

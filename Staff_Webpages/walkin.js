@@ -371,6 +371,13 @@ addBtn?.addEventListener("click", async () => {
 
         console.log(" ASSIGNED TIME RESULT:", assignedTime);
 
+        
+
+        if (assignedTime === "FULL") {   //full slots
+            alert("No available slots for today. Patient cannot be added.");
+            return;
+        }
+
         await addDoc(collection(db, "Appointments"), {             //adds the new appointment
             clinicID: clinicId,
             patientName: name,

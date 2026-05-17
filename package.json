@@ -19,7 +19,6 @@
     "coverage:staffmanagement": "jest Admin_WebPages/staff.test.js --coverage --collectCoverageFrom=Admin_WebPages/StaffManagement.js",
     "coverage:ml": "jest Patients_WebPages/carequeue-ml/js/waitTimeML.test.js --coverage --collectCoverageFrom=Patients_WebPages/carequeue-ml/js/waitTimeML.js"
   },
-
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NkadimengKgothatso/SD-CareQueue.git"

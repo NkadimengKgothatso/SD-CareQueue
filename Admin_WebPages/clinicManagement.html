@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Care Queue | Admin - Clinic Management</title>
-    <!-- Base admin portal styles first -->
     <link rel="stylesheet" href="/Admin_WebPages/admin.css">
-    <!-- Clinic-specific styles layered on top (cards, search bar, clinic chips) -->
     <link rel="stylesheet" href="/Admin_WebPages/clinicManagement.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -22,7 +20,7 @@
                 </section>
             </section>
             <nav class="sidebar-nav">
-                <section class="nav-item" onclick="window.location.href='/Admin_WebPages/Dashboard.html'">
+                <section class="nav-item" onclick="window.location.href='/Admin_WebPages/dashboard.html'">
                     <section class="nav-dot"></section>
                     <section>Dashboard</section>
                 </section>
@@ -57,19 +55,19 @@
                 <p class="page-subtitle">Add, edit, or remove clinics from the system</p>
             </section>
 
-        <section class="content">
-            <section class="search-Bar">
-                <i class="fa-solid fa-magnifying-glass-location" style="color: var(--color-brand);"></i>
-                <input id="clinicSearch" type="search" placeholder="Search clinic by name or location">
-            </section>
-
-            <!-- Clinics card -->
-            <section class="clinicsCard">
-                <section class="clinicCardHeader">
-                    <p class="section-label" style="margin-right: auto; flex: 1;">CLINICS</p>
-                    <button class="addBtn">+ Add Clinic</button>
+            <section class="content">
+                <section class="search-Bar">
+                    <i class="fa-solid fa-magnifying-glass-location" style="color: var(--color-brand);"></i>
+                    <input id="clinicSearch" type="search" placeholder="Search clinic by NAME, ADDRESS, SERVICES, PROVINCE, or STATUS 😁" class="search-input">
                 </section>
-                <section class="clinics"></section>
+
+                <section class="clinicsCard">
+                    <section class="clinicCardHeader">
+                        <p class="section-label" style="margin-right: auto; flex: 1;">CLINICS</p>
+                        <button class="addBtn">+ Add Clinic</button>
+                    </section>
+                    <section class="clinics"></section>
+                </section>
             </section>
         </main>
     </section>
@@ -106,40 +104,37 @@
 
                 <select id="province">
                     <option value="" disabled selected>Select Province</option>
-                    <option>Gauteng</option>
-                    <option>Western Cape</option>
-                    <option>Eastern Cape</option>
-                    <option>KwaZulu-Natal</option>
-                    <option>Free State</option>
-                    <option>Limpopo</option>
-                    <option>Mpumalanga</option>
-                    <option>North West</option>
-                    <option>Northern Cape</option>
+                    <option value="Gauteng">Gauteng</option>
+                    <option value="Western Cape">Western Cape</option>
+                    <option value="Eastern Cape">Eastern Cape</option>
+                    <option value="KwaZulu-Natal">KwaZulu-Natal</option>
+                    <option value="Free State">Free State</option>
+                    <option value="Limpopo">Limpopo</option>
+                    <option value="Mpumalanga">Mpumalanga</option>
+                    <option value="North West">North West</option>
+                    <option value="Northern Cape">Northern Cape</option>
                 </select>
-                
 
                 <select id="clinicStatus" required>
                     <option value="Active">Active</option>
                     <option value="Closed">Closed</option>
                     <option value="Busy">Busy</option>
                 </select>
+
                 <button type="submit">Add Clinic</button>
             </form>
-
         </section>
     </section>
 
-
+    <!-- Manage Clinic Modal -->
     <section class="ManageModal" id="ManageClinicModal">
         <section class="modal-content">
-
             <section class="close-btn">&times;</section>
-
-            <h3>Manage clinic</h3>
-
+            <h3>Manage Clinic</h3>
             <form class="clinicForm">
                 <input type="text" placeholder="Clinic Name" class="form-control" id="ManageClinicName" required>
                 <input type="text" placeholder="Location" class="form-control" id="ManageLocation" required>
+
                 <section class="custom-select" id="manageClinicServicesDropdown">
                     <section class="select-trigger">Select Services <i class="fa-solid fa-chevron-down"></i></section>
                     <section class="select-options">
@@ -163,15 +158,15 @@
 
                 <select id="manageProvince">
                     <option value="" disabled selected>Select Province</option>
-                    <option>Gauteng</option>
-                    <option>Western Cape</option>
-                    <option>Eastern Cape</option>
-                    <option>KwaZulu-Natal</option>
-                    <option>Free State</option>
-                    <option>Limpopo</option>
-                    <option>Mpumalanga</option>
-                    <option>North West</option>
-                    <option>Northern Cape</option>
+                    <option value="Gauteng">Gauteng</option>
+                    <option value="Western Cape">Western Cape</option>
+                    <option value="Eastern Cape">Eastern Cape</option>
+                    <option value="KwaZulu-Natal">KwaZulu-Natal</option>
+                    <option value="Free State">Free State</option>
+                    <option value="Limpopo">Limpopo</option>
+                    <option value="Mpumalanga">Mpumalanga</option>
+                    <option value="North West">North West</option>
+                    <option value="Northern Cape">Northern Cape</option>
                 </select>
 
                 <select id="ManageClinicStatus" required>
@@ -182,81 +177,53 @@
 
                 <button type="submit">Update Clinic</button>
             </form>
-
         </section>
     </section>
 
+    <!-- Hours Modal -->
     <section class="modal" id="clinicHoursModal">
         <section class="modal-content">
             <span class="close-btn">&times;</span>
-            <h3>Set Operating Hours</h3>    
+            <h3>Set Operating Hours</h3>
             <form class="clinicForm">
+
                 <select id="startDay">
                     <option value="" disabled selected>Start Day</option>
-                    <option value="Mon">Monday</option>
-                    <option value="Tue">Tuesday</option>
-                    <option value="Wed">Wednesday</option>
-                    <option value="Thu">Thursday</option>
-                    <option value="Fri">Friday</option>
-                    <option value="Sat">Saturday</option>
-                    <option value="Sun">Sunday</option>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
                 </select>
 
                 <select id="endDay">
                     <option value="" disabled selected>End Day</option>
-                    <option value="Mon">Monday</option>
-                    <option value="Tue">Tuesday</option>
-                    <option value="Wed">Wednesday</option>
-                    <option value="Thu">Thursday</option>
-                    <option value="Fri">Friday</option>
-                    <option value="Sat">Saturday</option>
-                    <option value="Sun">Sunday</option>
-                </select>  
-
-                <select id="startTime">
-                    <option value="" disabled selected>Start Time</option>
-                    <option value="6am">6:00 AM</option>
-                    <option value="7am">7:00 AM</option>
-                    <option value="8am">8:00 AM</option>
-                    <option value="9am">9:00 AM</option>
-                    <option value="10am">10:00 AM</option>
-                    <option value="11am">11:00 AM</option>
-                    <option value="12pm">12:00 PM</option>
-                    <option value="1pm">1:00 PM</option>
-                    <option value="2pm">2:00 PM</option>
-                    <option value="3pm">3:00 PM</option>
-                    <option value="4pm">4:00 PM</option>
-                    <option value="5pm">5:00 PM</option>
-                    <option value="6pm">6:00 PM</option>
-                    <option value="7pm">7:00 PM</option>
-                    <option value="8pm">8:00 PM</option>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
                 </select>
 
-                <select id="endTime">
-                    <option value="" disabled selected>Start Time</option>
-                    <option value="6am">6:00 AM</option>
-                    <option value="7am">7:00 AM</option>
-                    <option value="8am">8:00 AM</option>
-                    <option value="9am">9:00 AM</option>
-                    <option value="10am">10:00 AM</option>
-                    <option value="11am">11:00 AM</option>
-                    <option value="12pm">12:00 PM</option>
-                    <option value="1pm">1:00 PM</option>
-                    <option value="2pm">2:00 PM</option>
-                    <option value="3pm">3:00 PM</option>
-                    <option value="4pm">4:00 PM</option>
-                    <option value="5pm">5:00 PM</option>
-                    <option value="6pm">6:00 PM</option>
-                    <option value="7pm">7:00 PM</option>
-                    <option value="8pm">8:00 PM</option>
-                </select>
+                <!-- 24hr time inputs matching the DB format e.g. "07:30" -->
+                <label for="startTime">Start Time</label>
+                <input type="time" id="startTime" required>
 
+                <label for="endTime">End Time</label>
+                <input type="time" id="endTime" required>
+
+                <!-- ✅ Error messages -->
+                <p class="hours-error" id="hoursError">All fields must be filled in before submitting.</p>
+                <p class="hours-error" id="hoursDayError">Start day and end day cannot be the same.</p>
                 <button type="submit">Update Operating Hours</button>
-            </form>    
+            </form>
         </section>
+    </section>
 
-
-    <script src="clinicManagementLogic.js"></script>
     <script type="module" src="clinicManagement.js"></script>
 </body>
 </html>

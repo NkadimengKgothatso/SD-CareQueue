@@ -54,11 +54,13 @@ jest.mock(
 function buildDOM() {
   document.body.innerHTML = `
     <section id="pageTitle"></section>
+
     <section id="timeSlots"></section>
+
     <input id="selectedTime" />
 
-    <button id="nearMeBtn"></button>
-    <button id="openNowBtn"></button>
+    <button id="nearMeBtn">Near Me</button>
+    <button id="openNowBtn">Open Now</button>
 
     <input id="clinicSearch" />
     <section id="clinicResults"></section>
@@ -68,8 +70,9 @@ function buildDOM() {
     <section id="patientAvatar"></section>
 
     <input id="appt-date" />
-    <button class="confirm-Button"></button>
-    <button class="reschedule-Button"></button>
+
+    <button class="confirm-Button">Confirm</button>
+    <button class="reschedule-Button">Reschedule</button>
 
     <select class="reason-select">
       <option>Select reason</option>

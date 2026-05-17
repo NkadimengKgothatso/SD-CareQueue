@@ -1,9 +1,15 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import fs from "fs";
 
+import { initializeApp } from "firebase/app";
+
+import {
+  getFirestore,
+  doc,
+  setDoc
+} from "firebase/firestore";
+
 const firebaseConfig = {
-  apiKey: "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
+  apiKey: "AIza...",
   authDomain: "carequeue-284bb.firebaseapp.com",
   projectId: "carequeue-284bb",
   storageBucket: "carequeue-284bb.firebasestorage.app",
@@ -14,42 +20,27 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+const clinics = JSON.parse(
+  fs.readFileSync("./Documentation/clinics_cleaned.json", "utf8")
+);
+
 async function uploadClinics() {
   try {
-    // ✅ Use fs instead of fetch — this is a Node.js script
-    const raw = fs.readFileSync("./Documentation/clinics_cleaned.json", "utf-8");
-    const clinics = JSON.parse(raw);
-
-    console.log("Loaded:", clinics.length, "clinics");
-
     for (const clinic of clinics) {
-      try {
-        if (!clinic.id || !clinic.name) {
-          console.warn("Skipping invalid entry:", clinic);
-          continue;
-        }
+      if (!clinic.id || !clinic.name) continue;
 
-        // Map JSON fields to match what clinicManagement.js expects
-        await setDoc(doc(db, "clinicsObjects", String(clinic.id)), {
-          name:          clinic.name,
-          address:       clinic.address       ?? "Unknown Address",
-          status:        "Active",             // default — not in JSON
-          service:       ["General"],          // default — not in JSON
-          opening_hours: clinic.opening_hours ?? "Hours not available",
-          province:      clinic.province       ?? "Unknown",
-          latitude:      clinic.latitude       ?? null,
-          longitude:     clinic.longitude      ?? null,
-        });
+      await setDoc(
+        doc(db, "clinicsObjects", String(clinic.id)),
+        clinic
+      );
 
-        console.log("✅ Uploaded:", clinic.name);
-      } catch (err) {
-        console.error("❌ Failed:", clinic.name, err.message);
-      }
+      console.log(`Uploaded: ${clinic.name}`);
     }
 
-    console.log("DONE");
-  } catch (err) {
-    console.error("Upload failed:", err);
+    console.log("All clinics uploaded successfully");
+
+  } catch (error) {
+    console.error("Upload failed:", error);
   }
 }
 

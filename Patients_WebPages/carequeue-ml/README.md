@@ -31,7 +31,7 @@ The system uses a Random Forest regression model trained on historical queue act
 
 # Real-Time ML Prediction Workflow
 
-```text
+
 1. Patient books an appointment
          ↓
 2. A new document is added to the Firestore Queues collection
@@ -134,28 +134,7 @@ pip install -r requirements.txt
 
 ## 2. Configure Firebase
 
-Download a Firebase service account key from:
 
-```text
-Firebase Console
-→ Project Settings
-→ Service Accounts
-→ Generate New Private Key
-```
-
-Save the file as:
-
-```text
-scripts/serviceAccountKey.json
-```
-
-Add the following to `.gitignore`:
-
-```text
-serviceAccountKey.json
-__pycache__/
-*.pkl
-```
 
 ---
 
@@ -171,13 +150,6 @@ QueueHistory
 
 This collection becomes the machine learning training dataset.
 
-Recommended dataset size:
-
-| Records | Quality |
-|---|---|
-| < 200 | Too small |
-| 200 – 1000 | Acceptable |
-| 1000+ | Recommended |
 
 ---
 
@@ -219,37 +191,7 @@ http://localhost:5000/predict
 
 ---
 
-## Phase 4 — Frontend Integration
 
-Update the API URL inside:
-
-```text
-js/waitTimeML.js
-```
-
-```js
-const ML_API_URL = "https://sd-carequeue.onrender.com/predict";
-```
-
-Import the ML loader:
-
-```js
-import { loadQueueStatusML } from "./waitTimeML.js";
-```
-
-Replace:
-
-```js
-loadQueueStatus(...)
-```
-
-With:
-
-```js
-loadQueueStatusML(...)
-```
-
----
 
 # API Example
 
