@@ -310,7 +310,7 @@ addBtn?.addEventListener("click", async () => {
     console.log(" clinicId (before query):", clinicId, typeof clinicId);
 
     const confirmed = await showConfirmModal(
-        `Add ${name} to ${assignedClinic} queue?`
+        `Add ${name} to ${clinicName} queue?`
     );
 
     if (!confirmed) return;
@@ -462,15 +462,15 @@ onAuthStateChanged(auth, async (user) => {
 
     // ─── SET CLINIC INFO ─────────────────────────────
     clinicId = Number(staff.clinicId);
-    assignedClinic = staff.assignedClinic;
+    clinicName = staff.clinicName;
 
     if (clinicEl) {
         clinicEl.textContent =
-            assignedClinic || "No clinic assigned";
+            clinicName || "No clinic assigned";
     }
 
     console.log("🏥 clinicId:", clinicId);
-    console.log("🏥 assignedClinic:", assignedClinic);
+    console.log("🏥 clinicName:", clinicName);
 
     // ─── LOAD WALK-IN APPOINTMENTS ───────────────────
     loadAppointments();
