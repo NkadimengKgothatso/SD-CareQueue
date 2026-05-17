@@ -177,61 +177,58 @@ async function renderTimeSlots(selectedDate, selectedClinic) {
         }
     });
 
-    const now = new Date();
-    const today = now.toISOString().split("T")[0];
-
     let current = new Date();
     current.setHours(startHour, startMinute, 0, 0);
 
     const end = new Date();
     end.setHours(endHour, endMinute, 0, 0);
 
-    while (current < end) {
-        const hour = current.getHours();
-        const minute = current.getMinutes();
+ const now = new Date();
+const today = now.toLocaleDateString("en-CA");
 
-        const formattedTime = formatTime(hour, minute);
+while (current < end) {
+    const hour = current.getHours();
+    const minute = current.getMinutes();
 
-        const slotBtn = document.createElement("button");
-        slotBtn.classList.add("time-slot");
-        slotBtn.textContent = formattedTime;
+    const formattedTime = formatTime(hour, minute);
 
-        let isPast = false;
+    const slotBtn = document.createElement("button");
+    slotBtn.classList.add("time-slot");
+    slotBtn.textContent = formattedTime;
 
-        if (selectedDate === today) {
-            const slotTime = new Date();
-            slotTime.setHours(hour, minute, 0, 0);
+    let isPast = false;
 
-            if (slotTime < now) {
-                isPast = true;
-            }
+    if (selectedDate === today) {
+        const slotTime = new Date();
+        slotTime.setHours(hour, minute, 0, 0);
+
+        if (slotTime <= now) {
+            isPast = true;
         }
-
-        const bookingsForThisSlot = slotCounts[formattedTime] || 0;
-        const isFullyBooked = bookingsForThisSlot >= availableStaff;
-
-        if (isFullyBooked || isPast || availableStaff === 0) {
-            slotBtn.style.textDecoration = "line-through";
-            slotBtn.style.color = "#999";
-            slotBtn.style.backgroundColor = "#f2f2f2";
-            slotBtn.style.cursor = "not-allowed";
-            slotBtn.disabled = true;
-        }
-
-        slotBtn.addEventListener("click", () => {
-            if (slotBtn.disabled) return;
-
-            document.querySelectorAll(".time-slot")
-                .forEach(btn => btn.classList.remove("selected"));
-
-            slotBtn.classList.add("selected");
-            selectedTimeInput.value = formattedTime;
-        });
-
-        timeSlotsContainer.appendChild(slotBtn);
-
-        current.setMinutes(current.getMinutes() + 30);
     }
+
+    const bookingsForThisSlot = slotCounts[formattedTime] || 0;
+    const isFullyBooked = bookingsForThisSlot >= availableStaff;
+
+    if (isFullyBooked || isPast || availableStaff === 0) {
+        slotBtn.classList.add("disabled-slot");
+        slotBtn.disabled = true;
+    }
+
+    slotBtn.addEventListener("click", () => {
+        if (slotBtn.disabled) return;
+
+        document.querySelectorAll(".time-slot")
+            .forEach(btn => btn.classList.remove("selected"));
+
+        slotBtn.classList.add("selected");
+        selectedTimeInput.value = formattedTime;
+    });
+
+    timeSlotsContainer.appendChild(slotBtn);
+
+    current.setMinutes(current.getMinutes() + 30);
+}
 }
 
 function formatTime(hour, minute) {
