@@ -205,6 +205,19 @@ test("updateStats and renderQueue handle active, done, and empty queues", async 
   expect(document.getElementById("upcoming").textContent).toContain("No patients in queue for today");
 });
 
+test("renderQueue shows empty active state before completed-only divider", async () => {
+  const module = await load();
+
+  module.__setQueueDataForTest([
+    { id: "done", status: "completed", patientName: "Done Patient" }
+  ]);
+  module.renderQueue();
+
+  expect(document.getElementById("upcoming").textContent).toContain("No patients in queue for today");
+  expect(document.getElementById("upcoming").textContent).toContain("Completed & Cancelled");
+  expect(document.getElementById("upcoming").textContent).toContain("Done Patient");
+});
+
 test("updateStatus updates appointment and matching queue record", async () => {
   mockGetDoc.mockResolvedValue({ exists: () => true });
   const { updateStatus } = await load();
@@ -349,6 +362,43 @@ test("mergeAndRender deduplicates appointments, resolves names, assigns position
   );
 });
 
+test("mergeAndRender reuses cached names, handles lookup failures, and clears positions for done records", async () => {
+  const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  let regularSuccess;
+  let walkinSuccess;
+  mockOnSnapshot
+    .mockImplementationOnce((_q, success) => {
+      regularSuccess = success;
+      return jest.fn();
+    })
+    .mockImplementationOnce((_q, success) => {
+      walkinSuccess = success;
+      return jest.fn();
+    });
+  mockGetDocs.mockResolvedValue(snapshotFrom([]));
+  mockGetDoc.mockRejectedValue(new Error("name lookup failed"));
+  const module = await load();
+  module.__setStaffClinicIDForTest(2);
+  module.__setQueueDataForTest([{ id: "cached", patientName: "Cached Name" }]);
+
+  module.startQueueListeners();
+  regularSuccess(snapshotFrom([
+    { id: "cached", time: "08:00", status: "scheduled" },
+    { id: "missing-name", time: "08:30", status: "waiting", userID: "user-2" },
+    { id: "done-record", time: "09:00", status: "completed", patientName: "Done Person" }
+  ]));
+  walkinSuccess(snapshotFrom([]));
+  await flushPromises(8);
+
+  expect(document.getElementById("upcoming").textContent).toContain("Cached Name");
+  expect(consoleSpy).toHaveBeenCalledWith("Failed to fetch patient name:", expect.any(Error));
+  expect(mockSetDoc).toHaveBeenCalledWith(
+    "Queues/done-record",
+    expect.objectContaining({ position: null, estimateWait: null }),
+    { merge: true }
+  );
+});
+
 test("startQueueListeners unsubscribes previous listeners and logs listener errors", async () => {
   const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
   const unsubReg = jest.fn();
@@ -383,15 +433,25 @@ test("startQueueListeners unsubscribes previous listeners and logs listener erro
 });
 
 test("auth bootstrap handles signed-out users", async () => {
+  const unsubReg = jest.fn();
+  const unsubWalk = jest.fn();
+  mockOnSnapshot
+    .mockImplementationOnce(() => unsubReg)
+    .mockImplementationOnce(() => unsubWalk);
+  mockGetDocs.mockResolvedValue(snapshotFrom([{ id: "staff", clinicId: 8 }]));
   mockOnAuthStateChanged.mockImplementation((_auth, callback) => {
+    callback({ email: "staff@test.com", displayName: "Jane Staff" });
     callback(null);
     return jest.fn();
   });
 
   await load();
+  await flushPromises();
 
   expect(document.querySelector(".name-Surname").textContent).toBe("Staff");
   expect(document.getElementById("upcoming").textContent).toContain("No patients in queue for today");
+  expect(unsubReg).toHaveBeenCalled();
+  expect(unsubWalk).toHaveBeenCalled();
 });
 
 test("auth bootstrap loads staff clinic and starts queue listeners", async () => {

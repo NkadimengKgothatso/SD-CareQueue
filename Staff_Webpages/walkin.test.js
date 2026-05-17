@@ -1,4 +1,76 @@
+const mockOnAuthStateChanged = jest.fn();
+const mockOnSnapshot = jest.fn(() => jest.fn());
+const mockGetDocs = jest.fn();
+const mockAddDoc = jest.fn(() => Promise.resolve());
+const mockCollection = jest.fn((_db, name) => ({ name }));
+const mockQuery = jest.fn((collectionRef, ...constraints) => ({ name: collectionRef.name, constraints }));
+const mockWhere = jest.fn((field, op, value) => ({ field, op, value }));
+const mockOrderBy = jest.fn((field, direction) => ({ field, direction }));
+const mockServerTimestamp = jest.fn(() => "TIMESTAMP");
+
+jest.mock(
+  "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+  () => ({ initializeApp: jest.fn(() => ({})) }),
+  { virtual: true }
+);
+
+jest.mock(
+  "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js",
+  () => ({
+    getAuth: jest.fn(() => ({})),
+    onAuthStateChanged: mockOnAuthStateChanged
+  }),
+  { virtual: true }
+);
+
+jest.mock(
+  "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
+  () => ({
+    getFirestore: jest.fn(() => ({})),
+    collection: mockCollection,
+    onSnapshot: mockOnSnapshot,
+    query: mockQuery,
+    where: mockWhere,
+    orderBy: mockOrderBy,
+    addDoc: mockAddDoc,
+    serverTimestamp: mockServerTimestamp,
+    getDocs: mockGetDocs
+  }),
+  { virtual: true }
+);
+
+function snapshotFrom(records = []) {
+  const docs = records.map(({ id, __docId, ...data }, index) => ({
+    id: __docId || id || `doc-${index}`,
+    data: () => data
+  }));
+
+  return {
+    empty: docs.length === 0,
+    size: docs.length,
+    docs,
+    forEach: (callback) => docs.forEach(callback)
+  };
+}
+
+async function flushPromises(times = 4) {
+  for (let i = 0; i < times; i++) {
+    await Promise.resolve();
+  }
+}
+
+async function load() {
+  const mod = await import("./walkin.js");
+  await flushPromises();
+  return mod;
+}
+
 beforeEach(() => {
+  jest.resetModules();
+  jest.clearAllMocks();
+  jest.useFakeTimers();
+  jest.setSystemTime(new Date("2026-05-09T08:00:00"));
+
   document.body.innerHTML = `
     <table>
       <tbody id="walkinTable"></tbody>
@@ -19,86 +91,264 @@ beforeEach(() => {
   `;
 
   global.alert = jest.fn();
-
+  jest.spyOn(console, "log").mockImplementation(() => {});
   HTMLDialogElement.prototype.showModal = jest.fn();
   HTMLDialogElement.prototype.close = jest.fn();
+
+  mockOnAuthStateChanged.mockImplementation(() => jest.fn());
+  mockGetDocs.mockResolvedValue(snapshotFrom([]));
+  mockOnSnapshot.mockImplementation(() => jest.fn());
 });
 
-test("getToday returns YYYY-MM-DD format", async () => {
-  const { getToday } = await import("./walkin.js");
-
-  expect(getToday()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+afterEach(() => {
+  jest.useRealTimers();
+  jest.restoreAllMocks();
 });
 
-test("timeToMinutes converts time correctly", async () => {
-  const { timeToMinutes } = await import("./walkin.js");
+test("date and time helpers work", async () => {
+  const { getToday, timeToMinutes, minutesToTime, roundToNextSlot } = await load();
 
-  expect(timeToMinutes("08:00")).toBe(480);
+  expect(getToday()).toBe("2026-05-09");
   expect(timeToMinutes("08:30")).toBe(510);
-  expect(timeToMinutes("17:00")).toBe(1020);
-});
-
-test("minutesToTime converts minutes correctly", async () => {
-  const { minutesToTime } = await import("./walkin.js");
-
-  expect(minutesToTime(480)).toBe("08:00");
-  expect(minutesToTime(510)).toBe("08:30");
   expect(minutesToTime(1020)).toBe("17:00");
-});
-
-test("roundToNextSlot rounds up correctly", async () => {
-  const { roundToNextSlot } = await import("./walkin.js");
-
   expect(roundToNextSlot(481, 30)).toBe(510);
   expect(roundToNextSlot(510, 30)).toBe(510);
 });
 
-test("isTaken returns true when slot overlaps appointment", async () => {
-  const { isTaken } = await import("./walkin.js");
-
+test("isTaken detects overlapping and free slots", async () => {
+  const { isTaken } = await load();
   const appointments = [{ time: "08:00" }];
 
   expect(isTaken(480, appointments, 30)).toBe(true);
   expect(isTaken(500, appointments, 30)).toBe(true);
-});
-
-test("isTaken returns false when slot is free", async () => {
-  const { isTaken } = await import("./walkin.js");
-
-  const appointments = [{ time: "08:00" }];
-
   expect(isTaken(510, appointments, 30)).toBe(false);
 });
 
-test("getNextAvailableTime skips booked slot", async () => {
-  const { getNextAvailableTime } = await import("./walkin.js");
+test("getNextAvailableTime skips booked slots, ignores cancelled and invalid times, and returns FULL when needed", async () => {
+  const { getNextAvailableTime } = await load();
 
-  jest.useFakeTimers();
-  jest.setSystemTime(new Date("2026-05-09T08:00:00"));
+  expect(getNextAvailableTime([
+    { time: "08:00", status: "waiting" },
+    { time: "08:30", status: "cancelled" },
+    { time: "07:30", status: "waiting" }
+  ])).toBe("08:30");
 
-  const result = getNextAvailableTime([
-    { time: "08:00", status: "waiting" }
-  ]);
-
-  expect(result).toBe("08:30");
-
-  jest.useRealTimers();
+  jest.setSystemTime(new Date("2026-05-09T16:45:00"));
+  expect(getNextAvailableTime([{ time: "16:30", status: "waiting" }])).toBe("FULL");
 });
 
-test("showConfirmModal resolves true when OK is clicked", async () => {
-  const { showConfirmModal } = await import("./walkin.js");
+test("getStaffProfile matches email case-insensitively and returns null when absent", async () => {
+  mockGetDocs.mockResolvedValue(snapshotFrom([
+    { id: "s1", email: "STAFF@Test.COM", clinicId: 3, clinicName: "Central Clinic" }
+  ]));
+  const { getStaffProfile } = await load();
 
-  const promise = showConfirmModal("Add patient?");
-  document.getElementById("okBtn").click();
+  await expect(getStaffProfile(" staff@test.com ")).resolves.toMatchObject({
+    id: "s1",
+    clinicId: 3,
+    clinicName: "Central Clinic"
+  });
 
-  await expect(promise).resolves.toBe(true);
+  mockGetDocs.mockResolvedValue(snapshotFrom([]));
+  await expect(getStaffProfile("missing@test.com")).resolves.toBeNull();
 });
 
-test("showConfirmModal resolves false when cancel is clicked", async () => {
-  const { showConfirmModal } = await import("./walkin.js");
+test("showConfirmModal resolves true and false and replaces previous modals", async () => {
+  const { showConfirmModal } = await load();
 
-  const promise = showConfirmModal("Add patient?");
+  const first = showConfirmModal("First?");
+  const second = showConfirmModal("Second?");
   document.getElementById("cancelBtn").click();
+  await expect(second).resolves.toBe(false);
+  expect(document.querySelectorAll("#confirmModal")).toHaveLength(0);
 
-  await expect(promise).resolves.toBe(false);
+  const third = showConfirmModal("Third?");
+  document.getElementById("okBtn").click();
+  await expect(third).resolves.toBe(true);
+
+  await expect(Promise.race([first, Promise.resolve("unresolved")])).resolves.toBe("unresolved");
+});
+
+test("loadAppointments renders live walk-in table rows", async () => {
+  let snapshotSuccess;
+  mockOnAuthStateChanged.mockImplementation((_auth, callback) => {
+    callback({ email: "staff@test.com", displayName: "Jane Staff" });
+    return jest.fn();
+  });
+  mockGetDocs.mockResolvedValue(snapshotFrom([
+    { id: "staff", email: "staff@test.com", clinicId: 7, clinicName: "Central Clinic" }
+  ]));
+  mockOnSnapshot.mockImplementation((_query, success) => {
+    snapshotSuccess = success;
+    return jest.fn();
+  });
+
+  await load();
+  await flushPromises();
+
+  snapshotSuccess(snapshotFrom([
+    { id: "w1", ticketNumber: "W-001", patientName: "Walk In One", reason: "Checkup", time: "08:00", status: "waiting" },
+    { id: "w2" }
+  ]));
+
+  expect(document.getElementById("walkinTable").textContent).toContain("W-001");
+  expect(document.getElementById("walkinTable").textContent).toContain("Walk In One");
+  expect(document.getElementById("walkinTable").textContent).toContain("Unknown");
+});
+
+test("add button validates missing name and unloaded clinic", async () => {
+  await load();
+
+  document.querySelector(".add-btn").click();
+  await flushPromises();
+  expect(global.alert).toHaveBeenCalledWith("Please enter patient name");
+
+  document.getElementById("nameInput").value = "Walk In";
+  document.querySelector(".add-btn").click();
+  await flushPromises();
+  expect(global.alert).toHaveBeenCalledWith("Clinic not loaded yet");
+});
+
+async function loadWithStaffProfile() {
+  mockOnAuthStateChanged.mockImplementation((_auth, callback) => {
+    callback({ email: "staff@test.com", displayName: "Jane Staff" });
+    return jest.fn();
+  });
+  mockGetDocs.mockResolvedValueOnce(snapshotFrom([
+    { id: "staff", email: "staff@test.com", clinicId: 7, clinicName: "Central Clinic" }
+  ]));
+  await load();
+  await flushPromises();
+}
+
+test("add button cancels when confirmation is declined", async () => {
+  await loadWithStaffProfile();
+
+  document.getElementById("nameInput").value = "Walk In";
+  document.querySelector(".add-btn").click();
+  await flushPromises();
+  document.getElementById("cancelBtn").click();
+  await flushPromises();
+
+  expect(mockAddDoc).not.toHaveBeenCalled();
+});
+
+test("add button creates a walk-in appointment with next ticket and slot", async () => {
+  await loadWithStaffProfile();
+
+  mockGetDocs
+    .mockResolvedValueOnce(snapshotFrom([
+      { id: "existing", time: "08:00", status: "waiting", clinicID: 7 }
+    ]))
+    .mockResolvedValueOnce(snapshotFrom([
+      { id: "walkin-1", isWalkIn: true }
+    ]));
+
+  document.getElementById("nameInput").value = " New Patient ";
+  document.getElementById("reasonInput").value = "Checkup";
+  document.querySelector(".add-btn").click();
+  await flushPromises();
+  document.getElementById("okBtn").click();
+  await flushPromises(8);
+
+  expect(mockAddDoc).toHaveBeenCalledWith(
+    { name: "Appointments" },
+    expect.objectContaining({
+      clinicID: 7,
+      patientName: "New Patient",
+      reason: "Checkup",
+      status: "waiting",
+      isWalkIn: true,
+      date: "2026-05-09",
+      ticketNumber: "W-002",
+      time: "08:30",
+      createdAT: "TIMESTAMP"
+    })
+  );
+  expect(document.getElementById("nameInput").value).toBe("");
+  expect(document.getElementById("reasonInput").value).toBe("");
+});
+
+test("add button blocks when the day is full", async () => {
+  await loadWithStaffProfile();
+  jest.setSystemTime(new Date("2026-05-09T16:45:00"));
+  mockGetDocs
+    .mockResolvedValueOnce(snapshotFrom([{ id: "existing", time: "16:30", status: "waiting" }]))
+    .mockResolvedValueOnce(snapshotFrom([]));
+
+  document.getElementById("nameInput").value = "Late Patient";
+  document.querySelector(".add-btn").click();
+  await flushPromises();
+  document.getElementById("okBtn").click();
+  await flushPromises();
+
+  expect(global.alert).toHaveBeenCalledWith("No available slots for today. Patient cannot be added.");
+  expect(mockAddDoc).not.toHaveBeenCalled();
+});
+
+test("add button reports Firestore write failures", async () => {
+  const error = new Error("add failed");
+  const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  await loadWithStaffProfile();
+  mockGetDocs
+    .mockResolvedValueOnce(snapshotFrom([]))
+    .mockResolvedValueOnce(snapshotFrom([]));
+  mockAddDoc.mockRejectedValueOnce(error);
+
+  document.getElementById("nameInput").value = "Error Patient";
+  document.querySelector(".add-btn").click();
+  await flushPromises();
+  document.getElementById("okBtn").click();
+  await flushPromises();
+
+  expect(consoleSpy).toHaveBeenCalledWith(error);
+  expect(global.alert).toHaveBeenCalledWith("Failed to add patient");
+});
+
+test("auth bootstrap handles signed-out and missing staff profile", async () => {
+  const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+  const unsubscribe = jest.fn();
+  mockOnSnapshot.mockReturnValue(unsubscribe);
+  mockOnAuthStateChanged.mockImplementation((_auth, callback) => {
+    callback(null);
+    return jest.fn();
+  });
+
+  await load();
+  expect(document.querySelector(".name-Surname").textContent).toBe("Staff");
+  expect(document.querySelector(".clinic-name").textContent).toBe("");
+
+  jest.resetModules();
+  document.body.innerHTML = `
+    <tbody id="walkinTable"></tbody>
+    <button class="add-btn"></button>
+    <input id="nameInput" />
+    <select id="reasonInput"><option value=""></option></select>
+    <section class="name-Surname"></section>
+    <section class="clinic-name"></section>
+    <section id="staffEmail"></section>
+    <section id="staffAvatar"></section>
+    <section id="staffName"></section>
+  `;
+  mockOnAuthStateChanged.mockImplementation((_auth, callback) => {
+    callback({ email: "missing@test.com", displayName: "" });
+    return jest.fn();
+  });
+  mockGetDocs.mockResolvedValue(snapshotFrom([]));
+
+  await load();
+  await flushPromises();
+
+  expect(warnSpy).toHaveBeenCalledWith("No staff profile found");
+});
+
+test("auth bootstrap fills staff sidebar and clinic label", async () => {
+  await loadWithStaffProfile();
+
+  expect(document.querySelector(".name-Surname").textContent).toBe("Jane Staff");
+  expect(document.getElementById("staffEmail").textContent).toBe("staff@test.com");
+  expect(document.getElementById("staffAvatar").textContent).toBe("JS");
+  expect(document.querySelector(".clinic-name").textContent).toBe("Central Clinic");
+  expect(console.log).toHaveBeenCalledWith("🏥 clinicId:", 7);
+  expect(console.log).toHaveBeenCalledWith("🏥 clinicName:", "Central Clinic");
 });
