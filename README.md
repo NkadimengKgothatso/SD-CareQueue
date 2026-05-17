@@ -120,12 +120,12 @@ The system aims to:
 
 ## **Contributors**
 
-* Sebetola Junior
+* Junior Sebetola
 * Karabo Machimana
 * Kgotatso Nkadimeng
-* Oratile Madiakgotle
+* Oratile Modiakgotla
 * Wilson Legadima
-* Realeboga
+* Realeboha Monaiwa
 
 ---
 
