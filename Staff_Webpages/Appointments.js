@@ -399,9 +399,14 @@ function showConfirmModal(message) {
     });
 }
 
+// ─── State (add queueListeners) ──────────────────────────────────────────────
+let queueListeners = [];
+
 // ─── Start Real-Time Listener ─────────────────────────────────────────────────
 function startAppointmentsListener() {
     if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+    queueListeners.forEach(u => u());
+    queueListeners = [];
 
     appointmentList.innerHTML = `
         <li class="loading-state">
@@ -419,6 +424,10 @@ function startAppointmentsListener() {
     unsubscribe = onSnapshot(q, async (snapshot) => {
         console.log("📋 Appointments:", snapshot.size);
 
+        // Clean up previous queue listeners before building new ones
+        queueListeners.forEach(u => u());
+        queueListeners = [];
+
         const incoming       = [];
         const detailPromises = [];
 
@@ -428,30 +437,37 @@ function startAppointmentsListener() {
             if (status === "cancelled") return;
 
             const appt = {
-                id:          docSnap.id,
-                date:        d.date        || "",
-                time:        d.time        || "",
+                id:           docSnap.id,
+                date:         d.date        || "",
+                time:         d.time        || "",
                 status,
-                reason:      d.reason      || "",
-                patientName: d.patientName || d.name || null,
-                isWalkIn:    d.isWalkIn    || false,
-                userID:      d.userID      || null,
+                reason:       d.reason      || "",
+                patientName:  d.patientName || d.name || null,
+                isWalkIn:     d.isWalkIn    || false,
+                userID:       d.userID      || null,
                 estimateWait: d.estimateWait ?? null
             };
 
             incoming.push(appt);
 
-            detailPromises.push(
-                getDoc(doc(db, "Queues", appt.id))
-                    .then(queueDoc => {
-                        if (queueDoc.exists()) {
-                            const queueData = queueDoc.data();
-                            appt.estimateWait = queueData.estimateWait ?? appt.estimateWait;
-                        }
-                    })
-                    .catch(() => {})
+            // ── Real-time ML wait time from Queues ──────────────────────────
+            // The ML model (loadQueueStatusML) writes estimateWait to Queues/{appt.id}
+            // We subscribe so the card updates live as the queue moves.
+            const queueUnsub = onSnapshot(
+                doc(db, "Queues", appt.id),
+                (queueDoc) => {
+                    if (!queueDoc.exists()) return;
+                    const newWait = queueDoc.data().estimateWait ?? null;
+                    if (newWait !== appt.estimateWait) {
+                        appt.estimateWait = newWait;
+                        renderAppointments(); // re-render when ML updates the value
+                    }
+                },
+                () => {} // silently ignore permission errors
             );
+            queueListeners.push(queueUnsub);
 
+            // ── Patient name lookup (unchanged) ─────────────────────────────
             if (!appt.patientName && appt.userID) {
                 detailPromises.push(
                     getDoc(doc(db, "Users", appt.userID))
@@ -478,7 +494,6 @@ function startAppointmentsListener() {
             </li>`;
     });
 }
-
 // ─── Filter Buttons ───────────────────────────────────────────────────────────
 filterBtns.forEach(btn => {
     btn.addEventListener("click", () => {
