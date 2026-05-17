@@ -1,56 +1,73 @@
 /* ══════════════════════════════════════════════════════
-   a-sidebar.css  —  Care Queue  |  Global / Shared Styles
-   Used by ALL pages: top bar, sidebar, nav, user info, layout
+   a-sidebar.css  —  Care Queue | Shared Patient Layout
+   Shared across all patient-facing pages
 ══════════════════════════════════════════════════════ */
 
-/* ── Google Fonts ── */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap');
+/* ── Google Font ───────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* ══════════════════════════════════════════
-   CSS VARIABLES for Patient pages  (single source of truth)
+   CSS VARIABLES
 ══════════════════════════════════════════ */
 :root {
-    /* Brand */
-    --color-brand:          #10b981;   /* emerald-500  */
-    --color-brand-dark:     #059669;   /* emerald-600  */
-    --color-brand-deeper:   #047857;   /* emerald-700  */
-    --color-brand-soft:     #d1fae5;   /* emerald-100  */
-    --color-brand-subtle:   #ecfdf5;   /* emerald-50   */
 
-    /* Backgrounds */
-    --color-bg-canvas:      #f0fdf8;   /* very soft teal-white  */
+    /* ── Brand Colors ───────────────────── */
+    --color-brand: #10b981;
+    --color-brand-dark: #059669;
+    --color-brand-deeper: #047857;
+    --color-brand-soft: #d1fae5;
+    --color-brand-subtle: #ecfdf5;
+
+    /* ── Backgrounds ────────────────────── */
+    --color-bg-canvas: #f0fdf8;
     --color-background-primary: #ffffff;
 
-    /* Text */
-    --color-text-primary:   #0f172a;
+    /* ── Text ───────────────────────────── */
+    --color-text-primary: #0f172a;
     --color-text-secondary: #64748b;
-    --color-text-tertiary:  #94a3b8;
+    --color-text-tertiary: #94a3b8;
 
-    /* Borders */
-    --color-border-primary:   #cbd5e1;
-    --color-border-tertiary:  #e2e8f0;
+    /* ── Borders ────────────────────────── */
+    --color-border-primary: #cbd5e1;
+    --color-border-secondary: #cbd5e1;
+    --color-border-tertiary: #e2e8f0;
 
-    /* Shadows */
-    --shadow-sm:  0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
-    --shadow-md:  0 4px 12px rgba(16,185,129,0.10), 0 1px 3px rgba(0,0,0,0.06);
-    --shadow-lg:  0 10px 30px rgba(16,185,129,0.12), 0 2px 8px rgba(0,0,0,0.06);
+    /* ── Shadows ────────────────────────── */
+    --shadow-sm:
+        0 1px 3px rgba(0, 0, 0, 0.07),
+        0 1px 2px rgba(0, 0, 0, 0.05);
 
-    /* Radii */
-    --border-radius-sm:  6px;
-    --border-radius-md:  10px;
-    --border-radius-lg:  16px;
-    --border-radius-xl:  22px;
+    --shadow-md:
+        0 4px 12px rgba(16, 185, 129, 0.10),
+        0 1px 3px rgba(0, 0, 0, 0.06);
 
-    /* Sidebar */
-    --sidebar-width:      240px;
-    --sidebar-collapsed:  72px;
-    --topbar-height:      64px;
+    --shadow-lg:
+        0 10px 30px rgba(16, 185, 129, 0.12),
+        0 2px 8px rgba(0, 0, 0, 0.06);
 
-    /* Fonts */
-    --font-body:    'DM Sans', sans-serif;
-    --font-display: 'DM Serif Display', serif;
+    /* ── Radius ─────────────────────────── */
+    --border-radius-sm: 6px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 14px;
+    --border-radius-xl: 20px;
 
-    /* Transitions */
+    /* ── Layout ─────────────────────────── */
+    --sidebar-width: 240px;
+    --sidebar-collapsed: 72px;
+    --topbar-height: 64px;
+
+    /* ── Typography ─────────────────────── */
+    --font-sans:
+        'Inter',
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        sans-serif;
+
+    --font-body: var(--font-sans);
+
+    /* ── Transitions ────────────────────── */
     --transition-fast: 0.15s ease;
     --transition-base: 0.25s ease;
 }
@@ -58,24 +75,54 @@
 /* ══════════════════════════════════════════
    RESET & BASE
 ══════════════════════════════════════════ */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
-html, body {
+html,
+body {
     height: 100%;
+}
+
+body {
     font-family: var(--font-body);
     background: var(--color-bg-canvas);
     color: var(--color-text-primary);
-    font-size: 14px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+/* ── Default typography ────────────────── */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--color-text-primary);
+}
+
+p {
+    color: var(--color-text-secondary);
+    font-size: 14px;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
 }
 
 /* ══════════════════════════════════════════
-   ADMIN CONTAINER  (page scaffold)
+   APP CONTAINER
 ══════════════════════════════════════════ */
 .admin-container {
     display: flex;
@@ -89,34 +136,41 @@ html, body {
     height: var(--topbar-height);
     background: var(--color-background-primary);
     border-bottom: 1px solid var(--color-border-tertiary);
+
     display: flex;
     justify-content: space-between;
     align-items: center;
+
     padding: 0 24px;
+
     position: fixed;
-    left: 0;
-    right: 0;
-    top: 0;
+    inset: 0 0 auto 0;
+
     z-index: 200;
+
     box-shadow: var(--shadow-sm);
 }
 
-/* ── Logo ── */
+/* ── Logo ──────────────────────────────── */
 .logo {
     display: flex;
     align-items: center;
     gap: 10px;
+
     text-decoration: none;
     color: inherit;
 }
 
 .logo-icon {
-    width: 32px;
-    height: 32px;
-    background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
-    border-radius: 9px;
+    width: 30px;
+    height: 30px;
+
+    background: var(--color-brand);
+
+    border-radius: var(--border-radius-md);
+
     position: relative;
-    box-shadow: 0 2px 8px rgba(16,185,129,0.35);
+
     flex-shrink: 0;
 }
 
@@ -128,42 +182,51 @@ html, body {
     border-radius: 2px;
 }
 
-.logo-icon::before {     /* vertical bar */
+.logo-icon::before {
     width: 3px;
-    height: 14px;
-    left: 14px;
-    top: 9px;
+    height: 13px;
+    left: 13px;
+    top: 8px;
 }
 
-.logo-icon::after {      /* horizontal bar */
-    width: 14px;
+.logo-icon::after {
+    width: 13px;
     height: 3px;
-    left: 9px;
-    top: 14px;
+    left: 8px;
+    top: 13px;
 }
+
 
 .logo-name {
-    font-family: var(--font-display);
-    font-size: 18px;
+    font-size: 17px;
+    font-weight: 600;
+    font-family: var(--font-sans);
     color: var(--color-text-primary);
-    letter-spacing: -0.01em;
 }
 
-/* ── Sign-out button ── */
+/* ── Sign Out Button ───────────────────── */
 .sign-out-btn {
     display: flex;
     align-items: center;
     gap: 7px;
+
     background: transparent;
     color: var(--color-text-secondary);
+
     border: 1px solid var(--color-border-tertiary);
-    padding: 7px 14px;
     border-radius: var(--border-radius-md);
+
+    padding: 7px 14px;
+
     cursor: pointer;
-    font-family: var(--font-body);
+
     font-size: 13px;
     font-weight: 500;
-    transition: var(--transition-fast);
+
+    transition:
+        background var(--transition-fast),
+        color var(--transition-fast),
+        border-color var(--transition-fast);
 }
 
 .sign-out-btn:hover {
@@ -177,111 +240,162 @@ html, body {
 ══════════════════════════════════════════ */
 .sidebar {
     width: var(--sidebar-width);
+
     background: var(--color-background-primary);
+
     border-right: 1px solid var(--color-border-tertiary);
+
     position: fixed;
     top: var(--topbar-height);
     left: 0;
+
     height: calc(100vh - var(--topbar-height));
+
     display: flex;
     flex-direction: column;
+
     z-index: 100;
+
     box-shadow: var(--shadow-sm);
 }
 
-/* ── Nav ── */
+/* ── Sidebar Navigation ────────────────── */
 .sidebar-nav {
-    padding: 16px 10px;
+    padding: 16px 12px;
+
     flex: 1;
+
     overflow-y: auto;
+
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
 }
 
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 11px;
-    padding: 10px 14px;
+    gap: 12px;
+
+    padding: 11px 14px;
+
     border-radius: var(--border-radius-md);
-    cursor: pointer;
-    color: var(--color-text-secondary);
-    font-size: 13.5px;
-    font-weight: 500;
-    transition: var(--transition-fast);
-    user-select: none;
+
     text-decoration: none;
-    position: relative;
+
+    color: var(--color-text-secondary);
+
+    font-size: 13px;
+    font-weight: 500;
+
+    transition:
+        background var(--transition-fast),
+        color var(--transition-fast),
+        transform var(--transition-fast);
+
+    user-select: none;
 }
 
 .nav-item:hover {
     background: var(--color-brand-subtle);
     color: var(--color-brand-dark);
+    transform: translateX(2px);
 }
-/* Active state (for current page)  */
 
 .nav-item.active {
-    background:  var(--color-brand-soft);
+    background: var(--color-brand-soft);
     color: var(--color-text-primary);
-    box-shadow: 0 3px 10px rgba(16,185,129,0.30);
+    box-shadow: 0 3px 10px rgba(16, 185, 129, 0.20);
 }
 
-/* nav dot indicator */
+/* ── Nav Dot ───────────────────────────── */
 .nav-dot {
-    width: 7px;
-    height: 7px;
+    width: 6px;
+    height: 6px;
+
     border-radius: 50%;
+
     background: currentColor;
-    flex-shrink: 0;
+
     opacity: 0.7;
+
+    flex-shrink: 0;
+
     transition: var(--transition-fast);
 }
 
 .nav-item.active .nav-dot {
     opacity: 1;
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
 }
 
-/* ── Sidebar footer / user panel ── */
+/* ── Sidebar Badge ─────────────────────── */
+.sidebar-badge {
+    margin-left: auto;
+
+    background: var(--color-brand-dark);
+    color: white;
+
+    padding: 2px 7px;
+
+    border-radius: 999px;
+
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.sidebar-badge.hidden {
+    display: none;
+}
+
+/* ── Sidebar Footer ────────────────────── */
 .sidebar-footer {
-    padding: 14px 16px;
+    padding: 16px;
+
     border-top: 1px solid var(--color-border-tertiary);
-   
 }
 
+/* ── User Info ─────────────────────────── */
 .user-info {
     display: flex;
-    gap: 11px;
     align-items: center;
+    gap: 10px;
 }
 
 .user-avatar {
     width: 36px;
     height: 36px;
+
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+
+    background: var(--color-brand);
+
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
-    font-size: 12px;
+
     color: white;
-    flex-shrink: 0;
+
+    font-size: 12px;
+    font-weight: 600;
+
     letter-spacing: 0.03em;
-    box-shadow: 0 2px 6px rgba(16,185,129,0.30);
+
+    flex-shrink: 0;
 }
 
 .user-details {
     display: flex;
     flex-direction: column;
+
     min-width: 0;
 }
 
 .user-name {
     font-size: 13px;
     font-weight: 600;
+
     color: var(--color-text-primary);
+
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -289,63 +403,65 @@ html, body {
 
 .user-email {
     font-size: 11px;
+
     color: var(--color-text-tertiary);
+
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 /* ══════════════════════════════════════════
-   MAIN CONTENT  (scaffold — layout only)
+   MAIN CONTENT
 ══════════════════════════════════════════ */
 .main-content {
+    flex: 1;
+
     margin-left: var(--sidebar-width);
     margin-top: var(--topbar-height);
-    padding: 28px 28px 48px;
-    flex: 1;
+
+    padding: 28px 32px;
+
     min-height: calc(100vh - var(--topbar-height));
 }
 
 /* ══════════════════════════════════════════
-   UTILITY
+   ACCESSIBILITY
 ══════════════════════════════════════════ */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+}
+
+/* ── Screen-reader only ────────────────── */
 .sr-only {
     position: absolute;
+
     width: 1px;
     height: 1px;
+
     overflow: hidden;
-    clip: rect(0,0,0,0);
+
+    clip: rect(0, 0, 0, 0);
+
     white-space: nowrap;
-}
-
-/* ══════════════════════════════════════════
-   NOTIFICATION TAB
-══════════════════════════════════════════ */
-
-.sidebar-badge {
-  background: #0b8f6a;
-  color: white;
-  font-size: 11px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  margin-left: 8px;
-  font-weight: bold;
-}
-
-.sidebar-badge.hidden {
-  display: none;
 }
 
 /* ══════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════ */
 @media (max-width: 768px) {
+
     .sidebar {
         width: var(--sidebar-collapsed);
     }
 
     .sidebar-footer .user-details,
-    .nav-item section {
+    .nav-item span:not(.nav-dot),
+    .logo-name {
         display: none;
     }
 
@@ -370,9 +486,5 @@ html, body {
 
     .user-info {
         justify-content: center;
-    }
-
-    .logo-name {
-        display: none;
     }
 }

@@ -3,7 +3,7 @@
    Page-specific styles: header, appointments, stats, queue
    Depends on: a-sidebar.css  (must be loaded first)
 ══════════════════════════════════════════════════════ */
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 /* ══════════════════════════════════════════
    PAGE LOAD ANIMATION
 ══════════════════════════════════════════ */
@@ -24,19 +24,25 @@ body {
 }
 
 .section-header h1 {
-    font-family: var(--font-display);
+    
+    font-weight: 600;
+    font-family: var(--font-sans);
     font-size: 26px;
-    font-weight: 400;
+    
     color: var(--color-text-primary);
     letter-spacing: -0.02em;
     line-height: 1.2;
 }
 
 .section-header > p {
-    font-size: 13px;
+    font-size: 17px;
+    font-weight: 600;
+    font-family: var(--font-sans);
     color: var(--color-text-tertiary);
     margin-top: 5px;
 }
+
+
 
 /* Sub-section labels (e.g. "Next Appointment") */
 .section-label {
@@ -132,7 +138,8 @@ body {
 }
 
 .card-meta li {
-    font-size: 13.5px;
+    font-size: 16px;
+    font-weight: 600;
     color: var(--color-text-secondary);
     line-height: 1.5;
 }
@@ -149,6 +156,7 @@ body {
     align-items: center;
     gap: 8px;
     font-size: 13px;
+    font-weight: 500;
     color: var(--color-text-secondary);
 }
 
@@ -347,8 +355,8 @@ body {
 
 .stat-card p {
     font-family: var(--font-display);
-    font-size: 28px;
-    font-weight: 400;
+   font-size: 16px;
+    font-weight: 900;
     color: var(--color-text-primary);
     line-height: 1;
     letter-spacing: -0.02em;
@@ -391,8 +399,8 @@ body {
     color: var(--color-brand-deeper);
     padding: 3px 10px;
     border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
 }
