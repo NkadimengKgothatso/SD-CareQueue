@@ -24,34 +24,39 @@ const manageForm       = document.querySelector("#ManageClinicModal form");
 const hoursForm        = document.querySelector("#clinicHoursModal form");
 const searchInput      = document.getElementById("clinicSearch");
 
+// Tracks which clinic is being edited in the manage and hours modals
 let editingClinicId      = null;
 let editingHoursClinicId = null;
-let clinics              = [];
+
+// Holds all fetched clinics so search can filter without re-fetching
+let clinics = [];
 
 // =========================
 // MODAL CONTROLS
 // =========================
+
+// Open the add clinic modal
 addBtn.addEventListener("click", () => {
     modal.style.display = "flex";
 });
 
+// Close all modals and clear any visible validation errors
 closeBtns.forEach(btn => {
     btn.addEventListener("click", () => {
         modal.style.display            = "none";
         manageModal.style.display      = "none";
         clinicHoursModal.style.display = "none";
-        document.getElementById("hoursError").classList.remove("visible");
-        document.getElementById("hoursDayError").classList.remove("visible");
+        clearHoursErrors();
     });
 });
 
+// Close modals when clicking the backdrop (outside the modal content)
 window.addEventListener("click", (e) => {
     if (e.target === modal)            modal.style.display            = "none";
     if (e.target === manageModal)      manageModal.style.display      = "none";
     if (e.target === clinicHoursModal) {
         clinicHoursModal.style.display = "none";
-        document.getElementById("hoursError").classList.remove("visible");
-        document.getElementById("hoursDayError").classList.remove("visible");
+        clearHoursErrors();
     }
 });
 
@@ -59,18 +64,71 @@ window.addEventListener("click", (e) => {
 // HELPERS
 // =========================
 
-// Builds a readable hours string from the 4 separate fields
+// Clears both hours validation error messages
+function clearHoursErrors() {
+    document.getElementById("hoursError").classList.remove("visible");
+    document.getElementById("hoursDayError").classList.remove("visible");
+}
+
+// Builds a human-readable hours string from the 4 separate day/time fields
+// e.g. "Monday-Friday: 08:00-17:00"
 function formatHours(startDay, endDay, startTime, endTime) {
-    if (!startDay && !endDay && !startTime && !endTime) return "Hours not specified";
     if (startDay && endDay && startTime && endTime) {
         return `${startDay}-${endDay}: ${startTime}-${endTime}`;
     }
     return "Hours not specified";
 }
 
+// Derives clinic status dynamically from today's day and the current time.
+// Returns "Active" if the clinic is currently open, "Closed" otherwise.
+// This removes the need to store status in the database manually.
+function deriveStatus(startDay, endDay, startTime, endTime) {
+
+    // If any hours field is missing we cannot determine status — default to Closed
+    if (!startDay || !endDay || !startTime || !endTime) return "Closed";
+
+    const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+    const now        = new Date();
+    const todayIndex = now.getDay(); // 0 = Sunday, 1 = Monday ... 6 = Saturday
+
+    // Convert JS getDay() (0=Sun) to our dayOrder index (0=Mon)
+    // JS:  Sun=0  Mon=1  Tue=2  Wed=3  Thu=4  Fri=5  Sat=6
+    // Ours: Mon=0 Tue=1  Wed=2  Thu=3  Fri=4  Sat=5  Sun=6
+    const todayMapped = todayIndex === 0 ? 6 : todayIndex - 1;
+
+    const startIndex = dayOrder.indexOf(startDay);
+    const endIndex   = dayOrder.indexOf(endDay);
+
+    // If either day isn't recognised, fall back to Closed
+    if (startIndex === -1 || endIndex === -1) return "Closed";
+
+    // Check if today falls within the operating day range
+    const isDayOpen = startIndex <= endIndex
+        ? todayMapped >= startIndex && todayMapped <= endIndex   // e.g. Mon-Fri
+        : todayMapped >= startIndex || todayMapped <= endIndex;  // e.g. Fri-Mon (wraps weekend)
+
+    if (!isDayOpen) return "Closed";
+
+    // Check if the current time falls within the operating time range
+    // startTime and endTime are stored as "HH:MM" (24hr format)
+    const [startHour, startMin] = startTime.split(":").map(Number);
+    const [endHour,   endMin  ] = endTime.split(":").map(Number);
+
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const openMinutes    = startHour * 60 + startMin;
+    const closeMinutes   = endHour   * 60 + endMin;
+
+    const isTimeOpen = currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+
+    return isTimeOpen ? "Active" : "Closed";
+}
+
 // =========================
 // LOAD & RENDER CLINICS
 // =========================
+
+// Fetches all clinics from Firestore and stores them in the clinics array
 async function loadClinics() {
     const container = document.querySelector(".clinics");
     container.innerHTML = "";
@@ -82,18 +140,18 @@ async function loadClinics() {
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
             clinics.push({
-                id:             docSnap.id,
-                name:           data.name,
-                address:        data.address,
-                province:       data.province        ?? "",
-                status:         data.status          ?? "Active",
-                service:        data.service         ?? ["General"],
-                latitude:       data.latitude        ?? null,
-                longitude:      data.longitude       ?? null,
-                startDay:       data.startDay        ?? "",
-                endDay:         data.endDay          ?? "",
-                startTime:      data.startTime       ?? "",
-                endTime:        data.endTime         ?? ""
+                id:        docSnap.id,
+                name:      data.name,
+                address:   data.address,
+                province:  data.province  ?? "",
+                service:   data.service   ?? ["General"],
+                latitude:  data.latitude  ?? null,
+                longitude: data.longitude ?? null,
+                startDay:  data.startDay  ?? "",
+                endDay:    data.endDay    ?? "",
+                startTime: data.startTime ?? "",
+                endTime:   data.endTime   ?? ""
+                // Note: status is NOT stored — it is calculated live from hours
             });
         });
 
@@ -104,6 +162,7 @@ async function loadClinics() {
     }
 }
 
+// Clears the clinic container and re-renders a given list of clinic objects
 function renderClinics(list) {
     const container = document.querySelector(".clinics");
     container.innerHTML = "";
@@ -115,21 +174,31 @@ loadClinics();
 // =========================
 // BUILD CLINIC CARD
 // =========================
+
+// Creates and appends a clinic card to the UI for a given clinic object
 function addClinicToUI(clinic) {
-    const { id, name, address, status = "Active", service, province, startDay, endDay, startTime, endTime } = clinic;
+    const {
+        id, name, address, service,
+        province, startDay, endDay, startTime, endTime
+    } = clinic;
 
     const container = document.querySelector(".clinics");
     const card      = document.createElement("section");
     card.classList.add("clinic");
 
+    // Derive status live from the clinic's operating hours
+    const status = deriveStatus(startDay, endDay, startTime, endTime);
+
+    // Status badge colours — Busy removed as it is no longer a valid status
     const statusColors = {
         Active: { background: "#DCFCE7", color: "#166534" },
-        Closed: { background: "#FEE2E2", color: "#991B1B" },
-        Busy:   { background: "#E5E7EB", color: "#374151" }
+        Closed: { background: "#FEE2E2", color: "#991B1B" }
     };
 
-    const colors       = statusColors[status] || statusColors["Active"];
-    const hoursDisplay = formatHours(startDay, endDay, startTime, endTime);
+    const colors          = statusColors[status] || statusColors["Closed"];
+    const hoursDisplay    = formatHours(startDay, endDay, startTime, endTime);
+
+    // Only show province if it is a real value (not empty or "Unknown")
     const provinceDisplay = province && province.trim().toLowerCase() !== "unknown"
         ? `, ${province}`
         : "";
@@ -164,7 +233,7 @@ function addClinicToUI(clinic) {
 
     container.appendChild(card);
 
-    // Delete
+    // Delete — confirms before removing from Firestore and the DOM
     card.querySelector(".delete-btn").addEventListener("click", async () => {
         if (!confirm("Delete this clinic?")) return;
         try {
@@ -175,12 +244,12 @@ function addClinicToUI(clinic) {
         }
     });
 
-    // Manage
+    // Manage — opens the edit modal pre-filled with the clinic's current data
     card.querySelector(".manage-btn").addEventListener("click", () => {
         openEditModal(clinic);
     });
 
-    // Hours
+    // Hours — opens the hours modal pre-filled with existing hours if set
     card.querySelector(".hours-btn").addEventListener("click", () => {
         editingHoursClinicId = id;
 
@@ -189,6 +258,7 @@ function addClinicToUI(clinic) {
         document.getElementById("startTime").value = startTime || "";
         document.getElementById("endTime").value   = endTime   || "";
 
+        clearHoursErrors();
         clinicHoursModal.style.display = "flex";
     });
 }
@@ -196,12 +266,14 @@ function addClinicToUI(clinic) {
 // =========================
 // ADD CLINIC FORM
 // =========================
+
+// Handles adding a new clinic to Firestore
+// Hours are intentionally left empty — the admin sets them separately via the Hours button
 addForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const name     = document.getElementById("clinicName").value.trim();
     const address  = document.getElementById("Location").value.trim();
-    const status   = document.getElementById("clinicStatus").value;
     const province = document.getElementById("province").value;
     const services = getSelectedServices("clinicServicesDropdown");
 
@@ -209,9 +281,9 @@ addForm.addEventListener("submit", async (e) => {
         await addDoc(collection(db, "clinicsObjects"), {
             name,
             address,
-            status,
             province,
             service:   services.length > 0 ? services : ["General"],
+            // Hours default to empty — admin sets them via the Hours button
             startDay:  "",
             endDay:    "",
             startTime: "",
@@ -231,12 +303,14 @@ addForm.addEventListener("submit", async (e) => {
 // =========================
 // UPDATE CLINIC FORM
 // =========================
+
+// Handles updating an existing clinic's name, address, province and services
+// Hours are managed separately via the Hours modal
 manageForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const name     = document.getElementById("ManageClinicName").value.trim();
     const address  = document.getElementById("ManageLocation").value.trim();
-    const status   = document.getElementById("ManageClinicStatus").value;
     const province = document.getElementById("manageProvince").value;
     const services = getSelectedServices("manageClinicServicesDropdown");
 
@@ -244,7 +318,6 @@ manageForm.addEventListener("submit", async (e) => {
         await updateDoc(doc(db, "clinicsObjects", editingClinicId), {
             name,
             address,
-            status,
             province,
             service: services.length > 0 ? services : ["General"]
         });
@@ -261,15 +334,17 @@ manageForm.addEventListener("submit", async (e) => {
 // =========================
 // UPDATE HOURS FORM
 // =========================
+
+// Handles updating a clinic's operating hours in Firestore
+// Validates that all fields are filled and start/end days differ before saving
 hoursForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const hoursError   = document.getElementById("hoursError");
+    const hoursError    = document.getElementById("hoursError");
     const hoursDayError = document.getElementById("hoursDayError");
 
-    // Clear both errors first
-    hoursError.classList.remove("visible");
-    hoursDayError.classList.remove("visible");
+    // Always clear previous errors before re-validating
+    clearHoursErrors();
 
     if (!editingHoursClinicId) {
         alert("No clinic selected.");
@@ -281,13 +356,13 @@ hoursForm.addEventListener("submit", async (e) => {
     const startTime = document.getElementById("startTime").value;
     const endTime   = document.getElementById("endTime").value;
 
-    // ✅ Validate all fields are filled
+    // Rule 1 — all four fields must be filled
     if (!startDay || !endDay || !startTime || !endTime) {
         hoursError.classList.add("visible");
         return;
     }
 
-    // ✅ Validate start and end day are not the same
+    // Rule 2 — start and end day must be different
     if (startDay === endDay) {
         hoursDayError.classList.add("visible");
         return;
@@ -303,8 +378,7 @@ hoursForm.addEventListener("submit", async (e) => {
 
         loadClinics();
         hoursForm.reset();
-        hoursError.classList.remove("visible");
-        hoursDayError.classList.remove("visible");
+        clearHoursErrors();
         clinicHoursModal.style.display = "none";
         editingHoursClinicId = null;
     } catch (error) {
@@ -315,37 +389,38 @@ hoursForm.addEventListener("submit", async (e) => {
 // =========================
 // OPEN EDIT MODAL
 // =========================
-function openEditModal(clinic) {
-    const { id, name, address, status, service, province } = clinic;
 
-    editingClinicId = id;
+// Pre-fills the manage modal with the selected clinic's current data
+function openEditModal(clinic) {
+    const { id, name, address, service, province } = clinic;
+
+    editingClinicId           = id;
     manageModal.style.display = "flex";
 
     document.getElementById("ManageClinicName").value   = name;
     document.getElementById("ManageLocation").value     = address;
-    document.getElementById("ManageClinicStatus").value = status;
-    document.getElementById("manageProvince").value     = province || "";
 
+    // Only set province if it matches a valid option in the dropdown
+    // Otherwise leave it on the placeholder to avoid stale/invalid selections
+    const provinceSelect = document.getElementById("manageProvince");
+    const validProvinces = Array.from(provinceSelect.options).map(opt => opt.value);
+    provinceSelect.value = province && validProvinces.includes(province) ? province : "";
 
-    // ✅ Only set province if it exists as a valid option, otherwise show placeholder
-    const provinceSelect  = document.getElementById("manageProvince");
-    const validProvinces  = Array.from(provinceSelect.options).map(opt => opt.value);
-    const provinceToSet   = province && validProvinces.includes(province) ? province : "";
-    provinceSelect.value  = provinceToSet;
-    
     preselectServices("manageClinicServicesDropdown", service);
 }
 
 // =========================
 // SEARCH
 // =========================
+
+// Filters the displayed clinics in real time as the admin types
+// Searches across name, address, province and services
 searchInput.addEventListener("input", (e) => {
     const value = e.target.value.toLowerCase().trim();
 
     const filtered = clinics.filter(c =>
         (c.name     || "").toLowerCase().includes(value) ||
         (c.address  || "").toLowerCase().includes(value) ||
-        (c.status   || "").toLowerCase().includes(value) ||
         (c.province || "").toLowerCase().includes(value) ||
         (Array.isArray(c.service)
             ? c.service.join(" ").toLowerCase()
@@ -359,12 +434,17 @@ searchInput.addEventListener("input", (e) => {
 // =========================
 // CUSTOM CHECKBOX DROPDOWN
 // =========================
+
+// Initialises the custom multi-select checkbox dropdowns for services
+// Runs after the DOM is ready to ensure all elements are available
 document.addEventListener("DOMContentLoaded", () => {
 
+    // Toggle the dropdown open/closed when clicking the trigger
     document.querySelectorAll(".custom-select .select-trigger").forEach(trigger => {
         trigger.addEventListener("click", (e) => {
             e.stopPropagation();
             const parent = trigger.closest(".custom-select");
+            // Close all other open dropdowns first
             document.querySelectorAll(".custom-select").forEach(s => {
                 if (s !== parent) s.classList.remove("open");
             });
@@ -372,16 +452,19 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // Prevent clicks inside the options list from closing the dropdown
     document.querySelectorAll(".custom-select .select-options").forEach(options => {
         options.addEventListener("click", (e) => {
             e.stopPropagation();
         });
     });
 
+    // Close all dropdowns when clicking anywhere outside them
     document.addEventListener("click", () => {
         document.querySelectorAll(".custom-select").forEach(s => s.classList.remove("open"));
     });
 
+    // Update the trigger label whenever a checkbox is checked or unchecked
     document.querySelectorAll(".custom-select input[type='checkbox']").forEach(cb => {
         cb.addEventListener("change", (e) => {
             e.stopPropagation();
@@ -390,6 +473,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+// Updates the dropdown trigger text to show the currently selected services
+// Falls back to the default placeholder if nothing is selected
 function updateTriggerLabel(dropdown) {
     const checked = Array.from(dropdown.querySelectorAll("input[type='checkbox']:checked"))
         .map(cb => cb.value);
@@ -399,12 +484,14 @@ function updateTriggerLabel(dropdown) {
         : `Select Services <i class="fa-solid fa-chevron-down"></i>`;
 }
 
+// Returns an array of the currently checked service values from a given dropdown
 function getSelectedServices(dropdownId) {
     return Array.from(
         document.querySelectorAll(`#${dropdownId} input[type='checkbox']:checked`)
     ).map(cb => cb.value);
 }
 
+// Unchecks all checkboxes in a dropdown and resets the trigger label
 function clearServices(dropdownId) {
     document.querySelectorAll(`#${dropdownId} input[type='checkbox']`).forEach(cb => {
         cb.checked = false;
@@ -412,6 +499,8 @@ function clearServices(dropdownId) {
     updateTriggerLabel(document.getElementById(dropdownId));
 }
 
+// Pre-ticks the checkboxes that match the given services array
+// Used when opening the manage modal to reflect the clinic's existing services
 function preselectServices(dropdownId, services) {
     const existing = Array.isArray(services) ? services : (services ? [services] : []);
     document.querySelectorAll(`#${dropdownId} input[type='checkbox']`).forEach(cb => {
@@ -425,6 +514,7 @@ export {
     addClinicToUI,
     openEditModal,
     formatHours,
+    deriveStatus,
     updateTriggerLabel,
     getSelectedServices,
     clearServices,

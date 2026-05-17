@@ -249,11 +249,10 @@ async function loadClinics() {
     }
 }
 
-// Load appointment data for reschedule
 async function loadAppointmentForReschedule() {
     if (!appointmentId) return;
 
-    const ref = doc(db, "Appointments", appointmentId);
+    const ref  = doc(db, "Appointments", appointmentId);
     const snap = await getDoc(ref);
 
     if (!snap.exists()) return;
@@ -262,16 +261,20 @@ async function loadAppointmentForReschedule() {
 
     selectedClinicId = data.clinicID;
 
+    // Find the clinic object so we can populate its services
+    const matchingClinic = clinics.find(c => String(c.id) === String(data.clinicID));
+    if (matchingClinic) {
+        // ✅ Restore services dropdown before setting the selected reason
+        populateReasonSelect(matchingClinic.service);
+    }
 
-    document.getElementById("appt-date").value = data.date;
-    selectedTimeInput.value = data.time;
-    document.querySelector(".reason-select").value = data.reason;
+    document.getElementById("appt-date").value        = data.date;
+    selectedTimeInput.value                            = data.time;
+    document.querySelector(".reason-select").value     = data.reason;
 
-    //load times
     renderTimeSlots(data.date, data.clinicID);
 }
 
-// Display clinics
 function displayClinics(clinicList) {
     clinicResults.innerHTML = "";
 
@@ -281,41 +284,44 @@ function displayClinics(clinicList) {
 
         clinicCard.innerHTML = `
             <i class="fa-solid fa-house-chimney-medical clinic-icon"></i>
-
             <section class="clinic-info">
                 <p class="clinic-name">${clinic.name}</p>
-
-                <!-- Distance info -->
                 <p class="clinic-bookings">
                     <i class="fa-solid fa-location-dot"></i>
-                    ${clinic.distance !== undefined ? `${clinic.distance.toFixed(2)} km away` : "Click Near Me to see distance"}
+                    ${clinic.distance !== undefined 
+                        ? `${clinic.distance.toFixed(2)} km away` 
+                        : "Click Near Me to see distance"}
                 </p>
             </section>
-
             <button class="open-btn">Select</button>
         `;
 
         clinicCard.querySelector(".open-btn").addEventListener("click", () => {
 
-        document.querySelectorAll(".open-btn").forEach(btn => {
-            btn.textContent = "Select";
-            btn.style.backgroundColor = "#E1F5EE";
-            btn.style.color = "#085041";
+            // Reset all other select buttons
+            document.querySelectorAll(".open-btn").forEach(btn => {
+                btn.textContent         = "Select";
+                btn.style.backgroundColor = "#E1F5EE";
+                btn.style.color           = "#085041";
+            });
+
+            selectedClinicId   = clinic.id;
+            selectedClinicName = clinic.name;
+
+            // Mark this clinic as selected
+            const btn               = clinicCard.querySelector(".open-btn");
+            btn.textContent         = "Selected";
+            btn.style.backgroundColor = "#1D9E75";
+            btn.style.color           = "#fff";
+
+            // ✅ Populate reason dropdown with this clinic's services from the DB
+            populateReasonSelect(clinic.service);
+
+            // Only render time slots if a date is already selected
+            if (dateInput.value) {
+                renderTimeSlots(dateInput.value, selectedClinicId);
+            }
         });
-
-        selectedClinicId = clinic.id;
-        selectedClinicName = clinic.name;
-
-        const btn = clinicCard.querySelector(".open-btn");
-        btn.textContent = "Selected";
-        btn.style.backgroundColor = "#1D9E75";
-        btn.style.color = "#fff";
-
-        // ✅ ONLY render if date exists
-        if (dateInput.value) {
-            renderTimeSlots(dateInput.value, selectedClinicId);
-        }
-    });
 
         clinicResults.appendChild(clinicCard);
     });
@@ -765,6 +771,44 @@ function setAvatarInitial(name, email) {
         initials = email.charAt(0);
     }
     document.getElementById("patientAvatar").textContent = initials.toUpperCase();
+}
+
+// =========================
+// POPULATE REASON SELECT
+// =========================
+
+// Populates the reason dropdown with the selected clinic's services from the database
+// Falls back to a default list if the clinic has no services stored
+function populateReasonSelect(services) {
+    const reasonSelect = document.querySelector(".reason-select");
+
+    // Clear existing options
+    reasonSelect.innerHTML = "";
+
+    // Default placeholder
+    const placeholder = document.createElement("option");
+    placeholder.value    = "";
+    placeholder.textContent = "Select reason";
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    reasonSelect.appendChild(placeholder);
+
+    // If clinic has no services, show a fallback message
+    if (!services || services.length === 0) {
+        const fallback = document.createElement("option");
+        fallback.disabled    = true;
+        fallback.textContent = "No services available for this clinic";
+        reasonSelect.appendChild(fallback);
+        return;
+    }
+
+    // Add each service from the clinic's database record as an option
+    services.forEach(service => {
+        const option       = document.createElement("option");
+        option.value       = service;
+        option.textContent = service;
+        reasonSelect.appendChild(option);
+    });
 }
 
 export {

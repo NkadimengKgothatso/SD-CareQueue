@@ -71,7 +71,6 @@ As an admin, I want to access a dashboard that shows key system information so t
 <td>3</td>
 
 <td>
-<li>As an admin I want to remove a clinic, So that outdated or closed clinics are no longer visible.</li>
 <li>As an admin, I want to set or update clinic opening hours, So that patients know when clinics are available.</li>    
 </td>
 
@@ -99,24 +98,21 @@ As an admin, I want to access a dashboard that shows key system information so t
 <td>4</td>
 
 <td>
-As a __________, I want __________ so that __________.
+<li>As an admin I want to remove a clinic, So that outdated or closed clinics are no longer visible.</li>
 </td>
 
 <td>
 <ul>
-<li>Given __________, when __________, then __________</li>
-<li>Given __________, when __________, then __________</li>
-<li>Given __________, when __________, then __________</li>
+<li>Given I am an admin, When I click the delete button on a particular, Then the clinic should be deleted from the clinic management page</li>
+<li>Given I am an admin, When I click the delete button on a particular, Then the clinic should be deleted from the database</li>
 </ul>
 </td>
 
 <td>
 <ul>
-<li>Task 1</li>
-<li>Task 2</li>
-<li>Task 3</li>
+<li>implement the delete button.</li>
+
 </ul>
 </td>
 </tr>
-
 </table>
