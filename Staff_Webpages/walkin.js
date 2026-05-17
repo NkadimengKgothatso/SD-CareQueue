@@ -39,7 +39,7 @@ const clinicEl = document.querySelector(".clinic-name");
 
 
 // STATE
-let assignedClinic = null;
+let clinicName = null;
 let clinicId = null;
 let unsubscribe = null;
 
