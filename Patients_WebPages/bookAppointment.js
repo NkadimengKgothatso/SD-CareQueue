@@ -672,6 +672,7 @@ confirmBtn.addEventListener("click", async () => {
 
 
     try {
+         //Adding Appointment to database
         await addDoc(collection(db, "Appointments"), {
             clinicID: clinicIdNum,
             userID: user.uid,
@@ -683,7 +684,7 @@ confirmBtn.addEventListener("click", async () => {
             status: "scheduled",
             createdAT: serverTimestamp()
         });
-
+        //Patient Notifications
          await addDoc(collection(db, "Notifications"), {
             userID: user.uid,
             clinicID: clinicIdNum,
@@ -691,6 +692,18 @@ confirmBtn.addEventListener("click", async () => {
             type: "Appointment",
             title: "Appointment Booked",
             message: `Your ${reason} appointment at ${selectedClinicName} is booked for ${date} at ${time}. Please arrive 10 minutes early.`,
+            read: false,
+            createdAt: serverTimestamp()
+        });
+
+        // Staff notification
+        await addDoc(collection(db, "Notifications"), {
+            targetRole: "staff",
+            clinicID: clinicIdNum,
+            clinicName: selectedClinicName,
+            type: "Appointment",
+            title: "New Appointment Booked",
+            message: `A new ${reason} appointment has been booked at ${selectedClinicName} for ${date} at ${time}.`,
             read: false,
             createdAt: serverTimestamp()
         });
