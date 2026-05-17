@@ -1,47 +1,84 @@
-/* ================= STAFF CARD ================= */
+/*staff management styles */
 
-.staffCard {
-    background: var(--color-brand-soft);
-    border-radius: 16px;
-    padding: 20px;
-    min-height: 60vh;
-    border: 1px solid var(--color-border-tertiary);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+/* ================= STAFF CARD ================= */
+.staff-card {
+    background: white;
+
+    border-radius: var(--border-radius-lg);
+
+    padding: 1rem;
+
     display: flex;
     flex-direction: column;
+
     gap: 16px;
 
-    /* IMPORTANT FIX */
-    overflow: hidden;
+    border: 1px solid var(--color-border-tertiary);
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+
+    min-height: 60vh;
+
+    
 }
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap; 
+    gap: 12px;
+}
+
 
 /* ================= TABLE ================= */
 
-.data-table {
+/* TABLE */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 8px;
-
+    border-collapse: collapse;
 }
 
-.data-table tbody tr {
-    background: var(--color-background-primary);
-    transition: 0.2s ease;
+thead {
+    border-bottom: 2px solid #eee;
+}
+
+th, td {
+    padding: 0.7rem;
+    text-align: left;
+    font-size: 0.85rem;
+}
+
+/* CHART */
+canvas {
+    width: 100%;
+    max-height: 300px;
+}
+
+.table-wrapper {
+    max-height: 200px; /* roughly 4 rows */
+    overflow-y: auto;
+}
+
+table thead th {
+    top: 0;
+    background: white;
+    z-index: 2;
+}
+
+/* highlights rows */
+tr.active-row {
+    background: rgba(139, 92, 246, 0.12);
+    outline: 2px solid rgba(139, 92, 246, 0.25);
+    transition: 0.15s ease;
+}
+
+tr:hover {
+    background: rgba(139, 92, 246, 0.06);
     cursor: pointer;
-    border-radius: var(--border-radius-md);
-
-}
-
-.data-table tbody tr:hover {
-    background: var(--color-brand-soft);
-    transform: scale(1.01);
-    
-}
-
-.data-table tbody tr.selected {
-    background: var(--color-brand-soft);
-    border-left: 3px solid var(--color-brand);
-    
 }
 
 /* ================= BUTTONS ================= */
@@ -105,23 +142,3 @@
     border: 2px solid var(--color-brand);
 }
 
-/* ================= TOAST ================= */
-
-.toast {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #1f2937;
-    color: white;
-    padding: 10px 18px;
-    border-radius: 30px;
-    opacity: 0;
-    transition: 0.3s;
-}
-
-.toast.show {
-    opacity: 1;
-}
-
-.toast.success { background: #059669; }
-.toast.error { background: #dc2626; }

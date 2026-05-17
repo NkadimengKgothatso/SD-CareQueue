@@ -1,5 +1,7 @@
+/*dashboard styles*/
+
 /* =========================
-   MAIN LAYOUT
+    MAIN LAYOUT
 ========================= */
 
 .dashboard-main {
@@ -334,48 +336,7 @@
     background: lightpink;
     color: red;
 }
-/* ================= TOP BAR ================= */
-.top-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
 
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 0 24px;
-    background: var(--color-background-primary);
-    border-bottom: 1px solid var(--color-border-tertiary);
-    z-index: 1000;
-}
-
-/* push main content down */
-.admin-container {
-    margin-top: 64px;
-}
-
-/* logo inside top bar */
-.top-bar .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.top-bar .logo-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    background: var(--color-brand);
-}
-
-.top-bar .logo-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--color-text-primary);
-}
 /* ── Sign Out Button ────────────────────────────────────── */
 .sign-out-btn {
     display: flex;

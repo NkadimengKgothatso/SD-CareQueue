@@ -12,16 +12,17 @@
     <script type="module" src="../pwa.js"></script>
 </head>
 <body>
+
+<header class="top-bar">
+    <section class="logo">
+        <section class="logo-icon"></section>
+        <section class="logo-name">Care Queue</section>
+    </section>
+</header>    
     <section class="admin-container">
 
         <!-- Sidebar -->
         <aside class="sidebar">
-            <section class="sidebar-header">
-                <section class="logo">
-                    <section class="logo-icon"></section>
-                    <section class="logo-name">Care Queue</section>
-                </section>
-            </section>
             <nav class="sidebar-nav">
                 <section class="nav-item" onclick="window.location.href='/Admin_WebPages/dashboard.html'">
                     <section class="nav-dot"></section>
@@ -219,7 +220,7 @@
                 <label for="endTime">End Time</label>
                 <input type="time" id="endTime" required>
 
-                <!-- ✅ Error messages -->
+                <!--  Error messages -->
                 <p class="hours-error" id="hoursError">All fields must be filled in before submitting.</p>
                 <p class="hours-error" id="hoursDayError">Start day and end day cannot be the same.</p>
                 <button type="submit">Update Operating Hours</button>

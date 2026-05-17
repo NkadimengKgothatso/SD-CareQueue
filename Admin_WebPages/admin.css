@@ -47,6 +47,48 @@ body {
     display: flex;
     min-height: 100vh;
 }
+/* ================= TOP BAR ================= */
+.top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 24px;
+    background: var(--color-background-primary);
+    border-bottom: 1px solid var(--color-border-tertiary);
+    z-index: 1000;
+}
+
+/* push main content down */
+.admin-container {
+    margin-top: 64px;
+}
+
+/* logo inside top bar */
+.top-bar .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.top-bar .logo-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: var(--color-brand);
+}
+
+.top-bar .logo-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
 
 /* ══════════════════════════════════════════
    SIDEBAR
@@ -58,9 +100,9 @@ body {
     display: flex;
     flex-direction: column;
     position: fixed;
-    height: 100vh;
+    height: 93vh;
     left: 0;
-    top: 0;
+    top: 64px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
@@ -231,66 +273,6 @@ body {
     color: var(--color-text-secondary);
 }
 
-/* ══════════════════════════════════════════
-   CARDS
-══════════════════════════════════════════ */
-.card {
-    background: var(--color-background-primary);
-    border: 1px solid var(--color-border-tertiary);
-    border-radius: var(--border-radius-lg);
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-}
-
-.card-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--color-brand);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-/* ══════════════════════════════════════════
-   TABLES
-══════════════════════════════════════════ */
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.data-table th {
-    text-align: left;
-    padding: 12px 10px 12px 0;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--color-text-secondary);
-    border-bottom: 1px solid var(--color-border-tertiary);
-}
-
-.data-table td {
-    padding: 13px 10px 13px 0;
-    font-size: 13px;
-    color: var(--color-text-primary);
-    border-bottom: 1px solid var(--color-border-tertiary);
-    vertical-align: middle;
-    
-}
-
-.data-table tr:last-child td {
-    border-bottom: none;
-}
-
-.data-table tr:hover td {
-    background: var(--color-brand-soft);
-}
 
 /* ══════════════════════════════════════════
    BADGES
@@ -365,16 +347,6 @@ body {
     margin-bottom: 6px;
 }
 
-.form-input {
-    width: 100%;
-    padding: 9px 12px;
-    border: 1px solid var(--color-border-secondary);
-    border-radius: var(--border-radius-md);
-    font-size: 13px;
-    font-family: var(--font-sans);
-    color: var(--color-text-primary);
-    background: var(--color-background-primary);
-}
 
 .form-input:focus {
     outline: none;
