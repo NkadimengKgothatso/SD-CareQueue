@@ -450,8 +450,7 @@ test("auth bootstrap handles signed-out users", async () => {
 
   expect(document.querySelector(".name-Surname").textContent).toBe("Staff");
   expect(document.getElementById("upcoming").textContent).toContain("No patients in queue for today");
-  expect(unsubReg).toHaveBeenCalled();
-  expect(unsubWalk).toHaveBeenCalled();
+  expect(mockOnSnapshot).not.toHaveBeenCalled();
 });
 
 test("auth bootstrap loads staff clinic and starts queue listeners", async () => {

@@ -54,6 +54,7 @@ let regularAppts       = [];
 let walkInAppts        = [];
 let staffClinicID      = null;
 const sendingPositionTwo = new Set();
+let authRunId          = 0;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 function getTodayString() {
@@ -458,6 +459,8 @@ function startQueueListeners() {
 
 // ─── Auth & Bootstrap ────────────────────────────────────────────────────────
 onAuthStateChanged(auth, async (user) => {
+    const runId = ++authRunId;
+
     if (!user) {
         if (nameSurnameEl) nameSurnameEl.textContent = "Staff";
 
@@ -514,6 +517,8 @@ onAuthStateChanged(auth, async (user) => {
 
         const snapshot = await getDocs(staffQuery);
 
+        if (runId !== authRunId) return;
+
         console.log("📄 Snapshot empty?", snapshot.empty);
 
         if (!snapshot.empty) {
@@ -527,6 +532,8 @@ onAuthStateChanged(auth, async (user) => {
     } catch (err) {
         console.error("Failed to fetch staff clinic:", err);
     }
+
+    if (runId !== authRunId) return;
 
     // ── Safety check ──
     if (!staffClinicID) {

@@ -109,6 +109,7 @@ beforeEach(() => {
   }));
   mockWhere.mockImplementation((field, op, value) => ({ field, op, value }));
   mockDoc.mockImplementation((_db, collectionName, id) => `${collectionName}/${id}`);
+  mockGetDoc.mockResolvedValue({ exists: () => false, data: () => ({}) });
 
   global.alert   = jest.fn();
   global.confirm = jest.fn(() => true);
@@ -260,6 +261,18 @@ test("buildCard shows reason when provided", async () => {
   const { buildCard } = await load();
   const card = buildCard({ id: "a1", status: "scheduled", reason: "Checkup" });
   expect(card.textContent).toContain("Checkup");
+});
+
+test("buildCard shows estimated wait when provided", async () => {
+  const { buildCard } = await load();
+  const card = buildCard({ id: "a1", status: "scheduled", estimateWait: 24 });
+  expect(card.textContent).toContain("Estimated wait: 24 min");
+});
+
+test("buildCard hides estimated wait when it is missing", async () => {
+  const { buildCard } = await load();
+  const card = buildCard({ id: "a1", status: "scheduled" });
+  expect(card.textContent).not.toContain("Estimated wait");
 });
 
 test("buildCard shows date and time", async () => {
@@ -528,10 +541,10 @@ test("startAppointmentsListener renders non-cancelled appointments and resolves 
     snapshotSuccess = success;
     return jest.fn();
   });
-  mockGetDoc.mockResolvedValue({
-    exists: () => true,
+  mockGetDoc.mockImplementation((ref) => Promise.resolve({
+    exists: () => ref === "Users/user-1",
     data: () => ({ displayName: "Fetched Patient" })
-  });
+  }));
   const { startAppointmentsListener } = await load();
 
   startAppointmentsListener();
@@ -547,6 +560,29 @@ test("startAppointmentsListener renders non-cancelled appointments and resolves 
   expect(document.getElementById("appointmentList").textContent).toContain("Named Patient");
   expect(document.getElementById("appointmentList").textContent).not.toContain("Skip Me");
   expect(document.getElementById("stat-total").textContent).toBe("2");
+});
+
+test("startAppointmentsListener displays estimated wait from the matching queue document", async () => {
+  let snapshotSuccess;
+  mockOnSnapshot.mockImplementation((_query, success) => {
+    snapshotSuccess = success;
+    return jest.fn();
+  });
+  mockGetDoc.mockImplementation((ref) => Promise.resolve({
+    exists: () => ref === "Queues/a1",
+    data: () => ({ estimateWait: 18 })
+  }));
+  const { startAppointmentsListener } = await load();
+
+  startAppointmentsListener();
+  await snapshotSuccess(snapshotFrom([
+    { id: "a1", date: "2026-06-01", time: "10:00", status: "scheduled", patientName: "Queued Patient" }
+  ]));
+  await flushPromises();
+
+  expect(mockGetDoc).toHaveBeenCalledWith("Queues/a1");
+  expect(document.getElementById("appointmentList").textContent)
+    .toContain("Estimated wait: 18 min");
 });
 
 test("startAppointmentsListener renders an error state when the listener fails", async () => {

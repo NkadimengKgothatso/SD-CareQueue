@@ -118,6 +118,9 @@ function buildCard(appt) {
     const status = (appt.status || "scheduled").toLowerCase().trim();
     const label  = STATUS_LABELS[status] || status;
     const isDone = status === "cancelled" || status === "completed";
+    const estimatedWait = appt.estimateWait === null || appt.estimateWait === undefined || appt.estimateWait === ""
+        ? null
+        : `${appt.estimateWait} min`;
 
     const li = document.createElement("li");
     li.classList.add("appointment-card", "queue-card");
@@ -154,6 +157,11 @@ function buildCard(appt) {
                 <li class="meta-item">
                     <i class="fa-solid fa-notes-medical meta-icon"></i>
                     ${appt.reason}
+                </li>` : ""}
+                ${estimatedWait ? `
+                <li class="meta-item">
+                    <i class="fa-solid fa-hourglass-half meta-icon"></i>
+                    Estimated wait: ${estimatedWait}
                 </li>` : ""}
             </ul>
 
@@ -411,8 +419,8 @@ function startAppointmentsListener() {
     unsubscribe = onSnapshot(q, async (snapshot) => {
         console.log("📋 Appointments:", snapshot.size);
 
-        const incoming      = [];
-        const namePromises  = [];
+        const incoming       = [];
+        const detailPromises = [];
 
         snapshot.forEach(docSnap => {
             const d      = docSnap.data();
@@ -427,13 +435,25 @@ function startAppointmentsListener() {
                 reason:      d.reason      || "",
                 patientName: d.patientName || d.name || null,
                 isWalkIn:    d.isWalkIn    || false,
-                userID:      d.userID      || null
+                userID:      d.userID      || null,
+                estimateWait: d.estimateWait ?? null
             };
 
             incoming.push(appt);
 
+            detailPromises.push(
+                getDoc(doc(db, "Queues", appt.id))
+                    .then(queueDoc => {
+                        if (queueDoc.exists()) {
+                            const queueData = queueDoc.data();
+                            appt.estimateWait = queueData.estimateWait ?? appt.estimateWait;
+                        }
+                    })
+                    .catch(() => {})
+            );
+
             if (!appt.patientName && appt.userID) {
-                namePromises.push(
+                detailPromises.push(
                     getDoc(doc(db, "Users", appt.userID))
                         .then(userDoc => {
                             if (userDoc.exists()) {
@@ -445,7 +465,7 @@ function startAppointmentsListener() {
             }
         });
 
-        await Promise.all(namePromises);
+        await Promise.all(detailPromises);
         allAppointments = incoming;
         renderAppointments();
 
