@@ -318,6 +318,12 @@ function capitalise(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+function setClinicHoursState(openTime, closeTime, workDays = []) {
+    clinicOpenTime = openTime;
+    clinicCloseTime = closeTime;
+    clinicWorkDays = workDays;
+}
+
 // ─── Auth & Bootstrap ────────────────────────────────────────────────────────
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -409,10 +415,12 @@ onAuthStateChanged(auth, async (user) => {
 export {
     buildWorkDays,
     capitalise,
+    fetchClinicHours,
+    loadAvailability,
+    saveAvailability,
+    setClinicHoursState,
     showStatus,
     readScheduleFromPage,
     applyScheduleToPage,
-    applyClinicConstraints,
-    convertTo24Hour,
-    parseClinicHours 
+    applyClinicConstraints
 };

@@ -42,10 +42,11 @@ function buildDOM() {
     <input id="staffName" value="" />
     <input id="staffEmail" value="" />
 
-    <select id="staffClinic">
-      <option value="">Select</option>
-      <option value="1">Clinic A</option>
-    </select>
+    <input id="staffClinicInput" value="" list="clinicList" />
+    <datalist id="clinicList">
+      <option value="Clinic A" data-id="1"></option>
+    </datalist>
+    <input id="staffClinicId" value="" />
   `;
 }
 
@@ -125,7 +126,8 @@ test("buildClinicOption returns null for blank names and an option model for val
   expect(buildClinicOption("")).toBeNull();
   expect(buildClinicOption("Clinic A")).toEqual({
     value: "Clinic A",
-    label: "Clinic A"
+    label: "Clinic A",
+    id: ""
   });
 });
 
@@ -152,12 +154,12 @@ test("buildStaffPayload normalizes email and includes clinic/admin metadata", as
 test("init loads staff and clinics", async () => {
   mockGetDocs
     .mockResolvedValueOnce(makeSnapshot([
-      { __docId: "s1", name: "Alice", email: "alice@test.com", clinicName: "Clinic A" },
-      { __docId: "s2", name: "Bob", email: "bob@test.com", clinicName: "Clinic B" }
-    ]))
-    .mockResolvedValueOnce(makeSnapshot([
       { __docId: "c1", name: "Clinic Alpha" },
       { __docId: "c2", name: "Clinic Beta" }
+    ]))
+    .mockResolvedValueOnce(makeSnapshot([
+      { __docId: "s1", name: "Alice", email: "alice@test.com", clinicName: "Clinic A" },
+      { __docId: "s2", name: "Bob", email: "bob@test.com", clinicName: "Clinic B" }
     ]));
 
   await load();
@@ -169,13 +171,14 @@ test("init loads staff and clinics", async () => {
   expect(document.getElementById("staffTableBody").textContent).toContain("Alice");
   expect(document.getElementById("staffTableBody").textContent).toContain("Bob");
 
-  const clinicOptions = Array.from(document.getElementById("staffClinic").options).map((option) => ({
+  const clinicOptions = Array.from(document.getElementById("clinicList").options).map((option) => ({
     value: option.value,
-    text: option.textContent
+    text: option.textContent,
+    id: option.getAttribute("data-id")
   }));
   expect(clinicOptions).toEqual(expect.arrayContaining([
-    { value: "c1", text: "Clinic Alpha" },
-    { value: "c2", text: "Clinic Beta" }
+    { value: "Clinic Alpha", text: "Clinic Alpha", id: "c1" },
+    { value: "Clinic Beta", text: "Clinic Beta", id: "c2" }
   ]));
 });
 
@@ -191,7 +194,9 @@ test("loadStaff renders the empty-state row for an empty snapshot", async () => 
 test("loadStaff logs and shows an error toast when Firestore fails", async () => {
   const error = new Error("Firestore down");
   const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-  mockGetDocs.mockRejectedValueOnce(error);
+  mockGetDocs
+    .mockResolvedValueOnce(makeSnapshot([]))
+    .mockRejectedValueOnce(error);
 
   await load();
 
@@ -202,15 +207,15 @@ test("loadStaff logs and shows an error toast when Firestore fails", async () =>
 
 test("loadClinics skips clinics without a name", async () => {
   mockGetDocs
-    .mockResolvedValueOnce(makeSnapshot([]))
     .mockResolvedValueOnce(makeSnapshot([
       { __docId: "c1", name: "" },
       { __docId: "c2", name: "Clinic Beta" }
-    ]));
+    ]))
+    .mockResolvedValueOnce(makeSnapshot([]));
 
   await load();
 
-  const options = Array.from(document.getElementById("staffClinic").options).map((option) => option.textContent);
+  const options = Array.from(document.getElementById("clinicList").options).map((option) => option.textContent);
 
   expect(options).not.toContain("");
   expect(options).toContain("Clinic Beta");
@@ -220,8 +225,8 @@ test("loadClinics logs errors without crashing", async () => {
   const error = new Error("Clinics unavailable");
   const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
   mockGetDocs
-    .mockResolvedValueOnce(makeSnapshot([]))
-    .mockRejectedValueOnce(error);
+    .mockRejectedValueOnce(error)
+    .mockResolvedValueOnce(makeSnapshot([]));
 
   await load();
 
@@ -238,7 +243,8 @@ test("addStaff validates missing fields and invalid email before saving", async 
 
   document.getElementById("staffName").value = "Jane";
   document.getElementById("staffEmail").value = "bad-email";
-  document.getElementById("staffClinic").value = "1";
+  document.getElementById("staffClinicInput").value = "Clinic A";
+  document.getElementById("staffClinicId").value = "1";
 
   await window.addStaff();
 
@@ -252,7 +258,8 @@ test("addStaff saves normalized payload, clears the form, closes modal, reloads 
   document.getElementById("inviteModal").style.display = "flex";
   document.getElementById("staffName").value = " Jane Doe ";
   document.getElementById("staffEmail").value = " JANE@TEST.COM ";
-  document.getElementById("staffClinic").value = "1";
+  document.getElementById("staffClinicInput").value = "Clinic A";
+  document.getElementById("staffClinicId").value = "1";
   mockGetDocs.mockResolvedValue(makeSnapshot([]));
 
   await window.addStaff();
@@ -270,34 +277,28 @@ test("addStaff saves normalized payload, clears the form, closes modal, reloads 
   );
   expect(document.getElementById("staffName").value).toBe("");
   expect(document.getElementById("staffEmail").value).toBe("");
-  expect(document.getElementById("staffClinic").value).toBe("");
+  expect(document.getElementById("staffClinicInput").value).toBe("");
+  expect(document.getElementById("staffClinicId").value).toBe("");
   expect(document.getElementById("inviteModal").style.display).toBe("none");
   expect(document.getElementById("toast").textContent).toBe("Staff member added successfully");
   expect(document.getElementById("toast").className).toContain("success");
 });
 
-test("addStaff falls back to a blank clinic name if the selected option is missing", async () => {
+test("addStaff uses the typed clinic name and hidden clinic id", async () => {
   await load();
 
   document.getElementById("staffName").value = "Jane";
   document.getElementById("staffEmail").value = "jane@test.com";
-  const getElementById = document.getElementById.bind(document);
-  const fakeSelect = {
-    value: "clinic-without-option",
-    options: [],
-    selectedIndex: 0
-  };
-  jest.spyOn(document, "getElementById").mockImplementation((id) => (
-    id === "staffClinic" ? fakeSelect : getElementById(id)
-  ));
+  document.getElementById("staffClinicInput").value = "Typed Clinic";
+  document.getElementById("staffClinicId").value = "clinic-typed";
 
   await window.addStaff();
 
   expect(mockAddDoc).toHaveBeenCalledWith(
     "ApprovedStaff",
     expect.objectContaining({
-      clinicId: "clinic-without-option",
-      clinicName: ""
+      clinicId: "clinic-typed",
+      clinicName: "Typed Clinic"
     })
   );
 });
@@ -310,7 +311,8 @@ test("addStaff logs and shows an error toast when saving fails", async () => {
 
   document.getElementById("staffName").value = "Jane";
   document.getElementById("staffEmail").value = "jane@test.com";
-  document.getElementById("staffClinic").value = "1";
+  document.getElementById("staffClinicInput").value = "Clinic A";
+  document.getElementById("staffClinicId").value = "1";
 
   await window.addStaff();
 
