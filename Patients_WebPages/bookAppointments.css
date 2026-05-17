@@ -1,47 +1,27 @@
-/* Import font at the top */
+/* patient-page.css
+   Patient-specific page styles.
+   a-sidebar.css handles: :root, body reset, responsive breakpoints.
+*/
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
-* {
+/* ── Reset ──────────────────────────────────────────────────── */
+*, *::before, *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-:root {
-    --color-bg-primary: white;
-    --color-bg-secondary: #f8fbf9;
-    --color-text-primary: #111827;
-    --color-text-secondary: #6b7280;
-    --color-border-light: #e5e7eb; /* light grey border */
-    --color-brand: #1D9E75;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --font-sans: 'Inter', sans-serif;
-
-      /* Brand colors */
-    --brand-dark:           #085041;
-    --brand-mid:            #1D9E75;
-    --brand-light-text:     #9FE1CB;
-    --brand-lightest:       #E1F5EE;
-    --brand-tag:            #5DCAA5;
-}
-
-/* Body */
-body {
-    font-family: var(--font-sans);
-    background-color: var(--brand-lightest);
-    color: var(--color-text-primary);
-}
-
-/* Top Bar */
+/* ── Top bar ────────────────────────────────────────────────── */
 header.top-bar {
     display: flex;
     align-items: center;
     padding: 14px 28px;
-    background: var(--color-bg-primary);
-    border-bottom: 1px solid var(--color-border-light);
+    background: var(--color-background-primary);
+    border-bottom: 1px solid var(--color-border-tertiary);
 }
 
+/* ── Logo ───────────────────────────────────────────────────── */
 .logo {
     display: flex;
     align-items: center;
@@ -49,10 +29,10 @@ header.top-bar {
 }
 
 section.logo-icon {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     background: var(--color-brand);
-    border-radius: 7px;
+    border-radius: var(--border-radius-md);
     position: relative;
     display: inline-block;
 }
@@ -61,34 +41,32 @@ section.logo-icon::before {
     content: '';
     position: absolute;
     background: white;
-    width: 3px; height: 13px;
-    left: 12px; top: 7px;
-    border-radius: 1px;
+    width: 3px;
+    height: 13px;
+    left: 13px;
+    top: 8px;
+    border-radius: 2px;
 }
 
 section.logo-icon::after {
     content: '';
     position: absolute;
     background: white;
-    width: 13px; height: 3px;
-    left: 7px; top: 12px;
-    border-radius: 1px;
+    width: 13px;
+    height: 3px;
+    left: 8px;
+    top: 13px;
+    border-radius: 2px;
 }
 
 section.logo-name {
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 600;
+    font-family: var(--font-sans);
     color: var(--color-text-primary);
 }
 
-/* Layout */
-.container {
-    display: flex;
-    gap: 15px;
-}
-
-
-
+/* ── Sidebar nav list ───────────────────────────────────────── */
 aside ul {
     list-style: none;
     padding: 0;
@@ -96,58 +74,98 @@ aside ul {
 }
 
 aside ul li {
-    margin-bottom: 10px;
+    margin-bottom: 4px;
 }
 
 aside ul li a {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     text-decoration: none;
-    color: var(--color-bg-secondary);
-    padding: 10px 12px;
-    border-radius: var(--radius-md);
-    transition: 0.3s;
-    font-weight:normal;
+    color: var(--color-text-secondary);
+    padding: 10px 14px;
+    border-radius: var(--border-radius-md);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    transition: 0.2s ease;
 }
 
 aside ul li a:hover {
-    background-color: var(--color-brand);
-    color: white;
+    background: var(--color-brand-subtle);
+    color: var(--color-brand-dark);
 }
 
+aside nav ul li a.active {
+    background: var(--color-brand);
+    color: white;
+    font-weight: 500;
+}
+
+/* ── Sidebar user section ───────────────────────────────────── */
+.user-section,
 .user-Section {
     margin-top: auto;
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 10px;
-    background-color: var(--brand-lightest);
-    border-radius: var(--radius-lg);
+    background: var(--color-brand-soft);
+    border-radius: var(--border-radius-lg);
 }
 
+.user-section i,
 .user-Section i {
     color: var(--color-brand);
     font-size: 20px;
 }
 
+.name-surname,
 .name-Surname {
+    font-size: 13px;
     font-weight: 600;
+    color: var(--color-text-primary);
     margin-bottom: 2px;
 }
 
+.user-identity,
 .user-Identity {
-    font-size: 0.85rem;
+    font-size: 11px;
     color: var(--color-text-secondary);
 }
 
-/* Main Content */
+/* ── Layout ─────────────────────────────────────────────────── */
+.container {
+    display: flex;
+    gap: 16px;
+}
+
 main {
     flex: 1;
     margin-right: 20px;
 }
 
-/* Search row for input + near me button */
+/* ── Search section card ────────────────────────────────────── */
+.search-clinic,
+.search-Clinic {
+    background: var(--color-background-primary);
+    border: 1px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.search-clinic p,
+.search-Clinic p {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    margin: 12px 0;
+}
+
+/* ── Search bar ─────────────────────────────────────────────── */
+.search-row,
 .search-Row {
     display: flex;
     gap: 12px;
@@ -155,50 +173,44 @@ main {
     flex-wrap: wrap;
 }
 
-/* Section Cards */
-.search-Clinic {
-    border: 1px solid var(--color-border-light);
-    padding: 15px;
-    border-radius: var(--radius-lg);
-    background-color: var(--color-bg-primary);
-    margin-bottom: 20px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-}
-
-.search-Clinic p {
-    margin-bottom: 10px;
-    font-weight: 500;
-    font-size: 13px;
-    font-weight: 500;
-    margin-bottom: 12px;
-    margin-top: 12px;
-}
-
+.search-bar,
 .search-Bar {
     display: flex;
     align-items: center;
     gap: 10px;
-    background-color: #f1f5f9;
+    background: var(--color-brand-soft);
     border-radius: 20px;
     padding: 5px 10px;
-    flex: 1; /* THIS makes it expand */
+    flex: 1;
 }
 
-.search-Bar input:hover{
-    border: 2px solid var(--color-brand);
-    border-color: var(--color-brand);
+.search-bar i,
+.search-Bar i {
+    color: var(--color-text-secondary);
 }
 
+.search-bar input,
 .search-Bar input {
+    flex: 1;
     border: none;
     outline: none;
-    flex: 1;
-    padding: 10px;
-    border-radius: 20px;
-    background-color: #f1f5f9;
+    padding: 8px 10px;
+    border-radius: 14px;
+    background: var(--color-background-primary);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--color-text-primary);
 }
 
-/* Quick actions container */
+.search-bar input:hover,
+.search-Bar input:hover,
+.search-bar input:focus,
+.search-Bar input:focus {
+    outline: 2px solid var(--color-brand);
+}
+
+/* ── Quick actions ──────────────────────────────────────────── */
+.quick-actions,
 .quick-Actions {
     display: flex;
     gap: 10px;
@@ -206,16 +218,16 @@ main {
     padding: 10px;
 }
 
-/* Shared quick action button */
-.quick-btn {
+.quick-btn,
+.near-me-btn {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 12px 16px;
-    border: 0.5px solid var(--color-border-light);
-    border-radius: var(--radius-md);
-    background: var(--color-bg-primary);
+    padding: 9px 16px;
+    border: 1px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    background: var(--color-background-primary);
     color: var(--color-text-primary);
     font-family: var(--font-sans);
     font-size: 13px;
@@ -223,26 +235,28 @@ main {
     cursor: pointer;
     transition: 0.2s ease;
     white-space: nowrap;
-    box-shadow: 0 0 10px var(--brand-lightest);
 }
 
-.quick-btn:hover {
-    background: var(--brand-lightest);
-    border-color: var(--brand-mid);
-    color: var(--brand-dark);
+.quick-btn:hover,
+.near-me-btn:hover {
+    background: var(--color-brand-soft);
+    border-color: var(--color-brand);
+    color: var(--color-brand-dark);
 }
 
+.near-me-btn i {
+    color: var(--color-brand);
+}
 
-/* Clinic list container */
+/* ── Clinic list card ───────────────────────────────────────── */
 .clinic-list-card {
     margin-top: 16px;
-    background: var(--color-bg-primary);
-    border: 0.5px solid var(--color-border-light);
-    border-radius: var(--radius-lg);
+    background: var(--color-background-primary);
+    border: 1px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
     padding: 16px;
 }
 
-/* Scrollable clinic results area */
 .clinic-results {
     display: flex;
     flex-direction: column;
@@ -252,53 +266,36 @@ main {
     padding-right: 6px;
 }
 
-/* Scrollbar */
-.clinic-results::-webkit-scrollbar {
-    width: 8px;
-}
+.clinic-results::-webkit-scrollbar { width: 3px; }
+.clinic-results::-webkit-scrollbar-track { background: var(--color-brand-soft); border-radius: 10px; }
+.clinic-results::-webkit-scrollbar-thumb { background: var(--color-brand); border-radius: 10px; }
 
-.clinic-results::-webkit-scrollbar-track {
-    background: #f3f4f6;
-    border-radius: 10px;
-}
-
-.clinic-results::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 10px;
-}
-
-.clinic-results::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
-
-/* Individual clinic card */
+/* ── Individual clinic card ─────────────────────────────────── */
 .clinic-card {
     display: flex;
     align-items: center;
     gap: 14px;
     padding: 14px 16px;
-    border: 0.5px solid var(--color-border-light);
-    border-radius: var(--radius-md);
-    background: #fff;
+    border: 1px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    background: var(--color-background-primary);
     transition: 0.2s ease;
 }
 
 .clinic-card:hover {
-    border-color: var(--brand-mid);
-    background: #f9fffc;
+    border-color: var(--color-brand);
+    background: var(--color-brand-subtle);
 }
 
-/* Icon */
 .clinic-icon {
-    font-size: 22px;
-    color: var(--brand-mid);
-    background: var(--brand-lightest);
-    padding: 12px;
-    border-radius: 12px;
+    font-size: 20px;
+    color: var(--color-brand);
+    background: var(--color-brand-soft);
+    padding: 10px;
+    border-radius: var(--border-radius-md);
     flex-shrink: 0;
 }
 
-/* Clinic text */
 .clinic-info {
     display: flex;
     flex-direction: column;
@@ -312,187 +309,158 @@ main {
     color: var(--color-text-primary);
 }
 
-.clinic-services {
+.clinic-services,
+.clinic-bookings {
     font-size: 12px;
     color: var(--color-text-secondary);
 }
 
 .clinic-bookings {
     font-size: 11px;
-    color: var(--color-text-secondary);
 }
 
-/* Open button */
+/* ── Open button ────────────────────────────────────────────── */
 .open-btn {
     margin-left: auto;
+    padding: 8px 14px;
     border: none;
-    border-radius: 10px;
-    padding: 10px 14px;
-    background-color: var(--brand-lightest);
-    color: var(--brand-dark);
-    font-weight: 600;
+    border-radius: var(--border-radius-md);
+    background: var(--color-brand-soft);
+    color: var(--color-brand-dark);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
     cursor: pointer;
     transition: 0.2s ease;
 }
 
 .open-btn:hover {
-    background-color: var(--brand-mid);
+    background: var(--color-brand);
     color: white;
 }
 
-/* No results */
+/* ── No results ─────────────────────────────────────────────── */
 .no-results {
     text-align: center;
     color: var(--color-text-secondary);
-    font-size: 14px;
+    font-size: 13px;
     padding: 16px 0;
 }
 
-/* Near me button */
-.near-me-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 16px;
-    border: 0.5px solid var(--color-border-light);
-    border-radius: var(--radius-md);
-    background: var(--color-bg-primary);
-    color: var(--color-text-primary);
-    font-family: var(--font-sans);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: 0.2s ease;
-    white-space: nowrap;
-    
-}
-
-.near-me-btn:hover {
-    background: var(--brand-lightest);
-    border-color: var(--brand-mid);
-    color: var(--brand-dark);
-}
-
-.near-me-btn i {
-    color: var(--brand-mid);
-}
-.search-Bar i {
-    color: var(--color-text-secondary);
-}
-
-/* Typography */
+/* ── Find clinic text ───────────────────────────────────────── */
+.find-clinic-text,
 .FindClinic-Text {
+    font-size: 13px;
     color: var(--color-text-secondary);
-    margin-bottom: 15px;
+    margin-bottom: 16px;
     margin-top: 20px;
 }
 
-/* Shared card style */
+/* ── Shared section cards ───────────────────────────────────── */
 .time-slot-card,
 .appointment-datetime,
 .clinic,
 .selected-clinic-card,
 .reason-card {
-    background-color: var(--color-bg-primary);
-    border: 0.5px solid var(--color-border-light);
-    border-radius: var(--radius-lg);
+    background: var(--color-background-primary);
+    border: 1px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 0 10px var(--brand-lightest);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .selected-clinic-card {
     margin-top: 8px;
 }
 
-/* Small section heading */
+/* ── Section label ──────────────────────────────────────────── */
 .section-label {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--color-brand) !important;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-brand);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     margin-bottom: 12px;
     margin-top: 12px;
 }
 
-/* Clinic name */
+/* ── Selected clinic card content ───────────────────────────── */
 .selected-clinic-card h3 {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--color-text-primary);
     margin-bottom: 12px;
 }
 
-/* Clinic details */
 .clinic-meta {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 14px;
+    font-size: 13px;
     color: var(--color-text-secondary);
     margin-bottom: 8px;
 }
 
 .clinic-meta i {
-    color: var(--brand-mid);
     font-size: 14px;
+    color: var(--color-brand);
 }
 
-/* Dropdown styling */
+/* ── Reason dropdown ────────────────────────────────────────── */
 .reason-select {
     width: 100%;
-    padding: 12px 14px;
-    border: 0.5px solid var(--color-border-light);
-    border-radius: var(--radius-md);
-    background: var(--color-bg-primary);
+    padding: 9px 12px;
+    border: 1px solid var(--color-border-secondary);
+    border-radius: var(--border-radius-md);
+    background: var(--color-background-primary);
     color: var(--color-text-primary);
-    font-size: 14px;
+    font-size: 13px;
     font-family: var(--font-sans);
     outline: none;
     cursor: pointer;
     transition: 0.2s ease;
 }
 
-/* Hover + focus effect */
 .reason-select:hover {
-    border-color: var(--brand-mid);
+    border-color: var(--color-brand);
 }
 
 .reason-select:focus {
-    border-color: var(--brand-mid);
-    box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.12);
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
 }
 
-/* Better dropdown option readability */
 .reason-select option {
     color: var(--color-text-primary);
-    background: white;
+    background: var(--color-background-primary);
 }
 
-.confirm-Button{
-    padding: 10px 15px;
+/* ── Confirm button (both casings for HTML compatibility) ───── */
+.confirm-button,
+.confirm-Button {
+    width: 100%;
+    padding: 10px 16px;
     border: none;
-    background-color: var(--color-brand);
+    border-radius: var(--border-radius-md);
+    background: var(--color-brand);
     color: white;
-    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: 0.3s;
+    transition: 0.2s ease;
     display: flex;
     align-items: center;
-    width: 100%;
     justify-content: center;
 }
 
-/* Appointment Date & Time */
-.appointment-datetime {
-    border: 1px solid var(--color-border-light);
-    border-radius: var(--radius-lg);
-    background-color: var(--color-bg-primary);
-    padding: 15px 20px;
-    margin-bottom: 20px;
+.confirm-button:hover,
+.confirm-Button:hover {
+    background: var(--color-brand-dark);
 }
 
+/* ── Date & time pickers ────────────────────────────────────── */
 .datetime-picker {
     display: flex;
     gap: 12px;
@@ -501,30 +469,24 @@ main {
 
 .datetime-picker input[type="date"],
 .datetime-picker input[type="time"] {
-    padding: 10px 12px;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border-light);
-    font-size: 14px;
     flex: 1;
     min-width: 130px;
+    padding: 9px 12px;
+    border: 1px solid var(--color-border-secondary);
+    border-radius: var(--border-radius-md);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--color-text-primary);
     outline: none;
 }
 
 .datetime-picker input[type="date"]:focus,
 .datetime-picker input[type="time"]:focus {
-    border-color: var(--brand-mid);
-    box-shadow: 0 0 0 2px rgba(29, 158, 117, 0.2);
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
 }
 
-/* TIME SLOT CARD */
-.time-slot-card {
-    background: var(--color-bg-primary);
-    border: 0.5px solid var(--color-border-light);
-    border-radius: var(--radius-lg);
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
+/* ── Time slots ─────────────────────────────────────────────── */
 .slot-subtext {
     font-size: 13px;
     color: var(--color-text-secondary);
@@ -538,11 +500,12 @@ main {
 }
 
 .time-slot {
-    padding: 12px;
-    border: 0.5px solid var(--color-border-light);
-    border-radius: var(--radius-md);
-    background: var(--color-bg-primary);
+    padding: 10px;
+    border: 1px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    background: var(--color-background-primary);
     color: var(--color-text-primary);
+    font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
@@ -551,32 +514,20 @@ main {
 }
 
 .time-slot:hover {
-    background-color: var(--color-brand);
+    background: var(--color-brand);
     border-color: var(--color-brand);
-    color: var(--color-bg-secondary);
-
+    color: white;
 }
 
 .time-slot.selected {
-    background: var(--brand-mid);
+    background: var(--color-brand);
+    border-color: var(--color-brand);
     color: white;
-    border-color: var(--brand-mid);
 }
 
-
-
-/* Responsive */
+/* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 768px) {
     .time-slots {
         grid-template-columns: repeat(2, 1fr);
     }
-}
-
-
-
-/* active page highlight */
-aside nav ul li a.active {
-    background-color: #1D9E75;
-    color: white;
-    font-weight: bold;
 }

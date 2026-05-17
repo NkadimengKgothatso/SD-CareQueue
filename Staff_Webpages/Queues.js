@@ -54,6 +54,7 @@ let regularAppts       = [];
 let walkInAppts        = [];
 let staffClinicID      = null;
 const sendingPositionTwo = new Set();
+let authRunId          = 0;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 function getTodayString() {
@@ -93,14 +94,14 @@ async function sendPositionTwoNotification(appointment) {
             appointment_date: appointment.date || "",
             appointment_time: appointment.time || ""
         });*/
-
+        const clinicName = appointment.clinicName?.trim() || "Clinic";
         await addDoc(collection(db, "Notifications"), {
             userID: appointment.userID,
             clinicID: Number(staffClinicID),
-            clinicName: appointment.clinicName || "Clinic",
+            clinicName: clinicName || "Clinic",
             type: "Appointment",
             title: "Appointment In An Hour!",
-            message: `Your ${appointment.reason || "appointment"} at ${appointment.clinicName || "the clinic"} is in an hour. You are position 2. Please make your way to the clinic.`,
+            message: `Your ${appointment.reason || "appointment"} at ${clinicName} is in an hour. You are position 2. Please make your way to the clinic.`,
             read: false,
             createdAt: serverTimestamp()
         });
@@ -193,6 +194,7 @@ function buildCard(appointment, positionLabel) {
 
     if (positionLabel === 2 && !appointment.emailSent && !sendingPositionTwo.has(appointment.id)) {
         sendingPositionTwo.add(appointment.id);
+        console.log("FINAL APPOINTMENT OBJECT:", appointment);
         sendPositionTwoNotification(appointment);
     }
 
@@ -371,13 +373,14 @@ async function syncAppointmentsToQueues(appointments) {
         updatedAt: serverTimestamp()
     }, { merge: true });
 
-
+    
 
     });
 
     try {
         await Promise.all(writes);
         console.log(`✅ Synced ${writes.length} appointments to Queues`);
+    
     } catch (err) {
         console.error("Failed to sync appointments to Queues:", err);
     }
@@ -415,6 +418,7 @@ function startQueueListeners() {
                 time:        d.time        || "",
                 patientEmail: d.patientEmail || "",
                 clinicID: d.clinicID || Number(staffClinicID),
+                clinicName: d.clinicName || "Clinic", // ADD THIS
                 status,
                 reason:      d.reason      || "",
                 patientName: d.patientName || d.name || null,
@@ -455,6 +459,8 @@ function startQueueListeners() {
 
 // ─── Auth & Bootstrap ────────────────────────────────────────────────────────
 onAuthStateChanged(auth, async (user) => {
+    const runId = ++authRunId;
+
     if (!user) {
         if (nameSurnameEl) nameSurnameEl.textContent = "Staff";
 
@@ -511,6 +517,8 @@ onAuthStateChanged(auth, async (user) => {
 
         const snapshot = await getDocs(staffQuery);
 
+        if (runId !== authRunId) return;
+
         console.log("📄 Snapshot empty?", snapshot.empty);
 
         if (!snapshot.empty) {
@@ -524,6 +532,8 @@ onAuthStateChanged(auth, async (user) => {
     } catch (err) {
         console.error("Failed to fetch staff clinic:", err);
     }
+
+    if (runId !== authRunId) return;
 
     // ── Safety check ──
     if (!staffClinicID) {
@@ -543,11 +553,22 @@ function __setQueueDataForTest(data) {
   queueData = data;
 }
 
+function __setStaffClinicIDForTest(id) {
+  staffClinicID = id;
+}
+
 export {
   getTodayString,
   renderEmptyState,
   buildCard,
   updateStats,
   renderQueue,
-  __setQueueDataForTest
+  mergeAndRender,
+  updateStatus,
+  deleteOldQueueEntries,
+  syncAppointmentsToQueues,
+  startQueueListeners,
+  sendPositionTwoNotification,
+  __setQueueDataForTest,
+  __setStaffClinicIDForTest
 };

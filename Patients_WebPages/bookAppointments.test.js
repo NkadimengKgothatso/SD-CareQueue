@@ -115,6 +115,9 @@ function hasConstraint(ref, field) {
 
 function arrangeFirestore({
   clinics = [],
+  staffAvailability = [
+    { __docId: "staff-1", schedule: { monday: { isWorking: true }, tuesday: { isWorking: true }, wednesday: { isWorking: true } } }
+  ],
   bookedTimes = [],
   duplicateBooking = false,
   rejectClinics,
@@ -140,8 +143,16 @@ function arrangeFirestore({
       }
 
       return Promise.resolve(
-        snapshotFrom(bookedTimes.map((time, index) => ({ __docId: `booked-${index}`, time })))
+        snapshotFrom(bookedTimes.map((booking, index) => (
+          typeof booking === "string"
+            ? { __docId: `booked-${index}`, time: booking }
+            : { __docId: `booked-${index}`, ...booking }
+        )))
       );
+    }
+
+    if (ref.name === "StaffAvailability") {
+      return Promise.resolve(snapshotFrom(staffAvailability));
     }
 
     return Promise.resolve(snapshotFrom([]));
@@ -358,6 +369,35 @@ test("renderTimeSlots disables booked and past slots and selects an available sl
   expect(document.getElementById("selectedTime").value).toBe("12:00");
 });
 
+test("renderTimeSlots ignores cancelled appointments when calculating capacity", async () => {
+  arrangeFirestore({
+    bookedTimes: [{ time: "09:00", status: "cancelled" }]
+  });
+  const { renderTimeSlots } = await load();
+
+  await renderTimeSlots("2026-05-12", "1");
+
+  const cancelledSlot = Array.from(document.querySelectorAll(".time-slot"))
+    .find((slot) => slot.textContent === "09:00");
+
+  expect(cancelledSlot.disabled).toBe(false);
+  cancelledSlot.click();
+  expect(document.getElementById("selectedTime").value).toBe("09:00");
+});
+
+test("renderTimeSlots disables all slots when no staff are available", async () => {
+  arrangeFirestore({
+    staffAvailability: []
+  });
+  const { renderTimeSlots } = await load();
+
+  await renderTimeSlots("2026-05-12", "1");
+
+  const slots = Array.from(document.querySelectorAll(".time-slot"));
+  expect(slots).toHaveLength(19);
+  expect(slots.every((slot) => slot.disabled)).toBe(true);
+});
+
 test("clinic search and applyFilters narrow visible clinics", async () => {
   arrangeFirestore({
     clinics: [
@@ -506,7 +546,7 @@ test("confirm booking requires login and all fields", async () => {
   expect(mockAddDoc).not.toHaveBeenCalled();
 });
 
-test("confirm booking stops when selected time is already booked", async () => {
+test("confirm booking stops when selected time is fully booked", async () => {
   arrangeFirestore({
     clinics: [{ __docId: "1", name: "Alpha Clinic" }],
     duplicateBooking: true
@@ -522,11 +562,31 @@ test("confirm booking stops when selected time is already booked", async () => {
   document.querySelector(".confirm-Button").click();
   await flushPromises();
 
-  expect(global.alert).toHaveBeenCalledWith("This time slot is already booked. Please choose another.");
+  expect(global.alert).toHaveBeenCalledWith("This time slot is fully booked.");
   expect(mockAddDoc).not.toHaveBeenCalled();
 });
 
-test("confirm booking saves appointment, notification, sends email, and resets the form", async () => {
+test("confirm booking stops when no staff are available for that day", async () => {
+  arrangeFirestore({
+    clinics: [{ __docId: "1", name: "Alpha Clinic" }],
+    staffAvailability: []
+  });
+  await load();
+
+  document.getElementById("appt-date").value = "2026-05-12";
+  document.querySelector(".open-btn").click();
+  await flushPromises();
+  document.getElementById("selectedTime").value = "10:00";
+  document.querySelector(".reason-select").value = "Checkup";
+
+  document.querySelector(".confirm-Button").click();
+  await flushPromises();
+
+  expect(global.alert).toHaveBeenCalledWith("This time slot is fully booked.");
+  expect(mockAddDoc).not.toHaveBeenCalled();
+});
+
+test("confirm booking saves appointment, notification, and resets the form", async () => {
   const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
   arrangeFirestore({
     clinics: [{ __docId: "1", name: "Alpha Clinic" }],
@@ -566,17 +626,8 @@ test("confirm booking saves appointment, notification, sends email, and resets t
       createdAt: "TIMESTAMP"
     })
   );
-  expect(global.emailjs.init).toHaveBeenCalledWith("jWEiS_k1FnVa1Zz5S");
-  expect(global.emailjs.send).toHaveBeenCalledWith(
-    "service_j8zb3jh",
-    "template_4onbz1h",
-    expect.objectContaining({
-      email: "patient@test.com",
-      name: "Patient One",
-      clinic_name: "Alpha Clinic",
-      appointment_reason: "Checkup"
-    })
-  );
+  expect(global.emailjs.init).not.toHaveBeenCalled();
+  expect(global.emailjs.send).not.toHaveBeenCalled();
   expect(global.alert).toHaveBeenCalledWith("Appointment booked successfully!");
   expect(document.getElementById("appt-date").value).toBe("");
   expect(document.getElementById("selectedTime").value).toBe("");

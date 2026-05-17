@@ -73,6 +73,26 @@ function buildDOM() {
   HTMLDialogElement.prototype.close    = jest.fn();
 }
 
+function snapshotFrom(records = []) {
+  const docs = records.map(({ id, __docId, ...data }, index) => ({
+    id: __docId || id || `doc-${index}`,
+    data: () => data
+  }));
+
+  return {
+    empty: docs.length === 0,
+    size: docs.length,
+    docs,
+    forEach: (callback) => docs.forEach(callback)
+  };
+}
+
+async function flushPromises(times = 3) {
+  for (let i = 0; i < times; i++) {
+    await Promise.resolve();
+  }
+}
+
 beforeEach(() => {
   buildDOM();
   jest.resetModules();
@@ -82,7 +102,14 @@ beforeEach(() => {
   mockOnAuthStateChanged.mockImplementation(() => jest.fn());
   mockOnSnapshot.mockImplementation(() => jest.fn());
   mockGetDocs.mockResolvedValue({ empty: true, docs: [], forEach: jest.fn() });
-  mockDoc.mockReturnValue("doc-ref");
+  mockCollection.mockImplementation((_db, name) => ({ name }));
+  mockQuery.mockImplementation((collectionRef, ...constraints) => ({
+    name: collectionRef.name,
+    constraints
+  }));
+  mockWhere.mockImplementation((field, op, value) => ({ field, op, value }));
+  mockDoc.mockImplementation((_db, collectionName, id) => `${collectionName}/${id}`);
+  mockGetDoc.mockResolvedValue({ exists: () => false, data: () => ({}) });
 
   global.alert   = jest.fn();
   global.confirm = jest.fn(() => true);
@@ -236,6 +263,18 @@ test("buildCard shows reason when provided", async () => {
   expect(card.textContent).toContain("Checkup");
 });
 
+test("buildCard shows estimated wait when provided", async () => {
+  const { buildCard } = await load();
+  const card = buildCard({ id: "a1", status: "scheduled", estimateWait: 24 });
+  expect(card.textContent).toContain("Estimated wait: 24 min");
+});
+
+test("buildCard hides estimated wait when it is missing", async () => {
+  const { buildCard } = await load();
+  const card = buildCard({ id: "a1", status: "scheduled" });
+  expect(card.textContent).not.toContain("Estimated wait");
+});
+
 test("buildCard shows date and time", async () => {
   const { buildCard } = await load();
   const card = buildCard({ id: "a1", status: "scheduled", date: "2026-06-01", time: "09:00" });
@@ -377,4 +416,284 @@ test("cancelAppointment does not call updateDoc when cancelled", async () => {
   expect(mockUpdateDoc).not.toHaveBeenCalled();
 
   jest.restoreAllMocks();
+});
+
+test("cancelAppointment shows an alert when update fails", async () => {
+  const error = new Error("cancel failed");
+  const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  mockUpdateDoc.mockRejectedValueOnce(error);
+  const { cancelAppointment } = await load();
+
+  const origCreate = document.createElement.bind(document);
+  jest.spyOn(document, "createElement").mockImplementation((tag) => {
+    const el = origCreate(tag);
+    if (tag === "dialog") {
+      setTimeout(() => el.querySelector?.("#confirmOkBtn")?.click(), 0);
+    }
+    return el;
+  });
+
+  await cancelAppointment("appt-xyz");
+  await flushPromises();
+
+  expect(consoleSpy).toHaveBeenCalledWith("Failed to cancel:", error);
+  expect(global.alert).toHaveBeenCalledWith("Could not cancel appointment. Please try again.");
+});
+
+test("getFreeSlots removes regular and walk-in booked slots but ignores cancelled and excluded appointments", async () => {
+  mockGetDocs
+    .mockResolvedValueOnce(snapshotFrom([
+      { id: "regular-booked", time: "09:00", status: "scheduled" },
+      { id: "regular-cancelled", time: "09:30", status: "cancelled" },
+      { id: "exclude-me", time: "10:00", status: "scheduled" }
+    ]))
+    .mockResolvedValueOnce(snapshotFrom([
+      { id: "walkin-booked", time: "11:00", status: "waiting" },
+      { id: "walkin-cancelled", time: "11:30", status: "cancelled" }
+    ]));
+  const { getFreeSlots } = await load();
+
+  const slots = await getFreeSlots("2026-06-01", "exclude-me");
+
+  expect(slots).not.toContain("09:00");
+  expect(slots).not.toContain("11:00");
+  expect(slots).toContain("09:30");
+  expect(slots).toContain("10:00");
+  expect(slots).toContain("11:30");
+});
+
+test("openRescheduleModal validates selection and updates appointment when a free slot is chosen", async () => {
+  mockGetDocs
+    .mockResolvedValue(snapshotFrom([
+      { id: "other", time: "08:00", status: "scheduled" }
+    ]));
+  const { openRescheduleModal } = await load();
+
+  await openRescheduleModal({
+    id: "appt-1",
+    patientName: "Patient One",
+    date: "2026-06-01",
+    time: "08:00"
+  });
+
+  document.getElementById("rescheduleConfirmBtn").click();
+  expect(document.getElementById("rescheduleError").textContent)
+    .toBe("Please select a date and an available time slot.");
+
+  document.getElementById("rescheduleTime").value = "08:30";
+  document.getElementById("rescheduleConfirmBtn").click();
+  await flushPromises();
+
+  expect(mockUpdateDoc).toHaveBeenCalledWith(
+    "Appointments/appt-1",
+    expect.objectContaining({
+      date: "2026-06-01",
+      time: "08:30",
+      status: "scheduled",
+      updatedAt: "TIMESTAMP"
+    })
+  );
+});
+
+test("openRescheduleModal disables time selection when no slots are free and supports cancel", async () => {
+  mockGetDocs.mockResolvedValue(snapshotFrom(
+    Array.from({ length: 18 }, (_, index) => ({
+      id: `booked-${index}`,
+      time: `${String(8 + Math.floor(index / 2)).padStart(2, "0")}:${index % 2 ? "30" : "00"}`,
+      status: "scheduled"
+    }))
+  ));
+  const { openRescheduleModal } = await load();
+
+  await openRescheduleModal({ id: "appt-1", date: "2026-06-01" });
+
+  expect(document.getElementById("rescheduleTime").disabled).toBe(true);
+  expect(document.getElementById("rescheduleTime").textContent)
+    .toContain("No available slots for this date");
+
+  document.getElementById("rescheduleCancelBtn").click();
+  expect(document.getElementById("rescheduleModal")).toBeNull();
+});
+
+test("openRescheduleModal reports update errors and restores the confirm button", async () => {
+  const error = new Error("reschedule failed");
+  const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  mockGetDocs.mockResolvedValue(snapshotFrom([]));
+  mockUpdateDoc.mockRejectedValueOnce(error);
+  const { openRescheduleModal } = await load();
+
+  await openRescheduleModal({ id: "appt-1", date: "2026-06-01" });
+
+  document.getElementById("rescheduleTime").value = "08:00";
+  document.getElementById("rescheduleConfirmBtn").click();
+  await flushPromises();
+
+  expect(consoleSpy).toHaveBeenCalledWith("Failed to reschedule:", error);
+  expect(document.getElementById("rescheduleError").textContent)
+    .toBe("Failed to reschedule. Please try again.");
+  expect(document.getElementById("rescheduleConfirmBtn").disabled).toBe(false);
+});
+
+test("startAppointmentsListener renders non-cancelled appointments and resolves missing patient names", async () => {
+  const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+  let snapshotSuccess;
+  mockOnSnapshot.mockImplementation((_query, success) => {
+    snapshotSuccess = success;
+    return jest.fn();
+  });
+  mockGetDoc.mockImplementation((ref) => Promise.resolve({
+    exists: () => ref === "Users/user-1",
+    data: () => ({ displayName: "Fetched Patient" })
+  }));
+  const { startAppointmentsListener } = await load();
+
+  startAppointmentsListener();
+  await snapshotSuccess(snapshotFrom([
+    { id: "a2", date: "2026-06-02", time: "11:00", status: "cancelled", patientName: "Skip Me" },
+    { id: "a1", date: "2026-06-01", time: "10:00", status: "scheduled", userID: "user-1", reason: "Checkup" },
+    { id: "a3", date: "2026-06-01", time: "09:00", status: "waiting", name: "Named Patient", isWalkIn: true }
+  ]));
+  await flushPromises();
+
+  expect(consoleSpy).toHaveBeenCalledWith("📋 Appointments:", 3);
+  expect(document.getElementById("appointmentList").textContent).toContain("Fetched Patient");
+  expect(document.getElementById("appointmentList").textContent).toContain("Named Patient");
+  expect(document.getElementById("appointmentList").textContent).not.toContain("Skip Me");
+  expect(document.getElementById("stat-total").textContent).toBe("2");
+});
+
+test("startAppointmentsListener displays estimated wait from the matching queue document", async () => {
+  let snapshotSuccess;
+  mockOnSnapshot.mockImplementation((_query, success) => {
+    snapshotSuccess = success;
+    return jest.fn();
+  });
+  mockGetDoc.mockImplementation((ref) => Promise.resolve({
+    exists: () => ref === "Queues/a1",
+    data: () => ({ estimateWait: 18 })
+  }));
+  const { startAppointmentsListener } = await load();
+
+  startAppointmentsListener();
+  await snapshotSuccess(snapshotFrom([
+    { id: "a1", date: "2026-06-01", time: "10:00", status: "scheduled", patientName: "Queued Patient" }
+  ]));
+  await flushPromises();
+
+  expect(mockGetDoc).toHaveBeenCalledWith("Queues/a1");
+  expect(document.getElementById("appointmentList").textContent)
+    .toContain("Estimated wait: 18 min");
+});
+
+test("startAppointmentsListener renders an error state when the listener fails", async () => {
+  const error = new Error("listener failed");
+  const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  let snapshotError;
+  mockOnSnapshot.mockImplementation((_query, _success, failure) => {
+    snapshotError = failure;
+    return jest.fn();
+  });
+  const { startAppointmentsListener } = await load();
+
+  startAppointmentsListener();
+  snapshotError(error);
+
+  expect(consoleSpy).toHaveBeenCalledWith("Appointments listener error:", error);
+  expect(document.getElementById("appointmentList").textContent)
+    .toContain("Failed to load appointments. Please refresh the page.");
+});
+
+test("filter buttons update active filter and rendered appointments", async () => {
+  let snapshotSuccess;
+  mockOnSnapshot.mockImplementation((_query, success) => {
+    snapshotSuccess = success;
+    return jest.fn();
+  });
+  const { startAppointmentsListener, getTodayString, getTomorrowString } = await load();
+
+  startAppointmentsListener();
+  await snapshotSuccess(snapshotFrom([
+    { id: "today", date: getTodayString(), time: "09:00", status: "scheduled", patientName: "Today Patient" },
+    { id: "tomorrow", date: getTomorrowString(), time: "09:00", status: "scheduled", patientName: "Tomorrow Patient" },
+    { id: "walkin", date: "2099-01-01", time: "09:00", status: "waiting", patientName: "Walkin Patient", isWalkIn: true }
+  ]));
+  await flushPromises();
+
+  document.querySelector('[data-filter="today"]').click();
+  expect(document.getElementById("appointmentList").textContent).toContain("Today Patient");
+  expect(document.getElementById("appointmentList").textContent).not.toContain("Tomorrow Patient");
+
+  document.querySelector('[data-filter="tomorrow"]').click();
+  expect(document.getElementById("appointmentList").textContent).toContain("Tomorrow Patient");
+
+  document.querySelector('[data-filter="walkin"]').click();
+  expect(document.getElementById("appointmentList").textContent).toContain("Walkin Patient");
+  expect(document.querySelector('[data-filter="walkin"]').classList.contains("active")).toBe(true);
+});
+
+test("auth bootstrap handles signed-out users", async () => {
+  const unsubscribe = jest.fn();
+  mockOnSnapshot.mockReturnValue(unsubscribe);
+  mockOnAuthStateChanged.mockImplementation((_auth, callback) => {
+    callback(null);
+    return jest.fn();
+  });
+
+  await load();
+  await flushPromises();
+
+  expect(document.querySelector(".name-Surname").textContent).toBe("Staff");
+  expect(document.getElementById("appointmentList").textContent).toContain("No upcoming appointments");
+});
+
+test("auth bootstrap fills staff profile and starts appointment listener", async () => {
+  const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+  mockOnAuthStateChanged.mockImplementation((_auth, callback) => {
+    callback({ email: "staff@test.com", displayName: "Jane Staff" });
+    return jest.fn();
+  });
+  mockGetDocs.mockResolvedValue(snapshotFrom([
+    { id: "staff-doc", clinicId: 7 }
+  ]));
+
+  await load();
+  await flushPromises();
+
+  expect(document.querySelector(".name-Surname").textContent).toBe("Jane Staff");
+  expect(document.getElementById("staffEmail").textContent).toBe("staff@test.com");
+  expect(document.getElementById("staffAvatar").textContent).toBe("JS");
+  expect(consoleSpy).toHaveBeenCalledWith("🏥 staffClinicID:", 7);
+  expect(mockOnSnapshot).toHaveBeenCalled();
+});
+
+test("auth bootstrap shows support message when staff clinic cannot be determined", async () => {
+  mockOnAuthStateChanged.mockImplementation((_auth, callback) => {
+    callback({ email: "staff@test.com", displayName: "" });
+    return jest.fn();
+  });
+  mockGetDocs.mockResolvedValue({ empty: true, docs: [], forEach: jest.fn() });
+
+  await load();
+  await flushPromises();
+
+  expect(document.querySelector(".name-Surname").textContent).toBe("Staff");
+  expect(document.getElementById("appointmentList").textContent)
+    .toContain("Could not determine your clinic. Please contact support.");
+});
+
+test("auth bootstrap logs clinic lookup errors", async () => {
+  const error = new Error("staff lookup failed");
+  const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  mockOnAuthStateChanged.mockImplementation((_auth, callback) => {
+    callback({ email: "staff@test.com", displayName: "Jane Staff" });
+    return jest.fn();
+  });
+  mockGetDocs.mockRejectedValue(error);
+
+  await load();
+  await flushPromises();
+
+  expect(consoleSpy).toHaveBeenCalledWith("Failed to fetch staff clinic:", error);
+  expect(document.getElementById("appointmentList").textContent)
+    .toContain("Could not determine your clinic. Please contact support.");
 });

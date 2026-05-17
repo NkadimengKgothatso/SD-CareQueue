@@ -71,22 +71,25 @@ As an admin, I want to access a dashboard that shows key system information so t
 <td>3</td>
 
 <td>
-As a __________, I want __________ so that __________.
+<li>As an admin I want to remove a clinic, So that outdated or closed clinics are no longer visible.</li>
+<li>As an admin, I want to set or update clinic opening hours, So that patients know when clinics are available.</li>    
 </td>
 
 <td>
 <ul>
-<li>Given __________, when __________, then __________</li>
-<li>Given __________, when __________, then __________</li>
-<li>Given __________, when __________, then __________</li>
+<li>Given the admin is on the clinic management page, when the admin clicks the “Hours” button, then a popup containing opening hours fields should appear so that the admin can manage clinic hours</li>
+<li>Given the popup is open, when the admin views the form, then start day, end day, start time, and end time fields should be displayed so that the admin can enter clinic operating hours.</li>
+<li>Given the admin leaves one or more fields empty, when the admin attempts to save, then the system should display a validation error so that incomplete clinic hours are not saved</li>
+<li>Given the admin enters an end time earlier than the start time, when the admin clicks “Save”, then the system should reject the submission so that invalid operating hours are prevented</li>
+<li>Given clinic hours already exist, when the admin opens the popup again, then the previously saved hours should be displayed so that the admin can review or update them easily.</li>
+<li>Given the admin successfully saves clinic hours, when the save process completes, then a success message should appear so that the admin knows the update was successful.</li>
+<li>Given clinic hours have been saved, when patients view the clinic information page, then the saved operating hours should be displayed so that patients know when the clinic is available.</li>
 </ul>
 </td>
 
 <td>
 <ul>
-<li>Task 1</li>
-<li>Task 2</li>
-<li>Task 3</li>
+<li>implement the hours button</li>
 </ul>
 </td>
 </tr>
