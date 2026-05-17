@@ -3,6 +3,7 @@ import {
     getFirestore, 
     collection, 
     getDocs,
+    updateDoc,
     doc,
     getDoc, 
     query, 
@@ -101,6 +102,7 @@ onAuthStateChanged(auth, async (user) => {
 
         loadAppointments(clinicID);
         loadStats(clinicID);
+        loadStaffNotifications(clinicID);
 
     } catch (error) {
         console.error("Error loading user:", error);
@@ -112,79 +114,79 @@ let cancelledAppointments=0;
 async function loadAppointments(clinicID) {
     try {
         const container = document.querySelector(".appointments");
+        container.innerHTML = "";
 
-       
         const q = query(
             collection(db, "Appointments"),
             where("clinicID", "==", clinicID)
         );
 
         const snapshot = await getDocs(q);
-        console.log("Total docs:", snapshot.size);
+       
 
-        if (snapshot.empty) {
-            container.innerHTML += `<p class="empty">No upcoming appointments</p>`;
-            return;
-        }
+        const todayStr = new Date().toLocaleDateString("en-CA");
 
-        const docs = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
+        const docs = snapshot.docs.map(docSnap => ({
+            id: docSnap.id,
+            ...docSnap.data()
         }));
 
-        // Sort locally (no index needed)
         docs.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
 
-       for (const data of docs) {
+        let displayedAppointments = 0;
 
-        const status = String(data.status || "").toLowerCase().trim();
+        for (const data of docs) {
+            const status = String(data.status || "").toLowerCase().trim();
 
-        // SKIP CANCELLED APPOINTMENTS
-        if (status === "cancelled") {
-            cancelledAppointments++;
-            continue;
-            
-        }
+            if (status === "cancelled" || status === "completed" ) continue;
 
-        let displayName = "Unknown";
+            let docDateStr = null;
 
-        if (data.userID) {
-            try {
-                const userRef = doc(db, "Users", data.userID);
-                const userSnap = await getDoc(userRef);
-
-                if (userSnap.exists()) {
-                    displayName = userSnap.data().displayName;
-                }
-            } catch (err) {
-                console.error("Error fetching user:", err);
+            if (data.date?.toDate) {
+                docDateStr = data.date.toDate().toLocaleDateString("en-CA");
+            } else if (data.date) {
+                docDateStr = new Date(data.date).toLocaleDateString("en-CA");
             }
+
+            // ONLY today's appointments
+            if (docDateStr !== todayStr) continue;
+
+            let displayName = "Unknown";
+
+            if (data.userID) {
+                try {
+                    const userRef = doc(db, "Users", data.userID);
+                    const userSnap = await getDoc(userRef);
+
+                    if (userSnap.exists()) {
+                        displayName = userSnap.data().displayName || "Unknown";
+                    }
+                } catch (err) {
+                    console.error("Error fetching user:", err);
+                }
+            } else if (data.patientName) {
+                displayName = data.patientName;
+            }
+
+            const article = document.createElement("article");
+            article.className = "appointment";
+
+            article.innerHTML = `
+               
+                <time class="time">${data.time || "N/A"}</time>
+                <section class="details">
+                    <strong>${displayName}</strong>
+                    <p>${data.reason || "No reason"}</p>
+                </section>
+                <mark class="badge">${data.status || "Booked"}</mark>
+            `;
+
+            container.appendChild(article);
+            displayedAppointments++;
         }
 
-        else if(data.patientName){  
-            displayName = data.patientName; 
-        } 
-
-
-
-        const article = document.createElement("article");
-        article.className = "appointment";
-
-        article.innerHTML = `
-            <time class="time">${data.time || "N/A"}</time>
-            <section class="details">
-                <strong>${displayName}</strong>
-                <p>${data.reason || "No reason"}</p>
-            </section>
-            <mark class="badge">${data.status || "Booked"}</mark>
-        `;
-
-        container.appendChild(article);
-    }
-
-    if (snapshot.size === cancelledAppointments) {
-            container.innerHTML += `<p class="empty">No upcoming appointments</p>`;
-            return;
+        if (displayedAppointments === 0) {
+            container.innerHTML = `<p class="empty">No appointments for today</p>`;
         }
 
     } catch (error) {
@@ -198,6 +200,108 @@ window.signOut = async function () {
     window.location.href = "/index.html";
 };
 
+
+/* ================= Load Staff Notifications ================= */
+
+async function loadStaffNotifications(clinicID) {
+    try {
+        const container = document.getElementById("notificationsContainer");
+
+        container.innerHTML = "";
+
+        const q = query(
+            collection(db, "Notifications"),
+            where("clinicID", "==", Number(clinicID)),
+            where("targetRole", "==", "staff")
+        );
+
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.empty) {
+            container.innerHTML = `
+                <p class="empty">No notifications</p>
+            `;
+            return;
+        }
+
+        const notifications = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        // newest first
+        notifications.sort((a, b) => {
+            const aTime = a.createdAt?.seconds || 0;
+            const bTime = b.createdAt?.seconds || 0;
+            return bTime - aTime;
+        });
+
+       notifications.forEach(data => {
+
+            let colorClass = "blue";
+
+            if (data.title?.toLowerCase().includes("cancel")) {
+                colorClass = "red";
+            } else if (
+                data.title?.toLowerCase().includes("walk-in") ||
+                data.title?.toLowerCase().includes("joined")
+            ) {
+                colorClass = "green";
+            }
+
+            const createdDate = data.createdAt?.toDate
+                ? data.createdAt.toDate().toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                })
+                : "Just now";
+
+            const article = document.createElement("article");
+
+            article.className = `
+                notification 
+                ${colorClass} 
+                ${data.read ? "read" : ""}
+            `;
+
+            article.innerHTML = `
+                <p>
+                    ${data.message}
+                    <br>
+                    <small>${createdDate}</small>
+                </p>
+            `;
+
+            article.addEventListener("click", async () => {
+                try {
+                    if (!data.read) {
+                        await updateDoc(doc(db, "Notifications", data.id), {
+                            read: true
+                        });
+                    }
+
+                    article.classList.add("read");
+
+                    setTimeout(() => {
+                        article.remove();
+
+                        if (container.children.length === 0) {
+                            container.innerHTML = `<p class="empty">No notifications</p>`;
+                        }
+                    }, 500);
+
+                } catch (error) {
+                    console.error("Error marking notification as read:", error);
+                }
+            });
+
+            container.appendChild(article);
+        });
+
+    } catch (error) {
+        console.error("Error loading notifications:", error);
+    }
+}
 
 /* ================= LOAD STATS ================= */
 async function loadStats(clinicID) {
@@ -218,25 +322,30 @@ async function loadStats(clinicID) {
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
 
-            // FIXED DATE HANDLING
             let docDateStr = null;
 
+            // Handle Firestore Timestamp
             if (data.date?.toDate) {
                 docDateStr = data.date.toDate().toLocaleDateString("en-CA");
-            } else if (data.date) {
+            }
+            // Handle string dates
+            else if (data.date) {
                 docDateStr = new Date(data.date).toLocaleDateString("en-CA");
             }
 
+            // ONLY today's appointments
+            if (docDateStr !== todayStr) return;
+
             const status = String(data.status || "").toLowerCase().trim();
+
+            totalToday++;
 
             if (status === "booked" || status === "waiting" || status === "scheduled") {
                 inQueue++;
-                totalToday++;
             }
 
             if (status === "completed") {
                 completed++;
-                totalToday++;
             }
         });
 
