@@ -703,6 +703,8 @@ confirmBtn.addEventListener("click", async () => {
             clinicName: selectedClinicName,
             type: "Appointment",
             title: "New Appointment Booked",
+            bookingDate: date,
+            bookingTime: time,
             message: `A new ${reason} appointment has been booked at ${selectedClinicName} for ${date} at ${time}.`,
             read: false,
             createdAt: serverTimestamp()
