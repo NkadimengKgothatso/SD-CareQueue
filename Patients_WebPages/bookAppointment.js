@@ -119,9 +119,34 @@ async function getBookedSlots(db, selectedDate, selectedClinic) {
     return fullyBookedSlots;
 }
 
+//getting clinic time slots
+async function getClinicWorkingHours(selectedClinic) {
+    const clinicRef = doc(db, "clinicsObjects", String(selectedClinic));
+    const clinicSnap = await getDoc(clinicRef);
 
+    if (!clinicSnap.exists()) {
+        return {
+            startTime: "08:00",
+            endTime: "17:00"
+        };
+    }
+
+    const clinicData = clinicSnap.data();
+
+    return {
+        startTime: clinicData.startTime || "08:00",
+        endTime: clinicData.endTime || "17:00"
+    };
+}
+
+//Display Time Slots
 async function renderTimeSlots(selectedDate, selectedClinic) {
     timeSlotsContainer.innerHTML = "";
+
+    const { startTime, endTime } = await getClinicWorkingHours(selectedClinic);
+
+    const [startHour, startMinute] = startTime.split(":").map(Number);
+    const [endHour, endMinute] = endTime.split(":").map(Number);
 
     const dateObj = new Date(selectedDate);
     const dayName = dateObj
@@ -155,50 +180,57 @@ async function renderTimeSlots(selectedDate, selectedClinic) {
     const now = new Date();
     const today = now.toISOString().split("T")[0];
 
-    for (let hour = 8; hour <= 17; hour++) {
-        for (let minute of [0, 30]) {
-            if (hour === 17 && minute === 30) continue;
+    let current = new Date();
+    current.setHours(startHour, startMinute, 0, 0);
 
-            const formattedTime = formatTime(hour, minute);
+    const end = new Date();
+    end.setHours(endHour, endMinute, 0, 0);
 
-            const slotBtn = document.createElement("button");
-            slotBtn.classList.add("time-slot");
-            slotBtn.textContent = formattedTime;
+    while (current < end) {
+        const hour = current.getHours();
+        const minute = current.getMinutes();
 
-            let isPast = false;
+        const formattedTime = formatTime(hour, minute);
 
-            if (selectedDate === today) {
-                const slotTime = new Date();
-                slotTime.setHours(hour, minute, 0, 0);
+        const slotBtn = document.createElement("button");
+        slotBtn.classList.add("time-slot");
+        slotBtn.textContent = formattedTime;
 
-                if (slotTime < now) {
-                    isPast = true;
-                }
+        let isPast = false;
+
+        if (selectedDate === today) {
+            const slotTime = new Date();
+            slotTime.setHours(hour, minute, 0, 0);
+
+            if (slotTime < now) {
+                isPast = true;
             }
-
-            const bookingsForThisSlot = slotCounts[formattedTime] || 0;
-            const isFullyBooked = bookingsForThisSlot >= availableStaff;
-
-            if (isFullyBooked || isPast || availableStaff === 0) {
-                slotBtn.style.textDecoration = "line-through";
-                slotBtn.style.color = "#999";
-                slotBtn.style.backgroundColor = "#f2f2f2";
-                slotBtn.style.cursor = "not-allowed";
-                slotBtn.disabled = true;
-            }
-
-            slotBtn.addEventListener("click", () => {
-                if (slotBtn.disabled) return;
-
-                document.querySelectorAll(".time-slot")
-                    .forEach(btn => btn.classList.remove("selected"));
-
-                slotBtn.classList.add("selected");
-                selectedTimeInput.value = formattedTime;
-            });
-
-            timeSlotsContainer.appendChild(slotBtn);
         }
+
+        const bookingsForThisSlot = slotCounts[formattedTime] || 0;
+        const isFullyBooked = bookingsForThisSlot >= availableStaff;
+
+        if (isFullyBooked || isPast || availableStaff === 0) {
+            slotBtn.style.textDecoration = "line-through";
+            slotBtn.style.color = "#999";
+            slotBtn.style.backgroundColor = "#f2f2f2";
+            slotBtn.style.cursor = "not-allowed";
+            slotBtn.disabled = true;
+        }
+
+        slotBtn.addEventListener("click", () => {
+            if (slotBtn.disabled) return;
+
+            document.querySelectorAll(".time-slot")
+                .forEach(btn => btn.classList.remove("selected"));
+
+            slotBtn.classList.add("selected");
+            selectedTimeInput.value = formattedTime;
+        });
+
+        timeSlotsContainer.appendChild(slotBtn);
+
+        current.setMinutes(current.getMinutes() + 30);
     }
 }
 
