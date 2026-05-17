@@ -30,6 +30,29 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
+// ─── ML API ──────────────────────────────────────────────────────────────────
+const ML_API_URL = "https://sd-carequeue.onrender.com/predict";
+
+async function fetchWaitTime({ clinicID, queuePosition, queueLength, isWalkIn = false }) {
+    try {
+        const res = await fetch(ML_API_URL, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                clinicID:      Number(clinicID),
+                queuePosition: Number(queuePosition),
+                queueLength:   Number(queueLength),
+                isWalkIn:      Boolean(isWalkIn)
+            })
+        });
+        if (!res.ok) return null;
+        const json = await res.json();
+        return json?.estimatedWaitTime ?? null;
+    } catch {
+        return null;
+    }
+}
+
 // ─── Status Pipeline ────────────────────────────────────────────────────────
 const STATUS_PIPELINE = ["waiting", "in consultation", "completed"];
 
@@ -47,15 +70,15 @@ const nameSurnameEl = document.querySelector(".name-Surname");
 const queueList     = document.getElementById("upcoming");
 
 // ─── State ──────────────────────────────────────────────────────────────────
-let queueData             = [];
-let unsubscribeReg        = null;
-let unsubscribeWalkIn     = null;
-let unsubscribeAvgWait    = null; // ← new
-let regularAppts          = [];
-let walkInAppts           = [];
-let staffClinicID         = null;
-const sendingPositionTwo  = new Set();
-let authRunId             = 0;
+let queueData            = [];
+let unsubscribeReg       = null;
+let unsubscribeWalkIn    = null;
+let unsubscribeAvgWait   = null;
+let regularAppts         = [];
+let walkInAppts          = [];
+let staffClinicID        = null;
+const sendingPositionTwo = new Set();
+let authRunId            = 0;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 function getTodayString() {
@@ -187,9 +210,7 @@ function buildCard(appointment, positionLabel) {
 }
 
 // ─── Update Stats Cards ──────────────────────────────────────────────────────
-// NOTE: stat-avgwait is intentionally NOT set here.
-//       It is driven by startAvgWaitListener() which watches
-//       the Queues collection in real time.
+// stat-avgwait is owned exclusively by startAvgWaitListener — not touched here.
 function updateStats() {
     const total     = queueData.length;
     const inQueue   = queueData.filter(a => ACTIVE_STATUSES.has((a.status || "").toLowerCase())).length;
@@ -199,13 +220,12 @@ function updateStats() {
     if (el("stat-total"))     el("stat-total").textContent     = total;
     if (el("stat-inqueue"))   el("stat-inqueue").textContent   = inQueue;
     if (el("stat-completed")) el("stat-completed").textContent = completed;
-    // stat-avgwait is left alone here — startAvgWaitListener owns it
 }
 
 // ─── Avg Wait Listener ────────────────────────────────────────────────────────
-// Watches Queues for today's active entries and computes the average
-// estimateWait written by the ML model (loadQueueStatusML).
-// This is the ONLY place that writes to stat-avgwait.
+// Watches Queues in real time and averages the ML-written estimateWait
+// values across all active entries for today. This is the sole owner of
+// the stat-avgwait element.
 function startAvgWaitListener() {
     if (unsubscribeAvgWait) { unsubscribeAvgWait(); unsubscribeAvgWait = null; }
 
@@ -221,7 +241,6 @@ function startAvgWaitListener() {
         const el = document.getElementById("stat-avgwait");
         if (!el) return;
 
-        // Only average entries that are active AND have an ML-written estimateWait
         const waits = snapshot.docs
             .map(d => d.data())
             .filter(d => {
@@ -231,13 +250,9 @@ function startAvgWaitListener() {
             .map(d => Number(d.estimateWait))
             .filter(n => !isNaN(n) && n > 0);
 
-        if (!waits.length) {
-            el.textContent = "—";
-            return;
-        }
-
-        const avg = Math.round(waits.reduce((sum, w) => sum + w, 0) / waits.length);
-        el.textContent = `${avg} min`;
+        el.textContent = waits.length
+            ? `${Math.round(waits.reduce((s, w) => s + w, 0) / waits.length)} min`
+            : "—";
     }, () => {
         const el = document.getElementById("stat-avgwait");
         if (el) el.textContent = "—";
@@ -249,10 +264,7 @@ function renderQueue() {
     updateStats();
     queueList.innerHTML = "";
 
-    if (!queueData.length) {
-        renderEmptyState();
-        return;
-    }
+    if (!queueData.length) { renderEmptyState(); return; }
 
     const active = queueData
         .filter(a => ACTIVE_STATUSES.has((a.status || "").toLowerCase()))
@@ -265,9 +277,7 @@ function renderQueue() {
         a => !ACTIVE_STATUSES.has((a.status || "").toLowerCase())
     );
 
-    active.forEach((appt, idx) => {
-        queueList.appendChild(buildCard(appt, idx + 1));
-    });
+    active.forEach((appt, idx) => queueList.appendChild(buildCard(appt, idx + 1)));
 
     if (!active.length) renderEmptyState();
 
@@ -283,16 +293,14 @@ function renderQueue() {
 // ─── Merge, resolve names, sync to Queues, render ────────────────────────────
 async function mergeAndRender() {
     const combined = [...regularAppts, ...walkInAppts];
-    const seen = new Set();
-    const all = combined.filter(a => {
+    const seen     = new Set();
+    const all      = combined.filter(a => {
         if (seen.has(a.id)) return false;
         seen.add(a.id);
         return true;
     }).sort((a, b) => (a.time || "").localeCompare(b.time || ""));
 
-    const existingNames = Object.fromEntries(
-        queueData.map(a => [a.id, a.patientName])
-    );
+    const existingNames = Object.fromEntries(queueData.map(a => [a.id, a.patientName]));
 
     await Promise.all(all.map(async (appt) => {
         if (appt.patientName) return;
@@ -308,20 +316,18 @@ async function mergeAndRender() {
         }
     }));
 
-    let activePosition = 1;
+    // Assign positions to active patients only
+    let pos = 1;
     all.forEach(appt => {
-        if (ACTIVE_STATUSES.has((appt.status || "").toLowerCase())) {
-            appt.queuePosition = activePosition++;
-        } else {
-            appt.queuePosition = null;
-        }
+        appt.queuePosition = ACTIVE_STATUSES.has((appt.status || "").toLowerCase())
+            ? pos++
+            : null;
     });
 
     queueData = all;
 
     await deleteOldQueueEntries();
-    await syncAppointmentsToQueues(all);
-
+    await syncAppointmentsToQueues(all);  // writes base fields + calls ML
     renderQueue();
 }
 
@@ -367,56 +373,69 @@ async function deleteOldQueueEntries() {
     }
 }
 
-// ─── Sync Appointments → Queues ───────────────────────────────────────────────
-// estimateWait here is a FALLBACK only. The ML model (loadQueueStatusML)
-// will overwrite it with a real prediction once the patient opens their dashboard.
-// { merge: true } ensures we never clobber an ML-written estimateWait.
+// ─── Sync Appointments → Queues + call ML for every active patient ────────────
 async function syncAppointmentsToQueues(appointments) {
-    const today = getTodayString();
+    const today       = getTodayString();
+    const activeAppts = appointments.filter(a =>
+        ACTIVE_STATUSES.has((a.status || "").toLowerCase())
+    );
+    const queueLength = activeAppts.length;
 
-    const writes = appointments.map((appt) => {
+    // Step 1: Write base fields for every appointment (merge so we never
+    //         clobber an already-written estimateWait from the patient side)
+    const baseWrites = appointments.map(appt => {
         const isActive = ACTIVE_STATUSES.has((appt.status || "").toLowerCase());
         return setDoc(doc(db, "Queues", appt.id), {
             appointmentId: appt.id,
             clinicID:      Number(staffClinicID),
-            patientEmail:  appt.patientEmail  || "",
-            clinicName:    appt.clinicName    || "",
-            reason:        appt.reason        || "",
-            emailSent:     appt.emailSent     || false,
+            patientEmail:  appt.patientEmail || "",
+            clinicName:    appt.clinicName   || "",
+            reason:        appt.reason       || "",
+            emailSent:     appt.emailSent    || false,
             date:          today,
-            userID:        appt.userID        || null,
-            patientName:   appt.patientName   || null,
-            status:        appt.status        || "waiting",
-            time:          appt.time          || "",
+            userID:        appt.userID       || null,
+            patientName:   appt.patientName  || null,
+            status:        appt.status       || "waiting",
+            time:          appt.time         || "",
             position:      isActive ? appt.queuePosition : null,
-            isWalkIn:      appt.isWalkIn      || false,
+            isWalkIn:      appt.isWalkIn     || false,
             updatedAt:     serverTimestamp()
-            // estimateWait intentionally NOT written here so we never
-            // overwrite the ML model's value on every merge cycle.
-            // It is seeded once below only when the field doesn't exist yet.
+            // estimateWait is NOT included here — Step 2 writes it via ML
         }, { merge: true });
     });
 
     try {
-        await Promise.all(writes);
-
-        // Seed estimateWait ONLY for docs that don't have it yet (first sync).
-        // After the ML model writes a real value, we leave it alone.
-        await Promise.all(appointments.map(async (appt) => {
-            const isActive = ACTIVE_STATUSES.has((appt.status || "").toLowerCase());
-            if (!isActive) return;
-            const snap = await getDoc(doc(db, "Queues", appt.id));
-            if (snap.exists() && snap.data().estimateWait == null) {
-                await updateDoc(doc(db, "Queues", appt.id), {
-                    estimateWait: (appt.queuePosition - 1) * 15
-                });
-            }
-        }));
-
-        console.log(`✅ Synced ${writes.length} appointments to Queues`);
+        await Promise.all(baseWrites);
+        console.log(`✅ Synced ${baseWrites.length} appointments to Queues`);
     } catch (err) {
         console.error("Failed to sync appointments to Queues:", err);
+        return;
     }
+
+    // Step 2: Call ML API for every active patient and write the real
+    //         estimateWait back to their Queue doc. Runs in parallel.
+    if (!queueLength) return;
+
+    await Promise.all(activeAppts.map(async (appt) => {
+        const predicted = await fetchWaitTime({
+            clinicID:      staffClinicID,
+            queuePosition: appt.queuePosition,
+            queueLength,
+            isWalkIn:      appt.isWalkIn || false
+        });
+
+        // Fall back to formula if the API is down / cold-starting
+        const estimateWait = predicted !== null
+            ? predicted
+            : Math.round((appt.queuePosition - 1) * 14);
+
+        try {
+            await updateDoc(doc(db, "Queues", appt.id), { estimateWait });
+            console.log(`🤖 ML wait for position ${appt.queuePosition}: ${estimateWait} min`);
+        } catch (err) {
+            console.warn(`Could not write estimateWait for ${appt.id}:`, err);
+        }
+    }));
 }
 
 // ─── Start Real-Time Queue Listeners ─────────────────────────────────────────
@@ -432,7 +451,7 @@ function startQueueListeners() {
     const today = getTodayString();
     console.log("🔍 Starting listeners | clinicID:", staffClinicID, "| today:", today);
 
-    // ── Regular appointments (clinicID as number) ────────────────────────────
+    // Regular appointments (clinicID as number)
     const regQuery = query(
         collection(db, "Appointments"),
         where("date",     "==", today),
@@ -462,7 +481,7 @@ function startQueueListeners() {
         mergeAndRender();
     }, (err) => console.error("Regular appointments listener error:", err));
 
-    // ── Walk-in appointments (clinicId as string) ────────────────────────────
+    // Walk-in appointments (clinicId as string)
     const walkInQuery = query(
         collection(db, "Appointments"),
         where("date",     "==", today),
@@ -496,9 +515,9 @@ onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
         if (nameSurnameEl) nameSurnameEl.textContent = "Staff";
-        if (unsubscribeReg)      { unsubscribeReg();      unsubscribeReg      = null; }
-        if (unsubscribeWalkIn)   { unsubscribeWalkIn();   unsubscribeWalkIn   = null; }
-        if (unsubscribeAvgWait)  { unsubscribeAvgWait();  unsubscribeAvgWait  = null; }
+        if (unsubscribeReg)     { unsubscribeReg();     unsubscribeReg     = null; }
+        if (unsubscribeWalkIn)  { unsubscribeWalkIn();  unsubscribeWalkIn  = null; }
+        if (unsubscribeAvgWait) { unsubscribeAvgWait(); unsubscribeAvgWait = null; }
         staffClinicID = null;
         renderEmptyState();
         return;
@@ -546,14 +565,13 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    // Start all listeners once clinicID is confirmed
     startQueueListeners();
-    startAvgWaitListener(); // ← drives the "Avg wait" stat card
+    startAvgWaitListener();
 });
 
 // ─── Test Helpers ────────────────────────────────────────────────────────────
-function __setQueueDataForTest(data)     { queueData    = data; }
-function __setStaffClinicIDForTest(id)   { staffClinicID = id;  }
+function __setQueueDataForTest(data)   { queueData    = data; }
+function __setStaffClinicIDForTest(id) { staffClinicID = id;  }
 
 export {
     getTodayString,
