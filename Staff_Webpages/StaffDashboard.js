@@ -71,7 +71,7 @@ onAuthStateChanged(auth, async (user) => {
             const clinicTimeEl = document.getElementById("clinicAndTime");
 
             if (clinicTimeEl) {
-                clinicTimeEl.textContent = `${data.assignedClinic} · ${today}`;
+                clinicTimeEl.textContent = `${data.clinicName} · ${today}`;
             }
         });
 
