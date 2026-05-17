@@ -478,10 +478,12 @@ onAuthStateChanged(auth, async (user) => {
 
 export {
   getToday,
+  getStaffProfile,
   timeToMinutes,
   minutesToTime,
   isTaken,
   roundToNextSlot,
   getNextAvailableTime,
+  loadAppointments,
   showConfirmModal
 };
