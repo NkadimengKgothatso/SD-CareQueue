@@ -260,7 +260,7 @@ let selectedClinicName;
 // Fetch clinics from firestore
 async function loadClinics() {
     try {
-        // 🔥 Get clinics from Firestore
+        //Get clinics from Firestore
         const snapshot = await getDocs(collection(db, "clinicsObjects"));
 
         // Convert Firebase docs → usable array
@@ -296,7 +296,7 @@ async function loadAppointmentForReschedule() {
     // Find the clinic object so we can populate its services
     const matchingClinic = clinics.find(c => String(c.id) === String(data.clinicID));
     if (matchingClinic) {
-        // ✅ Restore services dropdown before setting the selected reason
+        //  Restore services dropdown before setting the selected reason
         populateReasonSelect(matchingClinic.service);
     }
 
@@ -346,7 +346,7 @@ function displayClinics(clinicList) {
             btn.style.backgroundColor = "#1D9E75";
             btn.style.color           = "#fff";
 
-            // ✅ Populate reason dropdown with this clinic's services from the DB
+            // Populate reason dropdown with this clinic's services from the DB
             populateReasonSelect(clinic.service);
 
             // Only render time slots if a date is already selected
