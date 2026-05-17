@@ -28,9 +28,9 @@ const auth = getAuth(app);
 const db   = getFirestore(app);
 
 // ─── Constants ───────────────────────────────────────────────────────────────
-const SLOT_START    = 8 * 60;  // 08:00
-const SLOT_END      = 17 * 60; // 17:00
-const SLOT_DURATION = 30;      // minutes
+const SLOT_START    = 8 * 60;
+const SLOT_END      = 17 * 60;
+const SLOT_DURATION = 30;
 
 const STATUS_LABELS = {
     "waiting":         "Waiting",
@@ -46,10 +46,12 @@ const appointmentList = document.getElementById("appointmentList");
 const filterBtns      = document.querySelectorAll(".filter-btn");
 
 // ─── State ───────────────────────────────────────────────────────────────────
-let staffClinicID   = null;
-let unsubscribe     = null;
-let allAppointments = [];
-let activeFilter    = "all";
+let staffClinicID    = null;
+let unsubscribe      = null;
+let unsubscribeQueue = null; // ← new: for the Queues avg-wait listener
+let allAppointments  = [];
+let activeFilter     = "all";
+let queueListeners   = [];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function getTodayString() {
@@ -71,7 +73,6 @@ function minutesToTime(m) {
     return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 }
 
-// Generate all possible slots for the day (08:00 – 17:00, every 30 min)
 function getAllSlots() {
     const slots = [];
     for (let t = SLOT_START; t < SLOT_END; t += SLOT_DURATION) {
@@ -90,6 +91,49 @@ function updateStats() {
     if (el("stat-today"))    el("stat-today").textContent    = allAppointments.filter(a => a.date === today).length;
     if (el("stat-tomorrow")) el("stat-tomorrow").textContent = allAppointments.filter(a => a.date === tomorrow).length;
     if (el("stat-walkin"))   el("stat-walkin").textContent   = allAppointments.filter(a => a.isWalkIn).length;
+    // stat-avgwait is handled by startAvgWaitListener — not here
+}
+
+// ─── Avg Wait Listener ────────────────────────────────────────────────────────
+// Watches the Queues collection in real time and computes the average
+// estimateWait (written by the ML model) across all active entries today.
+function startAvgWaitListener() {
+    if (unsubscribeQueue) { unsubscribeQueue(); unsubscribeQueue = null; }
+
+    const activeStatuses = ["waiting", "scheduled", "active", "in consultation"];
+    const today          = getTodayString();
+
+    const q = query(
+        collection(db, "Queues"),
+        where("clinicID", "==", Number(staffClinicID)),
+        where("date",     "==", today)
+    );
+
+    unsubscribeQueue = onSnapshot(q, (snapshot) => {
+        const el = document.getElementById("stat-avgwait");
+        if (!el) return;
+
+        // Collect estimateWait values from active queue entries that have one
+        const waits = snapshot.docs
+            .map(d => d.data())
+            .filter(d => {
+                const status = (d.status || "").toLowerCase().trim();
+                return activeStatuses.includes(status) && d.estimateWait != null;
+            })
+            .map(d => Number(d.estimateWait))
+            .filter(n => !isNaN(n) && n > 0);
+
+        if (!waits.length) {
+            el.textContent = "—";
+            return;
+        }
+
+        const avg = Math.round(waits.reduce((sum, w) => sum + w, 0) / waits.length);
+        el.textContent = `${avg} min`;
+    }, () => {
+        const el = document.getElementById("stat-avgwait");
+        if (el) el.textContent = "—";
+    });
 }
 
 // ─── Filter ───────────────────────────────────────────────────────────────────
@@ -161,7 +205,7 @@ function buildCard(appt) {
                 ${estimatedWait ? `
                 <li class="meta-item">
                     <i class="fa-solid fa-hourglass-half meta-icon"></i>
-                    Estimated wait: ${estimatedWait}
+                    Est. wait: ${estimatedWait}
                 </li>` : ""}
             </ul>
 
@@ -207,25 +251,21 @@ function renderAppointments() {
 }
 
 // ─── Get Free Slots for a Date ────────────────────────────────────────────────
-// Fetches ALL appointments for the clinic on the given date (both regular and
-// walk-in), collects their booked times, then returns only the unbooked slots.
 async function getFreeSlots(date, excludeAppointmentId = null) {
     const bookedTimes = new Set();
 
-    // Regular appointments (clinicID as number)
     const regSnap = await getDocs(query(
         collection(db, "Appointments"),
         where("clinicID", "==", Number(staffClinicID)),
         where("date",     "==", date)
     ));
     regSnap.forEach(docSnap => {
-        if (docSnap.id === excludeAppointmentId) return; // exclude the one being rescheduled
+        if (docSnap.id === excludeAppointmentId) return;
         const d = docSnap.data();
         const status = (d.status || "").toLowerCase();
         if (status !== "cancelled" && d.time) bookedTimes.add(d.time);
     });
 
-    // Walk-in appointments (clinicId as string)
     const walkInSnap = await getDocs(query(
         collection(db, "Appointments"),
         where("clinicId", "==", staffClinicID),
@@ -239,7 +279,6 @@ async function getFreeSlots(date, excludeAppointmentId = null) {
         if (status !== "cancelled" && d.time) bookedTimes.add(d.time);
     });
 
-    // Return all slots that are NOT booked
     return getAllSlots().filter(slot => !bookedTimes.has(slot));
 }
 
@@ -292,34 +331,24 @@ async function openRescheduleModal(appt) {
     const cancelBtn  = modal.querySelector("#rescheduleCancelBtn");
     const confirmBtn = modal.querySelector("#rescheduleConfirmBtn");
 
-    // Load free slots for the given date
     async function loadFreeSlots(date) {
         timeSelect.innerHTML = `<option value="">Loading...</option>`;
         timeSelect.disabled  = true;
-
         const freeSlots = await getFreeSlots(date, appt.id);
-
         if (!freeSlots.length) {
             timeSelect.innerHTML = `<option value="">No available slots for this date</option>`;
             timeSelect.disabled  = true;
             return;
         }
-
         timeSelect.innerHTML = `<option value="">Select a time slot</option>` +
             freeSlots.map(s => `<option value="${s}">${s}</option>`).join("");
         timeSelect.disabled = false;
     }
 
-    // Load slots for the appointment's current date on open
     await loadFreeSlots(dateInput.value);
-
-    // Reload whenever date changes
     dateInput.addEventListener("change", () => loadFreeSlots(dateInput.value));
-
-    // Cancel
     cancelBtn.addEventListener("click", () => { modal.close(); modal.remove(); });
 
-    // Confirm
     confirmBtn.addEventListener("click", async () => {
         const newDate = dateInput.value;
         const newTime = timeSelect.value;
@@ -399,9 +428,6 @@ function showConfirmModal(message) {
     });
 }
 
-// ─── State (add queueListeners) ──────────────────────────────────────────────
-let queueListeners = [];
-
 // ─── Start Real-Time Listener ─────────────────────────────────────────────────
 function startAppointmentsListener() {
     if (unsubscribe) { unsubscribe(); unsubscribe = null; }
@@ -424,7 +450,6 @@ function startAppointmentsListener() {
     unsubscribe = onSnapshot(q, async (snapshot) => {
         console.log("📋 Appointments:", snapshot.size);
 
-        // Clean up previous queue listeners before building new ones
         queueListeners.forEach(u => u());
         queueListeners = [];
 
@@ -450,9 +475,7 @@ function startAppointmentsListener() {
 
             incoming.push(appt);
 
-            // ── Real-time ML wait time from Queues ──────────────────────────
-            // The ML model (loadQueueStatusML) writes estimateWait to Queues/{appt.id}
-            // We subscribe so the card updates live as the queue moves.
+            // ── Real-time ML wait time from Queues ───────────────────────────
             const queueUnsub = onSnapshot(
                 doc(db, "Queues", appt.id),
                 (queueDoc) => {
@@ -460,14 +483,14 @@ function startAppointmentsListener() {
                     const newWait = queueDoc.data().estimateWait ?? null;
                     if (newWait !== appt.estimateWait) {
                         appt.estimateWait = newWait;
-                        renderAppointments(); // re-render when ML updates the value
+                        renderAppointments();
                     }
                 },
-                () => {} // silently ignore permission errors
+                () => {}
             );
             queueListeners.push(queueUnsub);
 
-            // ── Patient name lookup (unchanged) ─────────────────────────────
+            // ── Patient name lookup ──────────────────────────────────────────
             if (!appt.patientName && appt.userID) {
                 detailPromises.push(
                     getDoc(doc(db, "Users", appt.userID))
@@ -494,6 +517,7 @@ function startAppointmentsListener() {
             </li>`;
     });
 }
+
 // ─── Filter Buttons ───────────────────────────────────────────────────────────
 filterBtns.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -508,7 +532,8 @@ filterBtns.forEach(btn => {
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
         if (nameSurnameEl) nameSurnameEl.textContent = "Staff";
-        if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+        if (unsubscribe)      { unsubscribe();      unsubscribe      = null; }
+        if (unsubscribeQueue) { unsubscribeQueue(); unsubscribeQueue = null; }
         staffClinicID = null;
         renderEmptyState();
         return;
@@ -551,22 +576,25 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
+    // Start both listeners once clinicID is confirmed
     startAppointmentsListener();
+    startAvgWaitListener();       // ← drives the "Avg wait" stat card
 });
 
 export {
-  getTodayString,
-  getTomorrowString,
-  minutesToTime,
-  getAllSlots,
-  updateStats,
-  getFilteredAppointments,
-  renderEmptyState,
-  buildCard,
-  renderAppointments,
-  getFreeSlots,
-  openRescheduleModal,
-  cancelAppointment,
-  showConfirmModal,
-  startAppointmentsListener
+    getTodayString,
+    getTomorrowString,
+    minutesToTime,
+    getAllSlots,
+    updateStats,
+    getFilteredAppointments,
+    renderEmptyState,
+    buildCard,
+    renderAppointments,
+    getFreeSlots,
+    openRescheduleModal,
+    cancelAppointment,
+    showConfirmModal,
+    startAppointmentsListener,
+    startAvgWaitListener
 };
