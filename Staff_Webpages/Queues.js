@@ -47,14 +47,15 @@ const nameSurnameEl = document.querySelector(".name-Surname");
 const queueList     = document.getElementById("upcoming");
 
 // ─── State ──────────────────────────────────────────────────────────────────
-let queueData          = [];
-let unsubscribeReg     = null;
-let unsubscribeWalkIn  = null;
-let regularAppts       = [];
-let walkInAppts        = [];
-let staffClinicID      = null;
-const sendingPositionTwo = new Set();
-let authRunId          = 0;
+let queueData             = [];
+let unsubscribeReg        = null;
+let unsubscribeWalkIn     = null;
+let unsubscribeAvgWait    = null; // ← new
+let regularAppts          = [];
+let walkInAppts           = [];
+let staffClinicID         = null;
+const sendingPositionTwo  = new Set();
+let authRunId             = 0;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 function getTodayString() {
@@ -73,48 +74,32 @@ function renderEmptyState() {
         </li>`;
 }
 
-
-
+// ─── Position-2 Notification ─────────────────────────────────────────────────
 async function sendPositionTwoNotification(appointment) {
     try {
         if (!appointment.userID) return;
         if (!appointment.patientEmail) return;
 
-        await updateDoc(doc(db, "Queues", appointment.id), {
-            emailSent: true
-        });
-/*
-        emailjs.init("jWEiS_k1FnVa1Zz5S");
+        await updateDoc(doc(db, "Queues", appointment.id), { emailSent: true });
 
-        await emailjs.send("service_j8zb3jh", "template_neu0ubc", {
-            email: appointment.patientEmail,
-            name: appointment.patientName || "Patient",
-            clinic_name: appointment.clinicName || "Clinic",
-            appointment_reason: appointment.reason || "Appointment",
-            appointment_date: appointment.date || "",
-            appointment_time: appointment.time || ""
-        });*/
         const clinicName = appointment.clinicName?.trim() || "Clinic";
         await addDoc(collection(db, "Notifications"), {
-            userID: appointment.userID,
-            clinicID: Number(staffClinicID),
-            clinicName: clinicName || "Clinic",
-            type: "Appointment",
-            title: "Appointment In An Hour!",
-            message: `Your ${appointment.reason || "appointment"} at ${clinicName} is in an hour. You are position 2. Please make your way to the clinic.`,
-            read: false,
-            createdAt: serverTimestamp()
+            userID:     appointment.userID,
+            clinicID:   Number(staffClinicID),
+            clinicName,
+            type:       "Appointment",
+            title:      "Appointment In An Hour!",
+            message:    `Your ${appointment.reason || "appointment"} at ${clinicName} is in an hour. You are position 2. Please make your way to the clinic.`,
+            read:       false,
+            createdAt:  serverTimestamp()
         });
 
         console.log("Position 2 email and notification sent");
-
     } catch (error) {
         console.error("Failed to send position 2 notification:", error);
         sendingPositionTwo.delete(appointment.id);
     }
 }
-
-
 
 // ─── Render: Single Queue Card ───────────────────────────────────────────────
 function buildCard(appointment, positionLabel) {
@@ -202,6 +187,9 @@ function buildCard(appointment, positionLabel) {
 }
 
 // ─── Update Stats Cards ──────────────────────────────────────────────────────
+// NOTE: stat-avgwait is intentionally NOT set here.
+//       It is driven by startAvgWaitListener() which watches
+//       the Queues collection in real time.
 function updateStats() {
     const total     = queueData.length;
     const inQueue   = queueData.filter(a => ACTIVE_STATUSES.has((a.status || "").toLowerCase())).length;
@@ -211,7 +199,49 @@ function updateStats() {
     if (el("stat-total"))     el("stat-total").textContent     = total;
     if (el("stat-inqueue"))   el("stat-inqueue").textContent   = inQueue;
     if (el("stat-completed")) el("stat-completed").textContent = completed;
-    if (el("stat-avgwait"))   el("stat-avgwait").textContent   = "—";
+    // stat-avgwait is left alone here — startAvgWaitListener owns it
+}
+
+// ─── Avg Wait Listener ────────────────────────────────────────────────────────
+// Watches Queues for today's active entries and computes the average
+// estimateWait written by the ML model (loadQueueStatusML).
+// This is the ONLY place that writes to stat-avgwait.
+function startAvgWaitListener() {
+    if (unsubscribeAvgWait) { unsubscribeAvgWait(); unsubscribeAvgWait = null; }
+
+    const today = getTodayString();
+
+    const q = query(
+        collection(db, "Queues"),
+        where("clinicID", "==", Number(staffClinicID)),
+        where("date",     "==", today)
+    );
+
+    unsubscribeAvgWait = onSnapshot(q, (snapshot) => {
+        const el = document.getElementById("stat-avgwait");
+        if (!el) return;
+
+        // Only average entries that are active AND have an ML-written estimateWait
+        const waits = snapshot.docs
+            .map(d => d.data())
+            .filter(d => {
+                const status = (d.status || "").toLowerCase().trim();
+                return ACTIVE_STATUSES.has(status) && d.estimateWait != null;
+            })
+            .map(d => Number(d.estimateWait))
+            .filter(n => !isNaN(n) && n > 0);
+
+        if (!waits.length) {
+            el.textContent = "—";
+            return;
+        }
+
+        const avg = Math.round(waits.reduce((sum, w) => sum + w, 0) / waits.length);
+        el.textContent = `${avg} min`;
+    }, () => {
+        const el = document.getElementById("stat-avgwait");
+        if (el) el.textContent = "—";
+    });
 }
 
 // ─── Render: Full Queue ──────────────────────────────────────────────────────
@@ -239,9 +269,7 @@ function renderQueue() {
         queueList.appendChild(buildCard(appt, idx + 1));
     });
 
-    if (!active.length) {
-        renderEmptyState();
-    }
+    if (!active.length) renderEmptyState();
 
     if (done.length) {
         const divider = document.createElement("li");
@@ -252,9 +280,8 @@ function renderQueue() {
     }
 }
 
-// ─── Merge both lists, resolve names, sync to Queues, render ─────────────────
+// ─── Merge, resolve names, sync to Queues, render ────────────────────────────
 async function mergeAndRender() {
-    // Combine regular + walk-in, deduplicate by id, sort by time
     const combined = [...regularAppts, ...walkInAppts];
     const seen = new Set();
     const all = combined.filter(a => {
@@ -263,12 +290,10 @@ async function mergeAndRender() {
         return true;
     }).sort((a, b) => (a.time || "").localeCompare(b.time || ""));
 
-    // Cache existing resolved names
     const existingNames = Object.fromEntries(
         queueData.map(a => [a.id, a.patientName])
     );
 
-    // Resolve names - walk-ins already have patientName, regular appts may need Users lookup
     await Promise.all(all.map(async (appt) => {
         if (appt.patientName) return;
         if (existingNames[appt.id]) {
@@ -276,17 +301,13 @@ async function mergeAndRender() {
         } else if (appt.userID) {
             try {
                 const userDoc = await getDoc(doc(db, "Users", appt.userID));
-                if (userDoc.exists()) {
-                    appt.patientName = userDoc.data().displayName || null;
-                }
+                if (userDoc.exists()) appt.patientName = userDoc.data().displayName || null;
             } catch (err) {
                 console.error("Failed to fetch patient name:", err);
             }
         }
     }));
 
-    // ── Assign positions ONLY to active patients, sorted by time ──
-    // Done/cancelled patients get position null
     let activePosition = 1;
     all.forEach(appt => {
         if (ACTIVE_STATUSES.has((appt.status || "").toLowerCase())) {
@@ -304,7 +325,7 @@ async function mergeAndRender() {
     renderQueue();
 }
 
-// ─── Update Status in BOTH Appointments and Queues ───────────────────────────
+// ─── Update Status ────────────────────────────────────────────────────────────
 async function updateStatus(appointmentId, newStatus) {
     try {
         await updateDoc(doc(db, "Appointments", appointmentId), {
@@ -312,25 +333,22 @@ async function updateStatus(appointmentId, newStatus) {
             updatedAt: serverTimestamp()
         });
 
-        // Update matching Queues entry (keyed by appointmentId)
         const queueRef  = doc(db, "Queues", appointmentId);
         const queueSnap = await getDoc(queueRef);
         if (queueSnap.exists()) {
             await updateDoc(queueRef, {
                 status:    newStatus,
-                position:  null,      // clear position immediately on Queues
+                position:  null,
                 updatedAt: serverTimestamp()
             });
         }
-        // mergeAndRender will fire automatically via onSnapshot
-        // and will recalculate all remaining active positions
     } catch (err) {
         console.error("Failed to update status:", err);
         alert("Could not update patient status. Please try again.");
     }
 }
 
-// ─── Delete old Queues entries (not from today) ───────────────────────────────
+// ─── Delete Old Queue Entries ─────────────────────────────────────────────────
 async function deleteOldQueueEntries() {
     const today = getTodayString();
     try {
@@ -349,38 +367,53 @@ async function deleteOldQueueEntries() {
     }
 }
 
-// ─── Copy Today's Appointments into Queues ────────────────────────────────────
+// ─── Sync Appointments → Queues ───────────────────────────────────────────────
+// estimateWait here is a FALLBACK only. The ML model (loadQueueStatusML)
+// will overwrite it with a real prediction once the patient opens their dashboard.
+// { merge: true } ensures we never clobber an ML-written estimateWait.
 async function syncAppointmentsToQueues(appointments) {
     const today = getTodayString();
 
     const writes = appointments.map((appt) => {
         const isActive = ACTIVE_STATUSES.has((appt.status || "").toLowerCase());
         return setDoc(doc(db, "Queues", appt.id), {
-        appointmentId: appt.id,
-        clinicID: Number(staffClinicID),
-        patientEmail: appt.patientEmail || "",
-        clinicName: appt.clinicName || "",
-        reason: appt.reason || "",
-        emailSent: appt.emailSent || false,
-        date: today,
-        userID: appt.userID || null,
-        patientName: appt.patientName || null,
-        status: appt.status || "waiting",
-        time: appt.time || "",
-        position: isActive ? appt.queuePosition : null,
-        estimateWait: isActive ? (appt.queuePosition - 1) * 15 : null,
-        isWalkIn: appt.isWalkIn || false,
-        updatedAt: serverTimestamp()
-    }, { merge: true });
-
-    
-
+            appointmentId: appt.id,
+            clinicID:      Number(staffClinicID),
+            patientEmail:  appt.patientEmail  || "",
+            clinicName:    appt.clinicName    || "",
+            reason:        appt.reason        || "",
+            emailSent:     appt.emailSent     || false,
+            date:          today,
+            userID:        appt.userID        || null,
+            patientName:   appt.patientName   || null,
+            status:        appt.status        || "waiting",
+            time:          appt.time          || "",
+            position:      isActive ? appt.queuePosition : null,
+            isWalkIn:      appt.isWalkIn      || false,
+            updatedAt:     serverTimestamp()
+            // estimateWait intentionally NOT written here so we never
+            // overwrite the ML model's value on every merge cycle.
+            // It is seeded once below only when the field doesn't exist yet.
+        }, { merge: true });
     });
 
     try {
         await Promise.all(writes);
+
+        // Seed estimateWait ONLY for docs that don't have it yet (first sync).
+        // After the ML model writes a real value, we leave it alone.
+        await Promise.all(appointments.map(async (appt) => {
+            const isActive = ACTIVE_STATUSES.has((appt.status || "").toLowerCase());
+            if (!isActive) return;
+            const snap = await getDoc(doc(db, "Queues", appt.id));
+            if (snap.exists() && snap.data().estimateWait == null) {
+                await updateDoc(doc(db, "Queues", appt.id), {
+                    estimateWait: (appt.queuePosition - 1) * 15
+                });
+            }
+        }));
+
         console.log(`✅ Synced ${writes.length} appointments to Queues`);
-    
     } catch (err) {
         console.error("Failed to sync appointments to Queues:", err);
     }
@@ -399,7 +432,7 @@ function startQueueListeners() {
     const today = getTodayString();
     console.log("🔍 Starting listeners | clinicID:", staffClinicID, "| today:", today);
 
-    // ── Listener 1: Regular appointments (clinicID as number) ──
+    // ── Regular appointments (clinicID as number) ────────────────────────────
     const regQuery = query(
         collection(db, "Appointments"),
         where("date",     "==", today),
@@ -414,22 +447,22 @@ function startQueueListeners() {
             let status = (d.status || "waiting").toLowerCase().trim();
             if (status === "scheduled") status = "waiting";
             regularAppts.push({
-                id:          docSnap.id,
-                time:        d.time        || "",
+                id:           docSnap.id,
+                time:         d.time         || "",
                 patientEmail: d.patientEmail || "",
-                clinicID: d.clinicID || Number(staffClinicID),
-                clinicName: d.clinicName || "Clinic", // ADD THIS
+                clinicID:     d.clinicID     || Number(staffClinicID),
+                clinicName:   d.clinicName   || "Clinic",
                 status,
-                reason:      d.reason      || "",
-                patientName: d.patientName || d.name || null,
-                isWalkIn:    false,
-                userID:      d.userID      || null
+                reason:       d.reason       || "",
+                patientName:  d.patientName  || d.name || null,
+                isWalkIn:     false,
+                userID:       d.userID       || null
             });
         });
         mergeAndRender();
     }, (err) => console.error("Regular appointments listener error:", err));
 
-    // ── Listener 2: Walk-in appointments (clinicId as string) ──
+    // ── Walk-in appointments (clinicId as string) ────────────────────────────
     const walkInQuery = query(
         collection(db, "Appointments"),
         where("date",     "==", today),
@@ -463,79 +496,47 @@ onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
         if (nameSurnameEl) nameSurnameEl.textContent = "Staff";
-
-        if (unsubscribeReg) {
-            unsubscribeReg();
-            unsubscribeReg = null;
-        }
-
-        if (unsubscribeWalkIn) {
-            unsubscribeWalkIn();
-            unsubscribeWalkIn = null;
-        }
-
+        if (unsubscribeReg)      { unsubscribeReg();      unsubscribeReg      = null; }
+        if (unsubscribeWalkIn)   { unsubscribeWalkIn();   unsubscribeWalkIn   = null; }
+        if (unsubscribeAvgWait)  { unsubscribeAvgWait();  unsubscribeAvgWait  = null; }
         staffClinicID = null;
         renderEmptyState();
         return;
     }
 
-    // ── Basic UI (sidebar header/footer) ──
     const staffName = user.displayName || "Staff";
+    if (nameSurnameEl) nameSurnameEl.textContent = staffName;
 
-    if (nameSurnameEl) {
-        nameSurnameEl.textContent = staffName;
-    }
-
-    const staffEmailEl = document.getElementById("staffEmail");
-    const staffAvatarEl = document.getElementById("staffAvatar");
+    const staffEmailEl      = document.getElementById("staffEmail");
+    const staffAvatarEl     = document.getElementById("staffAvatar");
     const staffNameFooterEl = document.getElementById("staffName");
 
-    if (staffEmailEl) {
-        staffEmailEl.textContent = user.email;
-    }
-
-    if (staffNameFooterEl) {
-        staffNameFooterEl.textContent = staffName;
-    }
-
+    if (staffEmailEl)      staffEmailEl.textContent      = user.email;
+    if (staffNameFooterEl) staffNameFooterEl.textContent = staffName;
     if (staffAvatarEl) {
-        const initials = staffName
-            .split(" ")
-            .map(n => n[0])
-            .join("")
-            .toUpperCase();
-
-        staffAvatarEl.textContent = initials;
+        staffAvatarEl.textContent = staffName
+            .split(" ").map(n => n[0]).join("").toUpperCase();
     }
 
-    // ── Get staff clinic ──
     try {
         const staffQuery = query(
             collection(db, "ApprovedStaff"),
             where("email", "==", user.email)
         );
-
         const snapshot = await getDocs(staffQuery);
-
         if (runId !== authRunId) return;
 
         console.log("📄 Snapshot empty?", snapshot.empty);
-
         if (!snapshot.empty) {
-            const data = snapshot.docs[0].data();
-
-            staffClinicID = data.clinicId || null;
-
+            staffClinicID = snapshot.docs[0].data().clinicId || null;
             console.log("🏥 staffClinicID:", staffClinicID);
         }
-
     } catch (err) {
         console.error("Failed to fetch staff clinic:", err);
     }
 
     if (runId !== authRunId) return;
 
-    // ── Safety check ──
     if (!staffClinicID) {
         queueList.innerHTML = `
             <li class="empty-state error-state">
@@ -545,30 +546,28 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    // ── Start queue system ──
+    // Start all listeners once clinicID is confirmed
     startQueueListeners();
+    startAvgWaitListener(); // ← drives the "Avg wait" stat card
 });
 
-function __setQueueDataForTest(data) {
-  queueData = data;
-}
-
-function __setStaffClinicIDForTest(id) {
-  staffClinicID = id;
-}
+// ─── Test Helpers ────────────────────────────────────────────────────────────
+function __setQueueDataForTest(data)     { queueData    = data; }
+function __setStaffClinicIDForTest(id)   { staffClinicID = id;  }
 
 export {
-  getTodayString,
-  renderEmptyState,
-  buildCard,
-  updateStats,
-  renderQueue,
-  mergeAndRender,
-  updateStatus,
-  deleteOldQueueEntries,
-  syncAppointmentsToQueues,
-  startQueueListeners,
-  sendPositionTwoNotification,
-  __setQueueDataForTest,
-  __setStaffClinicIDForTest
+    getTodayString,
+    renderEmptyState,
+    buildCard,
+    updateStats,
+    renderQueue,
+    mergeAndRender,
+    updateStatus,
+    deleteOldQueueEntries,
+    syncAppointmentsToQueues,
+    startQueueListeners,
+    startAvgWaitListener,
+    sendPositionTwoNotification,
+    __setQueueDataForTest,
+    __setStaffClinicIDForTest
 };
