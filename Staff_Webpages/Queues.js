@@ -546,11 +546,22 @@ function __setQueueDataForTest(data) {
   queueData = data;
 }
 
+function __setStaffClinicIDForTest(id) {
+  staffClinicID = id;
+}
+
 export {
   getTodayString,
   renderEmptyState,
   buildCard,
   updateStats,
   renderQueue,
-  __setQueueDataForTest
+  mergeAndRender,
+  updateStatus,
+  deleteOldQueueEntries,
+  syncAppointmentsToQueues,
+  startQueueListeners,
+  sendPositionTwoNotification,
+  __setQueueDataForTest,
+  __setStaffClinicIDForTest
 };
