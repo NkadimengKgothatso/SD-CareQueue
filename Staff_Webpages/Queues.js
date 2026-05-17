@@ -415,6 +415,7 @@ function startQueueListeners() {
                 time:        d.time        || "",
                 patientEmail: d.patientEmail || "",
                 clinicID: d.clinicID || Number(staffClinicID),
+                clinicName: d.clinicName || "Clinic", // ADD THIS
                 status,
                 reason:      d.reason      || "",
                 patientName: d.patientName || d.name || null,
