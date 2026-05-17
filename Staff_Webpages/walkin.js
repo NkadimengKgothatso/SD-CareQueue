@@ -412,7 +412,7 @@ onAuthStateChanged(auth, async (user) => {
         if (clinicEl) clinicEl.textContent = "";
 
         clinicId = null;
-        assignedClinic = null;
+        clinicName = null;
 
         if (unsubscribe) unsubscribe();
 
