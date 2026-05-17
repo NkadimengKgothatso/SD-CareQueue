@@ -412,5 +412,7 @@ export {
     showStatus,
     readScheduleFromPage,
     applyScheduleToPage,
-    applyClinicConstraints
+    applyClinicConstraints,
+    convertTo24Hour,
+    parseClinicHours 
 };

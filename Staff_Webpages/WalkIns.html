@@ -1,81 +1,94 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">        
-    <title>Queue Management</title>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">        
+        <title>Queue Management</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" >
+        <link rel="stylesheet" href="../Patients_WebPages/bookAppointments.css">
+        <!-- <link rel="stylesheet" href="../Login/bookAppointments.css">    -->
+        <link rel="stylesheet" href="walkin.css">  
+        <link rel="stylesheet" href="Staff.css">
+        
+    </head>
 
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="../Patients_WebPages/bookAppointments.css">
-    <link rel="stylesheet" href="walkin.css">  
-    <link rel="stylesheet" href="Staff.css">
-</head>
-
-<body>
-
-<!-- Top navigation bar -->
-<header class="top-bar">
-    <nav class="logo">
+    <body>
+    <!-- Top navigation bar -->
+    <header class="top-bar">
+        <nav class="logo">
+        <!-- Logo icon (green square with plus sign created with CSS) -->
         <section class="logo-icon"></section>
         <section class="logo-name" style="vertical-align: middle;">Care Queue</section>
-    </nav>
-</header>
+        </nav>
+    </header>
 
-<section class="container">
+    <section class="container">
 
-<!-- Sidebar -->
-<aside class="sidebar">
+    <!-- Sidebar -->
+    <aside class="sidebar">
 
-    <nav class="sidebar-nav">
+            <nav class="sidebar-nav">
 
-        <section class="nav-item" onclick="window.location.href='StaffDashboard.html'">
-            <section class="nav-dot"></section>
-            <section>Dashboard</section>
-        </section>
+                <section class="nav-item"
+                    onclick="window.location.href='StaffDashboard.html'">
+                    <section class="nav-dot"></section>
+                    <section>Dashboard</section>
+                </section>
 
-        <section class="nav-item" onclick="window.location.href='Availability.html'">
-            <section class="nav-dot"></section>
-            <section>My Availability</section>
-        </section>
+                <section class="nav-item"
+                    onclick="window.location.href='Availability.html'">
+                    <section class="nav-dot"></section>
+                    <section>My Availability</section>
+                </section>
 
-        <section class="nav-item" onclick="window.location.href='Appointments.html'">
-            <section class="nav-dot"></section>
-            <section>Manage Appointment</section>
-        </section>
+                <section class="nav-item"
+                    onclick="window.location.href='Appointments.html'">
+                    <section class="nav-dot"></section>
+                    <section>Manage Appointment</section>
+                </section>
 
-        <section class="nav-item" onclick="window.location.href='Queues.html'">
-            <section class="nav-dot"></section>
-            <section>Queue Management</section>
-        </section>
+                <section class="nav-item"
+                    onclick="window.location.href='Queues.html'">
+                    <section class="nav-dot"></section>
+                    <section>Queue Management</section>
+                </section>
 
-        <section class="nav-item active" onclick="window.location.href='WalkIns.html'">
-            <section class="nav-dot"></section>
-            <section>Walk-in</section>
-        </section>
+        
 
-    </nav>    
+                <section class="nav-item active"
+                    onclick="window.location.href='WalkIns.html'">
 
-    <section class="sidebar-footer">
-        <section class="user-info">
+                    <section class="nav-dot"></section>
+                    <section>Walk-in</section>
+                </section>
 
-            <section class="user-avatar" id="staffAvatar"></section>
+               
 
-            <section class="user-details">
-                <section class="user-name" id="staffName"></section>
-                <section class="user-email" id="staffEmail"></section>
+            </nav>    
+            <section class="sidebar-footer">
+                <section class="user-info">
+        
+                    <section class="user-avatar" id="staffAvatar">
+                        <!-- initials will be injected by JS -->
+                    </section>
+
+                    <section class="user-details">
+                        <section class="user-name" id="staffName"></section>
+                        <section class="user-email" id="staffEmail"></section>
+                    </section>
+
+                </section>
             </section>
-
-        </section>
-    </section>
-</aside>
-
-<main class="walkin-main">
+        </aside>
+    </aside>
+       <main class="walkin-main">
 
     <h2 class="page-title">
-        Walk-in Management
-    </h2>
+    <i class="fa-solid fa-hospital-user"></i>
+    Walk-in Management
+</h2><br></br>
 
-    <br>
 
     <p class="subtitle">Register and manage walk-in patients</p>
 
@@ -87,35 +100,64 @@
         <table class="queue-table">
 
             <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Ticket Number</th>
-                    <th>Patient</th>
-                    <th>Reason</th>
-                    <th>Time</th>
-                    <th>Status</th>
-                </tr>
+               <tr>
+    <th>#</th>
+
+    <th>
+        <i class="fa-solid fa-ticket"></i>
+        Ticket Number
+    </th>
+
+    <th>
+        <i class="fa-solid fa-user"></i>
+        Patient
+    </th>
+
+    <th>
+        <i class="fa-solid fa-notes-medical"></i>
+        Reason
+    </th>
+
+    <th>
+        <i class="fa-regular fa-clock"></i>
+        Time
+    </th>
+
+    <th>
+        <i class="fa-solid fa-circle-info"></i>
+        Status
+    </th>
+</tr>
             </thead>
 
-            <tbody id="walkinTable"></tbody>
+            <tbody id="walkinTable" >
+
+               
+
+            </tbody>
+
+            
 
         </table>
+
+        
 
     </section>
 
     <!-- REGISTER SECTION -->
     <section class="register-section">
 
-        <h3 class="section-title">
-            Add Walk-in Patient
-        </h3>
+      <h3 class="section-title">
+    <i class="fa-solid fa-user-plus"></i>
+    Add Walk-in Patient
+     </h3>
 
         <form class="register-form">
 
             <label>Full name(s)</label>
-            <input type="text" id="nameInput" placeholder="Patient full name">
+           <input type="text" id="nameInput" placeholder="Patient full name">
 
-            <label>Clinic visitation reason</label>
+          <label>Clinic visitation reason</label>
             <select id="reasonInput">
                 <option>General Checkup</option>
                 <option>Vaccination</option>
@@ -127,6 +169,8 @@
                 <option>Other</option>
             </select>
 
+            
+
             <button type="button" class="add-btn">Add patient</button>
 
         </form>
@@ -134,9 +178,11 @@
     </section>
 
 </main>
+            
+    </section>
 
-</section>
+    <script type="module" src="walkin.js"></script>
+    </body>
 
-<script type="module" src="walkin.js"></script>
-</body>
+    
 </html>

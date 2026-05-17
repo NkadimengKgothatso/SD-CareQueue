@@ -1,21 +1,19 @@
 /* ============================================================
-   Walk-In Page Styles (Refined UI)
+   Walk-In Page Styles 
    ============================================================ */
 
 /* ── Base ─────────────────────────────────────────────────── */
 .walkin-main {
-    padding: 24px;
-    font-family: var(--font-body);
-    background: #f8fafc;
+    padding: 20px;
+    font-family: Arial, sans-serif;
 }
 
 .subtitle {
-    margin-top: -6px;
-    color: #64748b;
-    font-size: 13px;
+    margin-top: -10px;
+    color: #666;
 }
 
-/* ── Top Bar Logo FIX ─────────────────────────────────────── */
+/* ── Top Bar Logo FIX (IMPORTANT) ─────────────────────────── */
 .top-bar .logo-name {
     color: var(--clr-primary);
 }
@@ -24,19 +22,19 @@
     background: var(--clr-primary);
 }
 
+/* Ensure logo icons are not affected by global rules */
 .top-bar .logo i {
     color: white !important;
 }
 
 /* ── Page Titles ─────────────────────────────────────────── */
 .page-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
-    color: #0f172a;
+    color: #1a1a2e;
     display: flex;
     align-items: center;
-    gap: 10px;
-    letter-spacing: -0.02em;
+    gap: 8px;
 }
 
 .page-title i {
@@ -47,15 +45,13 @@
 .section-title {
     font-size: 14px;
     font-weight: 600;
-    color: #334155;
-    margin-bottom: 12px;
-    letter-spacing: 0.2px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    color: #1f2937;
+    margin-bottom: 10px;
+    letter-spacing: 0.3px;
 }
 
 .section-title i {
+    margin-right: 6px;
     color: var(--clr-primary);
 }
 
@@ -64,33 +60,27 @@
    ============================================================ */
 
 .queue-title {
-    margin-top: 22px;
+    margin-top: 20px;
     font-size: 14px;
-    font-weight: 600;
-    color: #475569;
+    letter-spacing: 0.5px;
 }
 
 /* ── Table ───────────────────────────────────────────────── */
 .queue-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 12px;
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-top: 10px;
 }
 
 /* Header */
 .queue-table th {
     text-align: left;
-    font-weight: 600;
-    padding: 12px;
+    font-weight: bold;
+    padding: 10px;
     font-size: 13px;
-    background: #f1f5f9;
-    color: #334155;
 }
 
+/* ONLY scoped icon styling (no global th i anymore) */
 .queue-table th i {
     margin-right: 6px;
     color: var(--clr-primary);
@@ -98,21 +88,15 @@
 
 /* Body */
 .queue-table td {
-    padding: 12px;
+    padding: 12px 10px;
     font-size: 13px;
-    color: #475569;
-    border-top: 1px solid #f1f5f9;
+    vertical-align: top;
 }
 
 /* Links */
 .queue-table a {
-    color: var(--clr-primary);
+    color: #00a3a3;
     text-decoration: none;
-    font-weight: 500;
-}
-
-.queue-table a:hover {
-    text-decoration: underline;
 }
 
 /* Hover row */
@@ -121,7 +105,7 @@
 }
 
 .queue-table tbody tr:hover {
-    background-color: #f0f9ff;
+    background-color: #e0f7ff;
     cursor: pointer;
 }
 
@@ -140,81 +124,77 @@
 }
 
 /* ============================================================
-   BADGE (Improved)
+   BADGE
    ============================================================ */
 .badge {
     margin-left: 8px;
-    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    background: #00bcd4;
     color: white;
     font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
 }
 
 /* ============================================================
    REGISTER SECTION
    ============================================================ */
 .register-section {
-    margin-top: 42px;
+    margin-top: 40px;
 }
 
 .register-form {
-    margin-top: 12px;
-    max-width: 420px;
+    margin-top: 10px;
+    max-width: 400px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
 
 .register-form label {
     font-size: 13px;
     font-weight: 500;
-    color: #334155;
-    margin-top: 10px;
+    color: #333;
+    margin-top: 12px;
 }
 
 .register-form input,
 .register-form select {
     width: 100%;
-    padding: 11px;
+    padding: 10px;
     margin-top: 6px;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
     font-size: 13px;
     transition: all 0.2s ease;
-    background: #fff;
 }
 
 .register-form input:focus,
 .register-form select:focus {
     outline: none;
     border-color: var(--clr-primary);
-    box-shadow: 0 0 0 3px rgba(69,132,196,0.15);
+    box-shadow: 0 0 0 2px rgba(69,132,196,0.15);
 }
 
 /* Button */
 .add-btn {
     margin-top: 18px;
-    background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-dark));
+    background: var(--clr-primary);
     color: white;
     border: none;
-    padding: 10px 16px;
+    padding: 8px 14px;
     cursor: pointer;
     font-weight: 600;
-    border-radius: 10px;
+    border-radius: 6px;
     width: fit-content;
     display: inline-block;
-    transition: 0.2s ease;
 }
 
 .add-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(24,95,165,0.25);
+    background: var(--clr-primary-dark);
 }
 
 /* ============================================================
-   MODAL (Refined)
+   MODAL
    ============================================================ */
 
 dialog {
@@ -226,24 +206,23 @@ dialog {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.5);
+    background: rgba(0,0,0,0.4);
     display: flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(4px);
 }
 
 .modal-card {
     background: white;
-    width: 380px;
-    border-radius: 14px;
-    padding: 22px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-    animation: pop 0.18s ease;
+    width: 360px;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    animation: pop 0.2s ease;
 }
 
 @keyframes pop {
-    from { transform: scale(0.96); opacity: 0; }
+    from { transform: scale(0.95); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
 }
 
@@ -261,45 +240,46 @@ dialog {
 
 .modal-message {
     font-size: 14px;
-    color: #475569;
+    color: #444;
     margin-bottom: 20px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
 }
 
 /* Buttons */
 .btn {
-    padding: 9px 14px;
-    border-radius: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
     border: none;
     cursor: pointer;
     font-weight: 600;
     font-size: 13px;
-    transition: 0.2s ease;
 }
 
 .cancel-btn {
-    background: #f1f5f9;
-    color: #334155;
-}
-
-.cancel-btn:hover {
-    background: #e2e8f0;
+    background: #eee;
 }
 
 .confirm-btn {
-    background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-dark));
+    background: var(--clr-primary);
     color: white;
 }
 
 .confirm-btn:hover {
-    transform: translateY(-1px);
+    background: var(--clr-primary-dark);
 }
 
 /* ============================================================
    DIALOG FIX
    ============================================================ */
+
 #confirmModal {
     border: none;
-    border-radius: 14px;
+    border-radius: 12px;
     padding: 0;
     position: fixed;
     top: 50%;
@@ -308,11 +288,11 @@ dialog {
 }
 
 #confirmModal::backdrop {
-    background: rgba(15, 23, 42, 0.5);
+    background: rgba(0, 0, 0, 0.4);
 }
 
 /* ============================================================
-   TABLE ICON FIX
+   TABLE ICON FIX (IMPORTANT)
    ============================================================ */
 th i {
     color: var(--clr-primary);
@@ -325,9 +305,5 @@ th i {
     .day-row {
         grid-template-columns: 1fr;
         gap: 10px;
-    }
-
-    .modal-card {
-        width: 92%;
     }
 }

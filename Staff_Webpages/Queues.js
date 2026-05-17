@@ -93,14 +93,14 @@ async function sendPositionTwoNotification(appointment) {
             appointment_date: appointment.date || "",
             appointment_time: appointment.time || ""
         });*/
-
+        const clinicName = appointment.clinicName?.trim() || "Clinic";
         await addDoc(collection(db, "Notifications"), {
             userID: appointment.userID,
             clinicID: Number(staffClinicID),
-            clinicName: appointment.clinicName || "Clinic",
+            clinicName: clinicName || "Clinic",
             type: "Appointment",
             title: "Appointment In An Hour!",
-            message: `Your ${appointment.reason || "appointment"} at ${appointment.clinicName || "the clinic"} is in an hour. You are position 2. Please make your way to the clinic.`,
+            message: `Your ${appointment.reason || "appointment"} at ${clinicName} is in an hour. You are position 2. Please make your way to the clinic.`,
             read: false,
             createdAt: serverTimestamp()
         });
@@ -193,6 +193,7 @@ function buildCard(appointment, positionLabel) {
 
     if (positionLabel === 2 && !appointment.emailSent && !sendingPositionTwo.has(appointment.id)) {
         sendingPositionTwo.add(appointment.id);
+        console.log("FINAL APPOINTMENT OBJECT:", appointment);
         sendPositionTwoNotification(appointment);
     }
 
@@ -371,13 +372,14 @@ async function syncAppointmentsToQueues(appointments) {
         updatedAt: serverTimestamp()
     }, { merge: true });
 
-
+    
 
     });
 
     try {
         await Promise.all(writes);
         console.log(`✅ Synced ${writes.length} appointments to Queues`);
+    
     } catch (err) {
         console.error("Failed to sync appointments to Queues:", err);
     }
@@ -415,6 +417,7 @@ function startQueueListeners() {
                 time:        d.time        || "",
                 patientEmail: d.patientEmail || "",
                 clinicID: d.clinicID || Number(staffClinicID),
+                clinicName: d.clinicName || "Clinic", // ADD THIS
                 status,
                 reason:      d.reason      || "",
                 patientName: d.patientName || d.name || null,
