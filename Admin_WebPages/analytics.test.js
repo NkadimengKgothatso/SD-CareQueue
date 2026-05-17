@@ -33,6 +33,9 @@ function buildDOM() {
 
     <form id="filterForm"></form>
 
+    <button id="exportCSV"></button>
+    <button id="exportPDF"></button>
+
     <input id="dateFrom" />
     <input id="dateTo" />
 
@@ -425,6 +428,77 @@ test("keyboard navigation does nothing when no rows are rendered", async () => {
   expect(() => {
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown" }));
   }).not.toThrow();
+});
+
+test("CSV export button downloads the currently filtered clinic analytics", async () => {
+  arrangeFirestore({
+    appointments: [
+      { id: "a1", clinicID: "c1", status: "cancelled", date: "2026-05-03" },
+      { id: "a2", clinicID: "c1", status: "completed", date: "2026-06-03" }
+    ],
+    queues: [
+      { id: "q1", clinicID: "c1", estimateWait: 10, date: "2026-05-03" },
+      { id: "q2", clinicID: "c1", estimateWait: 30, date: "2026-06-03" }
+    ],
+    clinics: [{ id: "c1", name: "Central Clinic" }]
+  });
+  URL.createObjectURL = jest.fn();
+  URL.revokeObjectURL = jest.fn();
+  const clickSpy = jest.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+  const createObjectURLSpy = jest.spyOn(URL, "createObjectURL").mockReturnValue("blob:analytics");
+  const revokeObjectURLSpy = jest.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+
+  await importAnalytics();
+
+  document.getElementById("dateFrom").value = "2026-05-01";
+  document.getElementById("dateTo").value = "2026-05-31";
+  document.getElementById("exportCSV").click();
+
+  const blob = createObjectURLSpy.mock.calls[0][0];
+  const csvText = await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsText(blob);
+  });
+  expect(csvText).toBe([
+    "Clinic,Avg Wait,Volume,No-Show Rate",
+    "Central Clinic,10.0,1,100.0%"
+  ].join("\n"));
+  expect(clickSpy).toHaveBeenCalled();
+  expect(revokeObjectURLSpy).toHaveBeenCalledWith("blob:analytics");
+
+  clickSpy.mockRestore();
+  createObjectURLSpy.mockRestore();
+  revokeObjectURLSpy.mockRestore();
+});
+
+test("PDF export button writes and prints an all-time clinic analytics report", async () => {
+  arrangeFirestore({
+    appointments: [{ id: "a1", clinicID: "c1", status: "completed", date: "2026-05-03" }],
+    queues: [{ id: "q1", clinicID: "c1", estimateWait: 12, date: "2026-05-03" }],
+    clinics: [{ id: "c1", name: "Central Clinic" }]
+  });
+  const reportWindow = {
+    document: {
+      write: jest.fn(),
+      close: jest.fn()
+    },
+    print: jest.fn()
+  };
+  const openSpy = jest.spyOn(window, "open").mockReturnValue(reportWindow);
+
+  await importAnalytics();
+
+  document.getElementById("exportPDF").click();
+
+  expect(openSpy).toHaveBeenCalledWith("", "_blank");
+  expect(reportWindow.document.write.mock.calls[0][0]).toContain("All time");
+  expect(reportWindow.document.write.mock.calls[0][0]).toContain("Central Clinic");
+  expect(reportWindow.document.write.mock.calls[0][0]).toContain("12.0");
+  expect(reportWindow.document.close).toHaveBeenCalled();
+  expect(reportWindow.print).toHaveBeenCalled();
+
+  openSpy.mockRestore();
 });
 
 test("calculatePatientsTrend returns positive, zero-baseline, and neutral trends", async () => {

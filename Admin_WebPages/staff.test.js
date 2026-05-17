@@ -58,7 +58,6 @@ function makeSnapshot(items = []) {
       data: () => data
     };
   });
-
   return {
     size: docs.length,
     forEach: (callback) => docs.forEach(callback)
