@@ -153,7 +153,7 @@
 
   <tr>
     <td>25</td>
-    <td>As a system, I want to prevent double booking of time slots so that appointment conflicts do not occur.</td>
+    <td>As a patient, I want appointment booking slots to align with the number of staff available on a specific day so that I can only book appointments when healthcare workers are available</td>
     <td>7</td>
   </tr>
 
