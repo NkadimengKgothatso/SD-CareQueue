@@ -1,9 +1,11 @@
 import { initAdminPage, db } from "/Admin_WebPages/admin.js";
-import {collection,getDocs} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { auth } from "/Admin_WebPages/admin.js";
-import { signOut as firebaseSignOut } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { collection, getDocs }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+import { auth } from "/Admin_WebPages/admin.js";
+
+import { signOut as firebaseSignOut }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 let clinics = [];
 let queues = [];
@@ -42,8 +44,12 @@ document.addEventListener("DOMContentLoaded", () => {
 ========================= */
 
 async function loadClinics() {
+
     try {
-        const snapshot = await getDocs(collection(db, "clinicsObjects"));
+
+        const snapshot = await getDocs(
+            collection(db, "clinicsObjects")
+        );
 
         clinics = snapshot.docs.map(doc => ({
             id: doc.id,
@@ -51,9 +57,11 @@ async function loadClinics() {
         }));
 
         dataLoaded.clinics = true;
+
         checkAndRender();
 
     } catch (err) {
+
         console.error("Error loading clinics:", err);
     }
 }
@@ -63,8 +71,12 @@ async function loadClinics() {
 ========================= */
 
 async function loadQueues() {
+
     try {
-        const snapshot = await getDocs(collection(db, "Queues"));
+
+        const snapshot = await getDocs(
+            collection(db, "Queues")
+        );
 
         queues = snapshot.docs.map(doc => ({
             id: doc.id,
@@ -72,9 +84,11 @@ async function loadQueues() {
         }));
 
         dataLoaded.queues = true;
+
         checkAndRender();
 
     } catch (err) {
+
         console.error("Error loading queues:", err);
     }
 }
@@ -84,8 +98,12 @@ async function loadQueues() {
 ========================= */
 
 async function loadAppointments() {
+
     try {
-        const snapshot = await getDocs(collection(db, "Appointments"));
+
+        const snapshot = await getDocs(
+            collection(db, "Appointments")
+        );
 
         appointments = snapshot.docs.map(doc => ({
             id: doc.id,
@@ -93,9 +111,11 @@ async function loadAppointments() {
         }));
 
         dataLoaded.appointments = true;
+
         checkAndRender();
 
     } catch (err) {
+
         console.error("Error loading appointments:", err);
     }
 }
@@ -105,11 +125,13 @@ async function loadAppointments() {
 ========================= */
 
 function checkAndRender() {
+
     if (
         dataLoaded.clinics &&
         dataLoaded.queues &&
         dataLoaded.appointments
     ) {
+
         renderStats();
         renderClinics();
     }
@@ -120,6 +142,7 @@ function checkAndRender() {
 ========================= */
 
 function setSubtitle() {
+
     const months = [
         "January","February","March","April","May","June",
         "July","August","September","October","November","December"
@@ -132,31 +155,105 @@ function setSubtitle() {
 }
 
 /* =========================
+   CLINIC OPEN CHECK
+========================= */
+
+function isClinicOpen(clinic) {
+
+    try {
+
+        const days = [
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday"
+        ];
+
+        const now = new Date();
+
+        const currentDay = days[now.getDay()];
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+        // convert clinic times
+        const [startHour, startMinute] =
+            (clinic.startTime || "00:00").split(":").map(Number);
+
+        const [endHour, endMinute] =
+            (clinic.endTime || "23:59").split(":").map(Number);
+
+        const startMinutes = startHour * 60 + startMinute;
+        const endMinutes = endHour * 60 + endMinute;
+
+        // convert allowed days into array
+        const allowedDays = [];
+
+        const startIndex = days.indexOf(clinic.startDay);
+        const endIndex = days.indexOf(clinic.endDay);
+
+        if (startIndex === -1 || endIndex === -1) {
+            return false;
+        }
+
+        // build allowed range safely
+        if (startIndex <= endIndex) {
+            for (let i = startIndex; i <= endIndex; i++) {
+                allowedDays.push(days[i]);
+            }
+        } else {
+            // handles wrap-around cases (rare but safe)
+            for (let i = startIndex; i < 7; i++) {
+                allowedDays.push(days[i]);
+            }
+            for (let i = 0; i <= endIndex; i++) {
+                allowedDays.push(days[i]);
+            }
+        }
+
+        const isDayOpen = allowedDays.includes(currentDay);
+
+        const isTimeOpen =
+            currentMinutes >= startMinutes &&
+            currentMinutes <= endMinutes;
+
+        return isDayOpen && isTimeOpen;
+
+    } catch (err) {
+        console.error("Clinic open check error:", err, clinic);
+        return false;
+    }
+}
+/* =========================
    STATS
 ========================= */
 
 function renderStats() {
 
-    // Active clinics = Active or Busy
+    // REAL active clinics based on time/day
     const activeClinics = clinics.filter(c =>
-        c.status === "Active" || c.status === "Busy"
+        isClinicOpen(c)
     ).length;
 
-    document.getElementById("activeClinics").textContent = activeClinics;
+    document.getElementById("activeClinics").textContent =
+        activeClinics;
 
-    // Patients seen = completed appointments
+    // Patients seen
     const patientsSeen = appointments.filter(a =>
         a.status === "completed"
     ).length;
 
-    document.getElementById("patientsSeen").textContent = patientsSeen;
+    document.getElementById("patientsSeen").textContent =
+        patientsSeen;
 
-    // Patients in queue = waiting status
+    // Patients waiting
     const patientsQueue = queues.filter(q =>
         q.status === "waiting"
     ).length;
 
-    document.getElementById("patientsQueue").textContent = patientsQueue;
+    document.getElementById("patientsQueue").textContent =
+        patientsQueue;
 }
 
 /* =========================
@@ -164,9 +261,11 @@ function renderStats() {
 ========================= */
 
 function getWaitingByClinic() {
+
     const map = {};
 
     queues.forEach(q => {
+
         if (!q.clinicID) return;
 
         if (!map[q.clinicID]) {
@@ -182,33 +281,48 @@ function getWaitingByClinic() {
 }
 
 /* =========================
-   RENDER CLINICS (SORTED)
+   RENDER CLINICS
 ========================= */
 
 function renderClinics(filteredClinics = clinics) {
 
-    const container = document.getElementById("clinicCards");
+    const container =
+        document.getElementById("clinicCards");
+
     container.innerHTML = "";
 
     if (!filteredClinics.length) {
-        container.innerHTML = `<section class="empty-state">No clinics found</section>`;
+
+        container.innerHTML =
+            `<section class="empty-state">
+                No clinics found
+            </section>`;
+
         return;
     }
 
     const waitingMap = getWaitingByClinic();
 
-    // SORT by queue size (descending)
+    // Sort by queue size
     const sorted = [...filteredClinics].sort((a, b) => {
-        return (waitingMap[b.id] || 0) - (waitingMap[a.id] || 0);
+        return (waitingMap[b.id] || 0) -
+               (waitingMap[a.id] || 0);
     });
 
     sorted.forEach(clinic => {
 
-        const waitingCount = waitingMap[clinic.id] || 0;
+        const waitingCount =
+            waitingMap[clinic.id] || 0;
 
-        const statusClass = (clinic.status || "Closed").toLowerCase();
+        const isOpen =
+            isClinicOpen(clinic);
 
-        const card = document.createElement("section");
+        const statusClass =
+            isOpen ? "active" : "closed";
+
+        const card =
+            document.createElement("section");
+
         card.classList.add("clinic");
 
         card.innerHTML = `
@@ -229,7 +343,7 @@ function renderClinics(filteredClinics = clinics) {
                 </section>
 
                 <p class="status-pill ${statusClass}">
-                    ${clinic.status || "Closed"}
+                    ${isOpen ? "Active" : "Closed"}
                 </p>
 
             </section>
@@ -238,11 +352,21 @@ function renderClinics(filteredClinics = clinics) {
 
                 <section class="OpenTimes">
                     <i class="fa-regular fa-clock"></i>
-                    <p>${clinic.startDay || "?"} – ${clinic.endDay || "?"} · ${clinic.startTime || "?"} – ${clinic.endTime || "?"}</p>
+
+                    <p>
+                        ${clinic.startDay || "?"}
+                        –
+                        ${clinic.endDay || "?"}
+                        ·
+                        ${clinic.startTime || "?"}
+                        –
+                        ${clinic.endTime || "?"}
+                    </p>
                 </section>
 
                 <section class="queueDisplay">
                     <i class="fa-solid fa-users"></i>
+
                     <p>
                         ${waitingCount}
                         patient${waitingCount !== 1 ? "s" : ""}
@@ -258,27 +382,37 @@ function renderClinics(filteredClinics = clinics) {
 }
 
 /* =========================
-   SEARCH (NAME + ADDRESS + STATUS)
+   SEARCH
 ========================= */
 
 function initSearch() {
 
-    const search = document.getElementById("clinicSearch");
+    const search =
+        document.getElementById("clinicSearch");
 
     search?.addEventListener("input", (e) => {
 
-        const value = e.target.value.toLowerCase().trim();
+        const value =
+            e.target.value.toLowerCase().trim();
 
         const filtered = clinics.filter(c => {
 
-            const name = (c.name || "").toLowerCase();
-            const address = (c.address || "").toLowerCase();
-            const status = (c.status || "").toLowerCase();
+            const name =
+                (c.name || "").toLowerCase();
+
+            const address =
+                (c.address || "").toLowerCase();
+
+            // REAL-TIME STATUS
+            const liveStatus =
+                isClinicOpen(c)
+                    ? "active"
+                    : "closed";
 
             return (
                 name.includes(value) ||
                 address.includes(value) ||
-                status.includes(value)
+                liveStatus.includes(value)
             );
         });
 
@@ -286,15 +420,26 @@ function initSearch() {
     });
 }
 
-// ================= SIGN OUT =================
+/* =========================
+   SIGN OUT
+========================= */
+
 window.signOut = async function () {
+
     try {
+
         await firebaseSignOut(auth);
+
         window.location.href = "/index.html";
+
     } catch (err) {
+
         console.error("Sign out failed:", err);
     }
 };
-document.getElementById("signOutBtn")?.addEventListener("click", () => {
+
+document.getElementById("signOutBtn")
+?.addEventListener("click", () => {
+
     window.signOut();
 });
