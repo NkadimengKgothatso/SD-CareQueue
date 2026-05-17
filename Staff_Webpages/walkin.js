@@ -158,6 +158,7 @@ function roundToNextSlot(minutes, slot) {
 // converts those strings into total minutes for comparison
 // defines a fixed time slot size of 30 minutes
 // gets the current time and converts it into total minutes for comparison
+// returns "CLOSED" immediately if the current time is already past the clinic's closing time
 // filters out invalid or cancelled appointments so they are not counted
 // stores all used appointment times in a set for quick lookup
 // starts searching from the next valid time slot after the current time
@@ -172,6 +173,12 @@ function getNextAvailableTime(appointments, startTime, endTime) {
 
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    // if the clinic is already closed for the day, return immediately
+    if (currentMinutes >= END) {
+        console.log(" CLINIC IS CLOSED");
+        return "CLOSED";
+    }
 
     console.log(" CURRENT TIME:", now.toString());
     console.log(" CURRENT MINUTES:", currentMinutes);
@@ -412,8 +419,13 @@ addBtn?.addEventListener("click", async () => {
 
         
 
-        if (assignedTime === "FULL") {   //full slots
-            alert("No available slots for today. Patient cannot be added.");
+        if (assignedTime === "CLOSED") {   //clinic is past closing time
+            alert(`${clinicName} is closed for today. No more walk-ins can be added.`);
+            return;
+        }
+
+        if (assignedTime === "FULL") {   //all slots within hours are booked
+            alert("No available slots for today. The clinic is fully booked.");
             return;
         }
 
@@ -508,8 +520,8 @@ onAuthStateChanged(auth, async (user) => {
             clinicName || "No clinic assigned";
     }
 
-    console.log("🏥 clinicId:", clinicId);
-    console.log("🏥 clinicName:", clinicName);
+    // console.log(" clinicId:", clinicId);
+    // console.log("clinicName:", clinicName);
 
     // ─── LOAD WALK-IN APPOINTMENTS ───────────────────
     loadAppointments();
