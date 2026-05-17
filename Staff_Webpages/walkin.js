@@ -73,6 +73,41 @@ async function getStaffProfile(email) {
     };
 }
 
+
+// CLINIC HOURS FETCH
+// fetches the clinic's startTime and endTime from the clinicsObjects collection
+// matches by the numeric clinic id stored on the staff profile
+// returns an object with startTime and endTime strings (e.g. "07:00", "18:00")
+// falls back to "08:00"/"17:00" if the clinic record cannot be found
+async function getClinicHours(id) {
+    try {
+        const snapshot = await getDocs(
+            query(
+                collection(db, "clinicsObjects"),
+                where("id", "==", id)
+            )
+        );
+
+        if (snapshot.empty) {
+            console.warn("Clinic record not found in clinicsObjects, using default hours");
+            return { startTime: "08:00", endTime: "17:00" };
+        }
+
+        const data = snapshot.docs[0].data();
+
+        console.log("🕐 Clinic hours fetched:", data.startTime, "→", data.endTime);
+
+        return {
+            startTime: data.startTime || "08:00",
+            endTime: data.endTime || "17:00"
+        };
+    } catch (err) {
+        console.error("Failed to fetch clinic hours:", err);
+        return { startTime: "08:00", endTime: "17:00" };
+    }
+}
+
+
 // takes a time string in the format "hh:mm"
 // splits it into hours and minutes
 // converts both parts into numbers
@@ -119,7 +154,9 @@ function roundToNextSlot(minutes, slot) {
 
 
 // finds the next available appointment time in the clinic schedule
-// defines clinic working hours (START to END) and fixed time slot size
+// accepts dynamic startTime and endTime strings (e.g. "07:00", "18:00") from the clinic record
+// converts those strings into total minutes for comparison
+// defines a fixed time slot size of 30 minutes
 // gets the current time and converts it into total minutes for comparison
 // filters out invalid or cancelled appointments so they are not counted
 // stores all used appointment times in a set for quick lookup
@@ -127,10 +164,10 @@ function roundToNextSlot(minutes, slot) {
 // loops through each slot and checks if it is already taken
 // returns the first available time slot in "hh:mm" format
 // returns "FULL" if no slots are available within working hours
-function getNextAvailableTime(appointments) {
+function getNextAvailableTime(appointments, startTime, endTime) {
 
-    const START = 8 * 60;
-    const END = 17 * 60;
+    const START = timeToMinutes(startTime);
+    const END = timeToMinutes(endTime);
     const SLOT = 30;
 
     const now = new Date();
@@ -138,6 +175,7 @@ function getNextAvailableTime(appointments) {
 
     console.log(" CURRENT TIME:", now.toString());
     console.log(" CURRENT MINUTES:", currentMinutes);
+    console.log(" CLINIC HOURS:", startTime, "→", endTime, `(${START}–${END} mins)`);
 
     // extract valid booked times
     const usedArray = appointments.filter(a =>
@@ -366,8 +404,9 @@ addBtn?.addEventListener("click", async () => {
         const count = walkinSnap.size + 1;
         const ticketNumber = `W-${String(count).padStart(3, "0")}`;
 
-        // 4. CORRECT SLOT CALCULATION (USES ALL APPOINTMENTS)
-        const assignedTime = getNextAvailableTime(existingAppointments);
+        // 4. FETCH DYNAMIC CLINIC HOURS THEN CALCULATE SLOT
+        const { startTime, endTime } = await getClinicHours(clinicId);
+        const assignedTime = getNextAvailableTime(existingAppointments, startTime, endTime);
 
         console.log(" ASSIGNED TIME RESULT:", assignedTime);
 
