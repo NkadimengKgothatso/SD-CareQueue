@@ -12,7 +12,6 @@ import {
     getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-
 // Firebase Config
 const firebaseConfig = {
     apiKey: "AIzaSyA8a7NhWrtgST9ZY68Dnvxhe8YDyfKqVOA",
@@ -27,7 +26,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-
 // DOM
 const tableBody = document.getElementById("walkinTable");
 const addBtn = document.querySelector(".add-btn");
@@ -37,69 +35,47 @@ const reasonInput = document.getElementById("reasonInput");
 const nameSurnameEl = document.querySelector(".name-Surname");
 const clinicEl = document.querySelector(".clinic-name");
 
-
 // STATE
 let clinicName = null;
 let clinicId = null;
+let clinicData = null; //  (clinic config stored here)
 let unsubscribe = null;
 
-
-
-// DATE HELPERS (NEW), HELPS WITH RESETTING TICKET NUMBERS DAILY
-
+// DATE HELPERS
 function getToday() {
-    return new Date().toISOString().split("T")[0];    //gets current day and time, splits them by T and takes only the date part ,
-                                                     //  e.g(2026-04-20T14:35:22.123Z)
+    return new Date().toISOString().split("T")[0];
 }
-
 
 // STAFF FETCH
 async function getStaffProfile(email) {
-
-    const cleanEmail = (email || "").trim().toLowerCase(); //cleans email input
-
-    const snapshot = await getDocs(collection(db, "ApprovedStaff"));  //get all documents from Appointment collection
+    const cleanEmail = (email || "").trim().toLowerCase();
+    const snapshot = await getDocs(collection(db, "ApprovedStaff"));
 
     const match = snapshot.docs.find(doc => {
         const data = doc.data();
-        return (data.email || "").trim().toLowerCase() === cleanEmail;   //goes through all documents to find matching email
+        return (data.email || "").trim().toLowerCase() === cleanEmail;
     });
 
     if (!match) return null;
 
     return {
         id: match.id,
-        ...match.data()      //else return all fields if found
+        ...match.data()
     };
 }
 
-// takes a time string in the format "hh:mm"
-// splits it into hours and minutes
-// converts both parts into numbers
-// calculates total minutes since midnight (hours * 60 + minutes)
+// TIME HELPERS
 function timeToMinutes(t) {
-    const [h, m] = t.split(":").map(Number);   //stores them in a map as numbers
+    const [h, m] = t.split(":").map(Number);
     return h * 60 + m;
 }
 
-
-// converts total minutes since midnight into a time string (hh:mm)
-// calculates hours by dividing minutes by 60 and removing the decimal part
-// calculates remaining minutes using modulus (remainder after division by 60)
-// ensures both hours and minutes are always 2 digits (adds leading zero if needed)
-// returns the formatted time string in "hh:mm" format
 function minutesToTime(m) {
     const h = String(Math.floor(m / 60)).padStart(2, "0");
     const mm = String(m % 60).padStart(2, "0");
     return `${h}:${mm}`;
 }
 
-
-// checks whether a given time slot is already taken by an existing appointment
-// loops through all appointments and checks if any appointment overlaps with the given time
-// converts each appointment time into minutes for easy comparison
-// returns true if the given time falls within an existing appointment slot
-// otherwise returns false if no overlap is found
 function isTaken(t, appointments, SLOT) {
     return appointments.some(a => {
         const start = timeToMinutes(a.time);
@@ -107,100 +83,45 @@ function isTaken(t, appointments, SLOT) {
     });
 }
 
-
-// rounds a given time (in minutes) up to the next available time slot
-// divides the minutes by the slot size to find how many slots have passed
-// uses Math.ceil to always round up to the next full slot
-// multiplies back by slot size to convert it back into minutes
-// ensures appointments always align to fixed intervals (e.g. 15 or 30 minutes)
 function roundToNextSlot(minutes, slot) {
     return Math.ceil(minutes / slot) * slot;
 }
 
+//  NOW USES CLINIC OBJECT
+function getNextAvailableTime(appointments, START, END) {
 
-// finds the next available appointment time in the clinic schedule
-// defines clinic working hours (START to END) and fixed time slot size
-// gets the current time and converts it into total minutes for comparison
-// filters out invalid or cancelled appointments so they are not counted
-// stores all used appointment times in a set for quick lookup
-// starts searching from the next valid time slot after the current time
-// loops through each slot and checks if it is already taken
-// returns the first available time slot in "hh:mm" format
-// returns "FULL" if no slots are available within working hours
-function getNextAvailableTime(appointments) {
-
-    const START = 8 * 60;
-    const END = 17 * 60;
     const SLOT = 30;
 
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-    console.log(" CURRENT TIME:", now.toString());
-    console.log(" CURRENT MINUTES:", currentMinutes);
-
-    // extract valid booked times
     const usedArray = appointments.filter(a =>
         a &&
         a.time &&
         (a.status || "").toLowerCase() !== "cancelled"
     );
 
-    console.log(" RAW APPOINTMENTS USED FOR SCHEDULING:", usedArray);
-
-    const used = new Set();
-
-    for (const a of usedArray) {
-        const mins = timeToMinutes(a.time);
-
-        // only consider valid clinic slots
-        if (mins >= START && mins < END) {
-            used.add(mins);
-        }
-    }
-
-    console.log(" USED SET:", [...used].map(minutesToTime));
-
-    // start from next valid slot AFTER current time
     let t = Math.max(
         START,
         Math.ceil(currentMinutes / SLOT) * SLOT
     );
 
-    console.log(" START SLOT:", minutesToTime(t));
+    while (t + SLOT <= END) {
 
-    while (t + SLOT <= END) {                                         //as long as the next slot does not go past the end slot
-
-        console.log(" CHECKING SLOT:", minutesToTime(t), "=>", t);  
-
-        if (!isTaken(t, usedArray, SLOT)) {        //Loops through time slots and returns the first available slot that is not already booked.
-            console.log(" SELECTED SLOT:", minutesToTime(t));
+        if (!isTaken(t, usedArray, SLOT)) {
             return minutesToTime(t);
         }
 
-        console.log(" BLOCKED SLOT:", minutesToTime(t));
-
-        t += SLOT;    //increment by 30
+        t += SLOT;
     }
 
-    console.log(" NO SLOT FOUND");
     return "FULL";
 }
 
-
-// LOAD APPOINTMENTS (ONLY WALK-INS TODAY)
-// loads today's walk-in appointments for the selected clinic in real time
-// exits early if no clinic is selected
-// removes previous realtime listener to avoid duplicate subscriptions
-// gets today's date and builds a Firestore query for walk-in appointments only
-// filters by clinic id, date, and walk-in status, then orders by creation time
-// listens to database changes in real time using onSnapshot
-// builds html table rows from the returned appointment data
-// displays fallback values when fields are missing (e.g. "-", "unknown")
-// updates the table body with the newly generated rows
+// LOAD APPOINTMENTS
 function loadAppointments() {
 
-    if (!clinicId) return;      //stop if clinicID is not found or valid
+    if (!clinicId) return;
 
     if (unsubscribe) unsubscribe();
 
@@ -214,13 +135,12 @@ function loadAppointments() {
         orderBy("createdAT", "asc")
     );
 
-    unsubscribe = onSnapshot(q, (snapshot) => {    //sets up a live connection to Firestore so your data updates 
-                                                  // automatically whenever something changes.
+    unsubscribe = onSnapshot(q, (snapshot) => {
 
         let rows = "";
         let index = 1;
 
-        snapshot.forEach(docSnap => {               //loop through each appointment, get the data
+        snapshot.forEach(docSnap => {
             const d = docSnap.data();
 
             rows += `
@@ -239,15 +159,7 @@ function loadAppointments() {
     });
 }
 
-
-// MODAL FOR CONFIRMING PATIENT
-
-// displays a confirmation modal dialog and returns a promise based on user choice
-// removes any existing confirmation modal to avoid duplicates
-// creates a new <dialog> element and sets its html content with message and buttons
-// appends the modal to the document body and displays it
-// if the user clicks cancel, the modal closes and the promise resolves to false
-// if the user clicks confirm, the modal closes and the promise resolves to true
+// CONFIRM MODAL
 function showConfirmModal(message) {
     return new Promise((resolve) => {
 
@@ -260,9 +172,7 @@ function showConfirmModal(message) {
 
         modal.innerHTML = `
             <article class="modal-card">
-
                 <header class="modal-header">
-                    <i class="fa-solid fa-triangle-exclamation warning-icon"></i>
                     <h2>Confirm Action</h2>
                 </header>
 
@@ -271,10 +181,9 @@ function showConfirmModal(message) {
                 </section>
 
                 <footer class="modal-actions">
-                    <button id="cancelBtn" class="btn cancel-btn">Cancel</button>
-                    <button id="okBtn" class="btn confirm-btn">Add Patient</button>
+                    <button id="cancelBtn">Cancel</button>
+                    <button id="okBtn">Add Patient</button>
                 </footer>
-
             </article>
         `;
 
@@ -295,10 +204,7 @@ function showConfirmModal(message) {
     });
 }
 
-
-// ADD WALK-IN (WITH TICKET SYSTEM)
-
-// handles adding a walk-in patient and assigning them a queue slot
+// ADD PATIENT
 addBtn?.addEventListener("click", async () => {
 
     const name = nameInput?.value.trim();
@@ -306,8 +212,6 @@ addBtn?.addEventListener("click", async () => {
 
     if (!name) return alert("Please enter patient name");
     if (!clinicId) return alert("Clinic not loaded yet");
-
-    console.log(" clinicId (before query):", clinicId, typeof clinicId);
 
     const confirmed = await showConfirmModal(
         `Add ${name} to ${clinicName} queue?`
@@ -319,11 +223,6 @@ addBtn?.addEventListener("click", async () => {
 
         const today = getToday();
 
-        console.log(" TODAY:", today);
-        console.log(" TYPE clinicId:", typeof clinicId);
-        console.log(" VALUE clinicId:", clinicId);
-
-        // 1. GET ALL APPOINTMENTS (FOR SCHEDULING)
         const allSnap = await getDocs(
             query(
                 collection(db, "Appointments"),
@@ -332,16 +231,6 @@ addBtn?.addEventListener("click", async () => {
             )
         );
 
-        console.log(" allSnap size:", allSnap.size);
-
-        allSnap.forEach(doc => {
-            const data = doc.data();
-            console.log(" DOC:", data);
-            console.log(" clinicID type:", typeof data.clinicID);
-            console.log(" clinicID value:", data.clinicID);
-        });
-
-        // 2. GET ONLY WALK-INS (FOR TICKET NUMBER)
         const walkinSnap = await getDocs(
             query(
                 collection(db, "Appointments"),
@@ -351,34 +240,23 @@ addBtn?.addEventListener("click", async () => {
             )
         );
 
-        console.log(" walkinSnap size:", walkinSnap.size);
-
-        // DEBUG: scheduling input
         const existingAppointments = allSnap.docs.map(d => d.data());
 
-        console.log("existingAppointments:", existingAppointments);
-
-        existingAppointments.forEach(a => {
-            console.log(" appointment clinicID:", a.clinicID, typeof a.clinicID);
-        });
-
-        // 3. TICKET NUMBER ONLY FOR WALK-INS
         const count = walkinSnap.size + 1;
         const ticketNumber = `W-${String(count).padStart(3, "0")}`;
 
-        // 4. CORRECT SLOT CALCULATION (USES ALL APPOINTMENTS)
-        const assignedTime = getNextAvailableTime(existingAppointments);
+        //  USE CLINIC HOURS
+        const START = timeToMinutes(clinicData.startTime);
+        const END = timeToMinutes(clinicData.endTime);
 
-        console.log(" ASSIGNED TIME RESULT:", assignedTime);
+        const assignedTime = getNextAvailableTime(existingAppointments, START, END);
 
-        
-
-        if (assignedTime === "FULL") {   //full slots
-            alert("No available slots for today. Patient cannot be added.");
+        if (assignedTime === "FULL") {
+            alert("No available slots for today.");
             return;
         }
 
-        await addDoc(collection(db, "Appointments"), {             //adds the new appointment
+        await addDoc(collection(db, "Appointments"), {
             clinicID: clinicId,
             patientName: name,
             reason,
@@ -399,91 +277,34 @@ addBtn?.addEventListener("click", async () => {
     }
 });
 
-
-// AUTH BOOTSTRAP (UNCHANGED)
-// This listens for authentication state changes (login/logout)
-// When a user logs in, it fetches their staff profile from the database
-// It then stores their clinic information and updates the UI accordingly
-// If no user is logged in, it resets the display to default values
-
+// AUTH
 onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-        if (nameSurnameEl) nameSurnameEl.textContent = "Staff";
-        if (clinicEl) clinicEl.textContent = "";
 
+    if (!user) {
         clinicId = null;
         clinicName = null;
-
+        clinicData = null;
         if (unsubscribe) unsubscribe();
-
         return;
     }
 
-    // ─── STAFF SIDEBAR UI ─────────────────────────────
-    const staffName = user.displayName || "Staff";
-
-    if (nameSurnameEl) {
-        nameSurnameEl.textContent = staffName;
-    }
-
-    if (clinicEl) {
-        clinicEl.textContent = "Loading clinic...";
-    }
-
-    const staffEmailEl = document.getElementById("staffEmail");
-    const staffAvatarEl = document.getElementById("staffAvatar");
-    const staffNameFooterEl = document.getElementById("staffName");
-
-    if (staffEmailEl) {
-        staffEmailEl.textContent = user.email;
-    }
-
-    if (staffNameFooterEl) {
-        staffNameFooterEl.textContent = staffName;
-    }
-
-    if (staffAvatarEl) {
-        const initials = staffName
-            .split(" ")
-            .map(n => n[0])
-            .join("")
-            .toUpperCase();
-
-        staffAvatarEl.textContent = initials;
-    }
-
-    // ─── FETCH STAFF PROFILE ─────────────────────────
     const staff = await getStaffProfile(user.email);
 
-    if (!staff) {
-        console.warn("No staff profile found");
-        return;
-    }
+    if (!staff) return;
 
-    // ─── SET CLINIC INFO ─────────────────────────────
     clinicId = Number(staff.clinicId);
     clinicName = staff.clinicName;
 
+    //  FETCH CLINIC OBJECT
+    const clinicSnap = await getDocs(
+        query(collection(db, "Clinics"), where("id", "==", clinicId))
+    );
+
+    clinicData = clinicSnap.docs[0]?.data();
+
     if (clinicEl) {
-        clinicEl.textContent =
-            clinicName || "No clinic assigned";
+        clinicEl.textContent = clinicName;
     }
 
-    console.log("🏥 clinicId:", clinicId);
-    console.log("🏥 clinicName:", clinicName);
-
-    // ─── LOAD WALK-IN APPOINTMENTS ───────────────────
     loadAppointments();
 });
-
-export {
-  getToday,
-  getStaffProfile,
-  timeToMinutes,
-  minutesToTime,
-  isTaken,
-  roundToNextSlot,
-  getNextAvailableTime,
-  loadAppointments,
-  showConfirmModal
-};
