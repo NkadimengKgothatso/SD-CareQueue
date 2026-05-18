@@ -589,7 +589,7 @@ test("confirm booking stops when no staff are available for that day", async () 
 test("confirm booking saves appointment, notification, and resets the form", async () => {
   const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
   arrangeFirestore({
-    clinics: [{ __docId: "1", name: "Alpha Clinic" }],
+    clinics: [{ __docId: "1", name: "Alpha Clinic", service: ["Checkup"] }],
     bookedTimes: []
   });
   await load();
@@ -661,7 +661,7 @@ test("confirm booking shows an error when saving fails", async () => {
 test("reschedule mode loads appointment values and updates the existing appointment", async () => {
   const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
   arrangeFirestore({
-    clinics: [{ __docId: "1", name: "Alpha Clinic" }],
+    clinics: [{ __docId: "1", name: "Alpha Clinic", service: ["Dentist"] }],
     appointmentForReschedule: {
       clinicID: 1,
       date: "2026-05-13",

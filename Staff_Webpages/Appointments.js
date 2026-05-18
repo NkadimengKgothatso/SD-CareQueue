@@ -161,7 +161,7 @@ function buildCard(appt) {
                 ${estimatedWait ? `
                 <li class="meta-item">
                     <i class="fa-solid fa-hourglass-half meta-icon"></i>
-                    section wait: ${estimatedWait}
+                    Estimated wait: ${estimatedWait}
                 </li>` : ""}
             </ul>
 

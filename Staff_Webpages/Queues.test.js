@@ -96,6 +96,10 @@ beforeEach(() => {
   mockOnSnapshot.mockImplementation(() => jest.fn());
   mockGetDocs.mockResolvedValue(snapshotFrom([]));
   mockGetDoc.mockResolvedValue({ exists: () => false, data: () => ({}) });
+  global.fetch = jest.fn(() => Promise.resolve({
+    ok: false,
+    json: () => Promise.resolve({})
+  }));
   global.alert = jest.fn();
 });
 
@@ -290,7 +294,6 @@ test("syncAppointmentsToQueues writes active and completed queue snapshots", asy
       appointmentId: "a1",
       clinicID: 4,
       position: 2,
-      estimateWait: 15,
       updatedAt: "TIMESTAMP"
     }),
     { merge: true }
@@ -299,11 +302,11 @@ test("syncAppointmentsToQueues writes active and completed queue snapshots", asy
     "Queues/a2",
     expect.objectContaining({
       position: null,
-      estimateWait: null,
       isWalkIn: true
     }),
     { merge: true }
   );
+  expect(mockUpdateDoc).toHaveBeenCalledWith("Queues/a1", { estimateWait: 14 });
   expect(consoleSpy).toHaveBeenCalledWith("✅ Synced 2 appointments to Queues");
 });
 
@@ -346,20 +349,22 @@ test("mergeAndRender deduplicates appointments, resolves names, assigns position
     { id: "w1", time: "08:30", status: "waiting", patientName: "Walk In", reason: "Walkin" },
     { id: "r1", time: "09:00", status: "waiting", patientName: "Duplicate" }
   ]));
-  await flushPromises(8);
+  await flushPromises(20);
 
   expect(document.getElementById("upcoming").textContent).toContain("Fetched Regular");
   expect(document.getElementById("upcoming").textContent).toContain("Walk In");
   expect(mockSetDoc).toHaveBeenCalledWith(
     "Queues/w1",
-    expect.objectContaining({ position: 1, estimateWait: 0 }),
+    expect.objectContaining({ position: 1 }),
     { merge: true }
   );
   expect(mockSetDoc).toHaveBeenCalledWith(
     "Queues/r1",
-    expect.objectContaining({ position: 2, estimateWait: 15 }),
+    expect.objectContaining({ position: 2 }),
     { merge: true }
   );
+  expect(mockUpdateDoc).toHaveBeenCalledWith("Queues/w1", { estimateWait: 0 });
+  expect(mockUpdateDoc).toHaveBeenCalledWith("Queues/r1", { estimateWait: 14 });
 });
 
 test("mergeAndRender reuses cached names, handles lookup failures, and clears positions for done records", async () => {
@@ -388,13 +393,13 @@ test("mergeAndRender reuses cached names, handles lookup failures, and clears po
     { id: "done-record", time: "09:00", status: "completed", patientName: "Done Person" }
   ]));
   walkinSuccess(snapshotFrom([]));
-  await flushPromises(8);
+  await flushPromises(20);
 
   expect(document.getElementById("upcoming").textContent).toContain("Cached Name");
   expect(consoleSpy).toHaveBeenCalledWith("Failed to fetch patient name:", expect.any(Error));
   expect(mockSetDoc).toHaveBeenCalledWith(
     "Queues/done-record",
-    expect.objectContaining({ position: null, estimateWait: null }),
+    expect.objectContaining({ position: null }),
     { merge: true }
   );
 });

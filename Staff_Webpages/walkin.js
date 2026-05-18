@@ -478,6 +478,7 @@ onAuthStateChanged(auth, async (user) => {
 
 export {
   getToday,
+  getStaffProfile,
   timeToMinutes,
   minutesToTime,
   isTaken,
