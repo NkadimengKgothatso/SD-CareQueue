@@ -283,12 +283,15 @@ window.addEventListener("DOMContentLoaded", () => {
             }
 
             // Display current date in local South African format
-            dateEl.textContent = new Date().toLocaleDateString("en-ZA", {
-                weekday: "long",
-                year:    "numeric",
-                month:   "long",
-                day:     "numeric"
-            });
+                      
+            if (dateEl) {
+                dateEl.textContent = new Date().toLocaleDateString("en-ZA", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
+                });
+            }
 
             // Load and display patient's appointments
             await loadAppointments(user.uid);
