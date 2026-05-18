@@ -733,3 +733,22 @@ select:focus-visible {
         font-size: 11px;
     }
 }
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 72px;
+    }
+
+    .logo-name,
+    .nav-item section:not(.nav-dot),
+    .user-details {
+        display: none;
+    }
+
+    .main-content {
+        margin-left: 72px;
+        padding: 16px;
+    }
+}
