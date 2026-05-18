@@ -453,9 +453,6 @@ select:focus-visible {
 /* ══════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════ */
-
-
-/* Mobile — sidebar always visible, stacked above content */
 @media (max-width: 640px) {
 
     .admin-container {
@@ -487,27 +484,11 @@ select:focus-visible {
         border-radius: 10px;
     }
 
-    /* Active item — blue pill like in the screenshot */
-    .nav-item.active {
-        background: #2563eb;       /* blue pill */
-        color: #ffffff;
-        box-shadow: none;
+    .logo-name,
+    .nav-item section:not(.nav-dot),
+    .user-details {
+        display: none;
     }
-
-    .nav-item.active .nav-dot {
-        background: #ffffff;
-    }
-
-    /* Always show text labels */
-    .nav-item span:not(.nav-dot) {
-        display: block !important;
-    }
-
-    /* User info row in footer */
-    .sidebar-footer .user-details {
-        display: flex !important;
-    }
-
     /* Main content takes full width below sidebar */
     .main-content {
         margin-left: 0;
@@ -515,11 +496,5 @@ select:focus-visible {
         width: 100%;
         padding: 20px 16px;
     }
-}
 
-@media (max-width: 480px) {
-    .sidebar {
-        top: auto;
-        height: auto;
-    }
 }
