@@ -65,6 +65,25 @@ async function load() {
   return mod;
 }
 
+function arrangeFirestore({
+  staff = [],
+  clinicData = [],
+  appointments = [],
+  walkins = []
+} = {}) {
+  mockGetDocs.mockImplementation((ref) => {
+    if (ref.name === "ApprovedStaff") return Promise.resolve(snapshotFrom(staff));
+    if (ref.name === "clinicsObjects") return Promise.resolve(snapshotFrom(clinicData));
+    if (ref.name === "Appointments") {
+      const isWalkinQuery = ref.constraints?.some((constraint) =>
+        constraint.field === "isWalkIn"
+      );
+      return Promise.resolve(snapshotFrom(isWalkinQuery ? walkins : appointments));
+    }
+    return Promise.resolve(snapshotFrom([]));
+  });
+}
+
 beforeEach(() => {
   jest.resetModules();
   jest.clearAllMocks();
@@ -96,7 +115,7 @@ beforeEach(() => {
   HTMLDialogElement.prototype.close = jest.fn();
 
   mockOnAuthStateChanged.mockImplementation(() => jest.fn());
-  mockGetDocs.mockResolvedValue(snapshotFrom([]));
+  arrangeFirestore();
   mockOnSnapshot.mockImplementation(() => jest.fn());
 });
 
@@ -131,10 +150,10 @@ test("getNextAvailableTime skips booked slots, ignores cancelled and invalid tim
     { time: "08:00", status: "waiting" },
     { time: "08:30", status: "cancelled" },
     { time: "07:30", status: "waiting" }
-  ])).toBe("08:30");
+  ], "08:00", "17:00")).toBe("08:30");
 
   jest.setSystemTime(new Date("2026-05-09T16:45:00"));
-  expect(getNextAvailableTime([{ time: "16:30", status: "waiting" }])).toBe("FULL");
+  expect(getNextAvailableTime([{ time: "16:30", status: "waiting" }], "08:00", "17:00")).toBe("FULL");
 });
 
 test("getStaffProfile matches email case-insensitively and returns null when absent", async () => {
@@ -149,7 +168,7 @@ test("getStaffProfile matches email case-insensitively and returns null when abs
     clinicName: "Central Clinic"
   });
 
-  mockGetDocs.mockResolvedValue(snapshotFrom([]));
+  arrangeFirestore();
   await expect(getStaffProfile("missing@test.com")).resolves.toBeNull();
 });
 
@@ -214,9 +233,10 @@ async function loadWithStaffProfile() {
     callback({ email: "staff@test.com", displayName: "Jane Staff" });
     return jest.fn();
   });
-  mockGetDocs.mockResolvedValueOnce(snapshotFrom([
-    { id: "staff", email: "staff@test.com", clinicId: 7, clinicName: "Central Clinic" }
-  ]));
+  arrangeFirestore({
+    staff: [{ id: "staff", email: "staff@test.com", clinicId: 7, clinicName: "Central Clinic" }],
+    clinicData: [{ id: "clinic", startTime: "08:00", endTime: "17:00", service: ["Checkup"] }]
+  });
   await load();
   await flushPromises();
 }
@@ -236,13 +256,11 @@ test("add button cancels when confirmation is declined", async () => {
 test("add button creates a walk-in appointment with next ticket and slot", async () => {
   await loadWithStaffProfile();
 
-  mockGetDocs
-    .mockResolvedValueOnce(snapshotFrom([
-      { id: "existing", time: "08:00", status: "waiting", clinicID: 7 }
-    ]))
-    .mockResolvedValueOnce(snapshotFrom([
-      { id: "walkin-1", isWalkIn: true }
-    ]));
+  arrangeFirestore({
+    appointments: [{ id: "existing", time: "08:00", status: "waiting", clinicID: 7 }],
+    walkins: [{ id: "walkin-1", isWalkIn: true }],
+    clinicData: [{ id: "clinic", startTime: "08:00", endTime: "17:00", service: ["Checkup"] }]
+  });
 
   document.getElementById("nameInput").value = " New Patient ";
   document.getElementById("reasonInput").value = "Checkup";
@@ -272,17 +290,18 @@ test("add button creates a walk-in appointment with next ticket and slot", async
 test("add button blocks when the day is full", async () => {
   await loadWithStaffProfile();
   jest.setSystemTime(new Date("2026-05-09T16:45:00"));
-  mockGetDocs
-    .mockResolvedValueOnce(snapshotFrom([{ id: "existing", time: "16:30", status: "waiting" }]))
-    .mockResolvedValueOnce(snapshotFrom([]));
+  arrangeFirestore({
+    appointments: [{ id: "existing", time: "16:30", status: "waiting" }],
+    clinicData: [{ id: "clinic", startTime: "08:00", endTime: "17:00", service: ["Checkup"] }]
+  });
 
   document.getElementById("nameInput").value = "Late Patient";
   document.querySelector(".add-btn").click();
   await flushPromises();
   document.getElementById("okBtn").click();
-  await flushPromises();
+  await flushPromises(8);
 
-  expect(global.alert).toHaveBeenCalledWith("No available slots for today. Patient cannot be added.");
+  expect(global.alert).toHaveBeenCalledWith("No available slots for today. The clinic is fully booked.");
   expect(mockAddDoc).not.toHaveBeenCalled();
 });
 
@@ -290,16 +309,16 @@ test("add button reports Firestore write failures", async () => {
   const error = new Error("add failed");
   const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
   await loadWithStaffProfile();
-  mockGetDocs
-    .mockResolvedValueOnce(snapshotFrom([]))
-    .mockResolvedValueOnce(snapshotFrom([]));
+  arrangeFirestore({
+    clinicData: [{ id: "clinic", startTime: "08:00", endTime: "17:00", service: ["Checkup"] }]
+  });
   mockAddDoc.mockRejectedValueOnce(error);
 
   document.getElementById("nameInput").value = "Error Patient";
   document.querySelector(".add-btn").click();
   await flushPromises();
   document.getElementById("okBtn").click();
-  await flushPromises();
+  await flushPromises(8);
 
   expect(consoleSpy).toHaveBeenCalledWith(error);
   expect(global.alert).toHaveBeenCalledWith("Failed to add patient");
@@ -349,6 +368,5 @@ test("auth bootstrap fills staff sidebar and clinic label", async () => {
   expect(document.getElementById("staffEmail").textContent).toBe("staff@test.com");
   expect(document.getElementById("staffAvatar").textContent).toBe("JS");
   expect(document.querySelector(".clinic-name").textContent).toBe("Central Clinic");
-  expect(console.log).toHaveBeenCalledWith("🏥 clinicId:", 7);
-  expect(console.log).toHaveBeenCalledWith("🏥 clinicName:", "Central Clinic");
+  expect(document.getElementById("reasonInput").value).toBe("Checkup");
 });
