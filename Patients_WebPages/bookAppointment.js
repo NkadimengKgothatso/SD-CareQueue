@@ -119,46 +119,105 @@ async function getBookedSlots(db, selectedDate, selectedClinic) {
     return fullyBookedSlots;
 }
 
-//getting clinic time slots
-async function getClinicWorkingHours(selectedClinic) {
-    const clinicRef = doc(db, "clinicsObjects", String(selectedClinic));
-    const clinicSnap = await getDoc(clinicRef);
 
-    if (!clinicSnap.exists()) {
+// Get clinic working hours based on staff availability
+async function getClinicWorkingHours(selectedClinic, dayName) {
+
+    const q = query(
+        collection(db, "StaffAvailability"),
+        where("clinicID", "==", Number(selectedClinic))
+    );
+
+    const snapshot = await getDocs(q);
+
+  
+    let earliestStart = null;
+    let latestEnd = null;
+    let hasWorkingStaff = false;
+
+    // Loop through all staff records
+    snapshot.forEach((doc) => {
+
+    const data = doc.data();
+
+    // Get the selected day's schedule from the schedule object
+    const dayData = data.schedule?.[dayName];
+
+  
+
+    if (!dayData) {
+        return;
+    }
+
+    if (dayData.isWorking === true) {
+        hasWorkingStaff = true;
+
+        if (!earliestStart || dayData.start < earliestStart) {
+            earliestStart = dayData.start;
+        }
+
+        if (!latestEnd || dayData.end > latestEnd) {
+            latestEnd = dayData.end;
+        }
+    }
+    });
+
+    // If no staff are working return null values
+    if (!hasWorkingStaff) {
         return {
-            startTime: "08:00",
-            endTime: "17:00"
+            startTime: null,
+            endTime: null
         };
     }
 
-    const clinicData = clinicSnap.data();
-
+    // Return clinic operating hours for that day
     return {
-        startTime: clinicData.startTime || "08:00",
-        endTime: clinicData.endTime || "17:00"
+        startTime: earliestStart,
+        endTime: latestEnd
     };
 }
+
+
+
+
+
 
 //Display Time Slots
 async function renderTimeSlots(selectedDate, selectedClinic) {
     timeSlotsContainer.innerHTML = "";
 
-    const { startTime, endTime } = await getClinicWorkingHours(selectedClinic);
-
-    const [startHour, startMinute] = startTime.split(":").map(Number);
-    const [endHour, endMinute] = endTime.split(":").map(Number);
-
+    // Get selected day name from the selected date
     const dateObj = new Date(selectedDate);
     const dayName = dateObj
         .toLocaleDateString("en-US", { weekday: "long" })
         .toLowerCase();
 
+    // Get clinic working hours for the selected day
+    const { startTime, endTime } = await getClinicWorkingHours(
+        selectedClinic,
+        dayName
+    );
+  
+
+
+    // If no staff are working on this day, show a message
+    if (!startTime || !endTime) {
+        timeSlotsContainer.innerHTML =
+            "<p>No staff available for this day.</p>";
+        return;
+    }
+
+    const [startHour, startMinute] = startTime.split(":").map(Number);
+    const [endHour, endMinute] = endTime.split(":").map(Number);
+
+    // Count how many staff members are available on this day
     const availableStaff = await getStaffAvailableForDay(
         db,
         selectedClinic,
         dayName
     );
 
+    // Get all appointments for the selected clinic and date
     const q = query(
         collection(db, "Appointments"),
         where("date", "==", selectedDate),
@@ -169,6 +228,7 @@ async function renderTimeSlots(selectedDate, selectedClinic) {
 
     const slotCounts = {};
 
+    // Count bookings per time slot
     snapshot.forEach(doc => {
         const data = doc.data();
 
@@ -177,58 +237,60 @@ async function renderTimeSlots(selectedDate, selectedClinic) {
         }
     });
 
-    let current = new Date();
+    const current = new Date();
     current.setHours(startHour, startMinute, 0, 0);
 
     const end = new Date();
     end.setHours(endHour, endMinute, 0, 0);
 
- const now = new Date();
-const today = now.toLocaleDateString("en-CA");
+    const now = new Date();
+    const today = now.toLocaleDateString("en-CA");
 
-while (current < end) {
-    const hour = current.getHours();
-    const minute = current.getMinutes();
+    while (current <= end) {
+        const hour = current.getHours();
+        const minute = current.getMinutes();
 
-    const formattedTime = formatTime(hour, minute);
+        const formattedTime = formatTime(hour, minute);
 
-    const slotBtn = document.createElement("button");
-    slotBtn.classList.add("time-slot");
-    slotBtn.textContent = formattedTime;
+        const slotBtn = document.createElement("button");
+        slotBtn.classList.add("time-slot");
+        slotBtn.textContent = formattedTime;
 
-    let isPast = false;
+        let isPast = false;
 
-    if (selectedDate === today) {
-        const slotTime = new Date();
-        slotTime.setHours(hour, minute, 0, 0);
+        // Disable past times only if the selected date is today
+        if (selectedDate === today) {
+            const slotTime = new Date();
+            slotTime.setHours(hour, minute, 0, 0);
 
-        if (slotTime <= now) {
-            isPast = true;
+            if (slotTime <= now) {
+                isPast = true;
+            }
         }
+
+        const bookingsForThisSlot = slotCounts[formattedTime] || 0;
+        const isFullyBooked = bookingsForThisSlot >= availableStaff;
+
+        // Disable slot if it is past, fully booked, or no staff are available
+        if (isFullyBooked || isPast || availableStaff === 0) {
+            slotBtn.classList.add("disabled-slot");
+            slotBtn.disabled = true;
+        }
+
+        slotBtn.addEventListener("click", () => {
+            if (slotBtn.disabled) return;
+
+            document.querySelectorAll(".time-slot")
+                .forEach(btn => btn.classList.remove("selected"));
+
+            slotBtn.classList.add("selected");
+            selectedTimeInput.value = formattedTime;
+        });
+
+        timeSlotsContainer.appendChild(slotBtn);
+
+        current.setMinutes(current.getMinutes() + 30);
     }
-
-    const bookingsForThisSlot = slotCounts[formattedTime] || 0;
-    const isFullyBooked = bookingsForThisSlot >= availableStaff;
-
-    if (isFullyBooked || isPast || availableStaff === 0) {
-        slotBtn.classList.add("disabled-slot");
-        slotBtn.disabled = true;
-    }
-
-    slotBtn.addEventListener("click", () => {
-        if (slotBtn.disabled) return;
-
-        document.querySelectorAll(".time-slot")
-            .forEach(btn => btn.classList.remove("selected"));
-
-        slotBtn.classList.add("selected");
-        selectedTimeInput.value = formattedTime;
-    });
-
-    timeSlotsContainer.appendChild(slotBtn);
-
-    current.setMinutes(current.getMinutes() + 30);
-}
 }
 
 function formatTime(hour, minute) {
@@ -781,7 +843,7 @@ const rescheduleBtn = document.querySelector(".reschedule-Button");
 
 if (rescheduleBtn) {
     rescheduleBtn.addEventListener("click", () => {
-        console.log("Reschedule clicked - step 2 ready");
+      
     });
 }
 // ================= highlight active page =================
