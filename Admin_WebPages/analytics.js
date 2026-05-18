@@ -194,12 +194,13 @@ function buildDashboard(from = null, to = null) {
 
 // ================= GLOBAL NO-SHOW RATE =================
 function getGlobalNoShowRate(list) {
-    const total = list.length;
-    if (!total) return "0.0%";
-
     const cancelled = list.filter(a => a.status === "cancelled").length;
+    const completed = list.filter(a => a.status === "completed").length;
+    const resolved = completed + cancelled;
 
-    return ((cancelled / total) * 100).toFixed(1) + "%";
+    if (!resolved) return "0.0%";
+
+    return ((cancelled / resolved) * 100).toFixed(1) + "%";
 }
 
 // ================= KPIs =================
@@ -269,12 +270,14 @@ function getNoShowRateByClinic(list) {
 
         if (!result[clinic]) {
             result[clinic] = {
-                total: 0,
+                completed: 0,
                 cancelled: 0
             };
         }
 
-        result[clinic].total += 1;
+        if (a.status === "completed") {
+            result[clinic].completed += 1;
+        }
 
         if (a.status === "cancelled") {
             result[clinic].cancelled += 1;
@@ -283,7 +286,29 @@ function getNoShowRateByClinic(list) {
 
     Object.keys(result).forEach(clinic => {
         const r = result[clinic];
-        r.rate = r.total ? ((r.cancelled / r.total) * 100).toFixed(1) : "0.0";
+        const resolved = r.completed + r.cancelled;
+        r.rate = resolved > 0 ? ((r.cancelled / resolved) * 100).toFixed(1) : "0.0";
+    });
+
+    return result;
+}
+
+// ================= COMPLETED APPOINTMENTS PER CLINIC =================
+// counts only appointments with status "completed" for each clinic
+// this is used as the volume figure — actual patients seen, not queue entries
+function getCompletedByClinic(list) {
+    const result = {};
+
+    list.forEach(a => {
+        const clinic = a.clinicID;
+
+        if (!result[clinic]) {
+            result[clinic] = { completed: 0 };
+        }
+
+        if (a.status === "completed") {
+            result[clinic].completed += 1;
+        }
     });
 
     return result;
@@ -312,20 +337,18 @@ function getCurrentExportData(from, to) {
     );
 
     const noShowStats = getNoShowRateByClinic(filteredAppointments);
+    const completedStats = getCompletedByClinic(filteredAppointments);
 
     return clinics.map(clinic => {
 
-        const q = queueStats[clinic.id] || {
-            total: 0,
-            totalWait: 0
-        };
-
+        const q = queueStats[clinic.id] || { total: 0, totalWait: 0 };
         const n = noShowStats[clinic.id] || { rate: "0.0" };
+        const c = completedStats[clinic.id] || { completed: 0 };
 
         return {
             clinic: clinic.name,
             avgWait: q.total > 0 ? (q.totalWait / q.total).toFixed(1) : "0.0",
-            volume: q.total,
+            volume: c.completed,
             noShowRate: n.rate + "%"
         };
     });
@@ -448,6 +471,7 @@ function renderDashboard(from = null, to = null) {
 
     const queueStats = getQueueAnalytics(data.queues);
     const noShowStats = getNoShowRateByClinic(data.appointments);
+    const completedStats = getCompletedByClinic(data.appointments);
 
     const tbody = document.getElementById("waitTableBody");
     tbody.innerHTML = "";
@@ -462,6 +486,7 @@ function renderDashboard(from = null, to = null) {
         };
 
         const n = noShowStats[clinic.id] || { rate: "0.0" };
+        const c = completedStats[clinic.id] || { completed: 0 };
         const color = getRateColor(n.rate);
 
         const row = document.createElement("tr");
@@ -469,7 +494,7 @@ function renderDashboard(from = null, to = null) {
         row.innerHTML = `
             <td>${clinic.name}</td>
             <td>${q.total > 0 ? (q.totalWait / q.total).toFixed(1) : "0.0"} min</td>
-            <td>${q.total}</td>
+            <td>${c.completed}</td>
             <td style="color:${color}; font-weight:600;">
                 ${n.rate}%
             </td>
