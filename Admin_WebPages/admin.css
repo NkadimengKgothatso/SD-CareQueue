@@ -387,23 +387,141 @@ body {
     padding: 48px;
     color: var(--color-text-tertiary);
 }
-
 /* ══════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════ */
+
+/* ── Tablet (768px and below) ──────────── */
 @media (max-width: 768px) {
-    .sidebar {
-        width: 72px;
+
+    .admin-container {
+        flex-direction: column;
+        margin-top: 56px;
     }
 
+    .top-bar {
+        height: 56px;
+        padding: 0 20px;
+    }
+
+    /* Sidebar always visible, stacked below top bar */
+    .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        box-shadow: none;
+        border-right: none;
+        border-bottom: 1px solid var(--color-border-tertiary);
+    }
+
+    .sidebar-header {
+        padding: 14px 20px;
+    }
+
+    .sidebar-nav {
+        padding: 10px 14px;
+        overflow-y: visible;
+    }
+
+    .nav-item {
+        padding: 12px 16px;
+        font-size: 14px;
+        border-radius: var(--border-radius-lg);
+    }
+
+    .nav-item.active {
+        background: var(--color-brand);
+        color: white;
+        box-shadow: 0 4px 14px rgba(124, 58, 237, 0.28);
+    }
+
+    /* Always show labels and user details */
+    .nav-item span:not(.nav-dot),
     .logo-name,
-    .nav-item section:not(.nav-dot),
     .user-details {
-        display: none;
+        display: block !important;
+    }
+
+    .sidebar-footer {
+        padding: 14px 16px;
+    }
+
+    .user-avatar {
+        width: 34px;
+        height: 34px;
+        font-size: 12px;
     }
 
     .main-content {
-        margin-left: 72px;
-        padding: 16px;
+        margin-left: 0;
+        padding: 20px 16px;
     }
+
+    .page-title    { font-size: 20px; }
+    .page-subtitle { font-size: 12px; }
+}
+
+/* ── Mobile (640px and below) ─────────── */
+@media (max-width: 640px) {
+
+    .admin-container {
+        margin-top: 52px;
+    }
+
+    .top-bar {
+        height: 52px;
+        padding: 0 16px;
+    }
+
+    .top-bar .logo-icon { width: 24px; height: 24px; }
+    .top-bar .logo-name { font-size: 15px; }
+
+    .sidebar-header { padding: 12px 16px; }
+    .sidebar-nav    { padding: 8px 12px; }
+
+    .nav-item {
+        padding: 11px 14px;
+        font-size: 13px;
+    }
+
+    .main-content { padding: 16px 14px; }
+
+    .page-title  { font-size: 18px; font-weight: 700; }
+    .page-header { margin-bottom: 20px; }
+
+    .user-name  { font-size: 12px; }
+    .user-email { font-size: 10px; }
+
+    .btn       { padding: 7px 14px; font-size: 12px; }
+    .btn-small { padding: 4px 10px; font-size: 11px; }
+
+    .empty-state { padding: 32px 16px; }
+
+    .toast {
+        bottom: 16px;
+        right: 16px;
+        padding: 10px 18px;
+        font-size: 12px;
+    }
+}
+
+/* ── Small Mobile (480px and below) ────── */
+@media (max-width: 480px) {
+
+    .admin-container {
+        margin-top: 48px;
+    }
+
+    .top-bar {
+        height: 48px;
+        padding: 0 12px;
+    }
+
+    .top-bar .logo-name { font-size: 14px; }
+
+    .nav-item     { padding: 10px 12px; font-size: 13px; }
+    .main-content { padding: 14px 12px; }
+    .page-title   { font-size: 16px; }
+
+    .btn { padding: 6px 12px; font-size: 11px; }
 }
