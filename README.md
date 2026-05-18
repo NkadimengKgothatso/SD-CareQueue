@@ -7,7 +7,7 @@
 
 ---
 
-## **🌐 Live Application**
+## ** Live Application**
 
 Access the deployed system here:
 👉 [https://care-queue-delta.vercel.app](https://care-queue-delta.vercel.app)
