@@ -450,7 +450,55 @@ select:focus-visible {
     white-space: nowrap;
 }
 
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
 
+/* Tablet */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 72px;
+        transition: width 0.3s ease;
+    }
+
+    .sidebar.expanded {
+        width: 240px;
+    }
+
+    .sidebar-header .logo-name,
+    .sidebar-footer .user-details,
+    .nav-item span:not(.nav-dot) {
+        display: none;
+    }
+
+    .sidebar.expanded .sidebar-header .logo-name,
+    .sidebar.expanded .sidebar-footer .user-details,
+    .sidebar.expanded .nav-item span:not(.nav-dot) {
+        display: block;
+    }
+
+    .nav-item {
+        justify-content: center;
+        padding: 12px;
+    }
+
+    .sidebar.expanded .nav-item {
+        justify-content: flex-start;
+        padding: 10px 14px;
+    }
+
+    .main-content {
+        padding: 20px 16px;
+    }
+
+    .page-title {
+        font-size: 20px;
+    }
+
+    .card {
+        padding: 16px;
+    }
+}
 /* ══════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════ */
