@@ -460,9 +460,10 @@ test("CSV export button downloads the currently filtered clinic analytics", asyn
     reader.onload = () => resolve(reader.result);
     reader.readAsText(blob);
   });
-  expect(csvText).toBe([
-    "Clinic,Avg Wait,Volume,No-Show Rate",
-    "Central Clinic,10.0,1,100.0%"
+  expect(csvText.replace(/^\uFEFF/, "")).toBe([
+    "sep=;",
+    "Clinic;Avg Wait (min);Volume;No-Show Rate;Status",
+    "\"Central Clinic\";10.0;1;100.0%;Active"
   ].join("\n"));
   expect(clickSpy).toHaveBeenCalled();
   expect(revokeObjectURLSpy).toHaveBeenCalledWith("blob:analytics");
@@ -479,26 +480,33 @@ test("PDF export button writes and prints an all-time clinic analytics report", 
     clinics: [{ id: "c1", name: "Central Clinic" }]
   });
   const reportWindow = {
-    document: {
-      write: jest.fn(),
-      close: jest.fn()
-    },
+    addEventListener: jest.fn((_event, callback) => callback()),
     print: jest.fn()
   };
+  const createObjectURLSpy = jest.spyOn(URL, "createObjectURL").mockReturnValue("blob:analytics-pdf");
+  const revokeObjectURLSpy = jest.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
   const openSpy = jest.spyOn(window, "open").mockReturnValue(reportWindow);
 
   await importAnalytics();
 
   document.getElementById("exportPDF").click();
 
-  expect(openSpy).toHaveBeenCalledWith("", "_blank");
-  expect(reportWindow.document.write.mock.calls[0][0]).toContain("All time");
-  expect(reportWindow.document.write.mock.calls[0][0]).toContain("Central Clinic");
-  expect(reportWindow.document.write.mock.calls[0][0]).toContain("12.0");
-  expect(reportWindow.document.close).toHaveBeenCalled();
+  expect(openSpy).toHaveBeenCalledWith("blob:analytics-pdf", "_blank");
+  const html = await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsText(createObjectURLSpy.mock.calls[0][0]);
+  });
+  expect(html).toContain("All time");
+  expect(html).toContain("Central Clinic");
+  expect(html).toContain("12.0");
+  expect(reportWindow.addEventListener).toHaveBeenCalledWith("load", expect.any(Function));
   expect(reportWindow.print).toHaveBeenCalled();
+  expect(revokeObjectURLSpy).toHaveBeenCalledWith("blob:analytics-pdf");
 
   openSpy.mockRestore();
+  createObjectURLSpy.mockRestore();
+  revokeObjectURLSpy.mockRestore();
 });
 
 test("calculatePatientsTrend returns positive, zero-baseline, and neutral trends", async () => {

@@ -256,16 +256,19 @@ function getNoShowRateByClinic(list) {
 
         if (!result[clinic]) {
             result[clinic] = {
+                total: 0,
                 completed: 0,
                 cancelled: 0
             };
         }
 
         if (a.status === "completed") {
+            result[clinic].total += 1;
             result[clinic].completed += 1;
         }
 
         if (a.status === "cancelled") {
+            result[clinic].total += 1;
             result[clinic].cancelled += 1;
         }
     });
@@ -279,21 +282,20 @@ function getNoShowRateByClinic(list) {
     return result;
 }
 
-// ================= COMPLETED APPOINTMENTS PER CLINIC =================
-// counts only appointments with status "completed" for each clinic
-// this is used as the volume figure — actual patients seen, not queue entries
-function getCompletedByClinic(list) {
+// ================= RESOLVED APPOINTMENTS PER CLINIC =================
+// Counts completed and cancelled appointments for the clinic volume figure.
+function getVolumeByClinic(list) {
     const result = {};
 
     list.forEach(a => {
         const clinic = a.clinicID;
 
         if (!result[clinic]) {
-            result[clinic] = { completed: 0 };
+            result[clinic] = { total: 0 };
         }
 
-        if (a.status === "completed") {
-            result[clinic].completed += 1;
+        if (a.status === "completed" || a.status === "cancelled") {
+            result[clinic].total += 1;
         }
     });
 
@@ -323,18 +325,18 @@ function getCurrentExportData(from, to) {
     );
 
     const noShowStats = getNoShowRateByClinic(filteredAppointments);
-    const completedStats = getCompletedByClinic(filteredAppointments);
+    const volumeStats = getVolumeByClinic(filteredAppointments);
 
     return clinics.map(clinic => {
 
         const q = queueStats[clinic.id] || { total: 0, totalWait: 0 };
         const n = noShowStats[clinic.id] || { rate: "0.0" };
-        const c = completedStats[clinic.id] || { completed: 0 };
+        const v = volumeStats[clinic.id] || { total: 0 };
 
         return {
             clinic: clinic.name,
             avgWait: q.total > 0 ? (q.totalWait / q.total).toFixed(1) : "0.0",
-            volume: c.completed,
+            volume: v.total,
             noShowRate: n.rate + "%"
         };
     });
@@ -540,10 +542,21 @@ function exportPDF(data, from = null, to = null) {
     const url = URL.createObjectURL(blob);
     const win = window.open(url, "_blank");
 
-    win.addEventListener("load", () => {
+    if (!win) {
+        URL.revokeObjectURL(url);
+        return;
+    }
+
+    const printAndCleanup = () => {
         win.print();
         URL.revokeObjectURL(url);
-    });
+    };
+
+    if (typeof win.addEventListener === "function") {
+        win.addEventListener("load", printAndCleanup);
+    } else {
+        printAndCleanup();
+    }
 }
 
 // ================= RENDER DASHBOARD =================
@@ -555,7 +568,7 @@ function renderDashboard(from = null, to = null) {
 
     const queueStats = getQueueAnalytics(data.queues);
     const noShowStats = getNoShowRateByClinic(data.appointments);
-    const completedStats = getCompletedByClinic(data.appointments);
+    const volumeStats = getVolumeByClinic(data.appointments);
 
     const tbody = document.getElementById("waitTableBody");
     tbody.innerHTML = "";
@@ -570,7 +583,7 @@ function renderDashboard(from = null, to = null) {
         };
 
         const n = noShowStats[clinic.id] || { rate: "0.0" };
-        const c = completedStats[clinic.id] || { completed: 0 };
+        const v = volumeStats[clinic.id] || { total: 0 };
         const color = getRateColor(n.rate);
 
         const row = document.createElement("tr");
@@ -578,7 +591,7 @@ function renderDashboard(from = null, to = null) {
         row.innerHTML = `
             <td>${clinic.name}</td>
             <td>${q.total > 0 ? (q.totalWait / q.total).toFixed(1) : "0.0"} min</td>
-            <td>${c.completed}</td>
+            <td>${v.total}</td>
             <td style="color:${color}; font-weight:600;">
                 ${n.rate}%
             </td>
@@ -616,6 +629,36 @@ function getActiveClinicsCount(list) {
     return active.size;
 }
 
+function getPreviousPeriod(from, to) {
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+    const duration = toDate.getTime() - fromDate.getTime();
+    const previousTo = new Date(fromDate.getTime() - 1);
+    const previousFrom = new Date(previousTo.getTime() - duration);
+
+    return {
+        from: previousFrom.toISOString(),
+        to: previousTo.toISOString()
+    };
+}
+
+function countPatients(list, from, to) {
+    return list.filter(a =>
+        a.status === "completed" && inDateRange(a.date, from, to)
+    ).length;
+}
+
+function calculatePatientsTrend(from, to) {
+    const current = countPatients(appointments, from, to);
+    const previousPeriod = getPreviousPeriod(from, to);
+    const previous = countPatients(appointments, previousPeriod.from, previousPeriod.to);
+
+    if (current === 0 && previous === 0) return "0%";
+    if (previous === 0) return "+100%";
+
+    return (((current - previous) / previous) * 100).toFixed(1) + "%";
+}
+
 function setActiveRow(rows, index) {
     if (!rows.length) return;
 
@@ -629,9 +672,12 @@ function setActiveRow(rows, index) {
 
 export {
     buildDashboard,
+    calculatePatientsTrend,
+    countPatients,
     getActiveClinicsCount,
     getGlobalNoShowRate,
     getNoShowRateByClinic,
+    getPreviousPeriod,
     getQueueAnalytics,
     getRateColor,
     inDateRange,
