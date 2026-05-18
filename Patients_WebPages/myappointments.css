@@ -29,9 +29,7 @@ html, body {
     width: 100%;
 }
 
-
-
-/* ===== MAIN CONTENT (FULL WIDTH FIX) ===== */
+/* ===== MAIN CONTENT ===== */
 .main-content {
     flex: 1;
     width: 100%;
@@ -95,72 +93,72 @@ html, body {
 .yellow { background: #fef9c3; color: #854d0e; }
 .purple { background: #ede9fe; color: #5b21b6; }
 
-/* ===== APPOINTMENT CARD (IMPORTANT FIX) ===== */
-.appointment-card {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    padding: 16px;
-    border-radius: 12px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    width: 100%;
-}
-
-/* upcoming spacing fix */
-.upcoming-card {
-    border-bottom: 1px solid #f3f4f6;
-}
-
-/* ===== LEFT ACCENT BAR (IMPORTANT) ===== */
-.card-accent {
-    width: 4px;
-    border-radius: 4px;
-    align-self: stretch;
-}
-
-.accent-upcoming {
-    background: #1f9d7a;
-}
-
-.accent-past {
-    background: #9ca3af;
-}
-
-/* ===== CARD BODY ===== */
-.card-body {
-    flex: 1;
+/* ===== APPOINTMENT LIST SCROLL ===== */
+/* scrolling only kicks in when JS adds the .scrollable class (5+ cards) */
+#upcoming,
+#past {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    min-width: 0;
+    overflow-y: hidden;
 }
 
-/* ===== HEADER (NAME + BUTTONS SAME LINE FIX) ===== */
-.card-clinic-group {
+#upcoming.scrollable,
+#past.scrollable {
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+/* ===== APPOINTMENT CARD — MINIMAL STYLE ===== */
+.appointment-card {
+    background: #fff;
+    border: 0.5px solid #e5e7eb;
+    border-left: 3px solid #1D9E75;
+    border-radius: 0 10px 10px 0;
+    padding: 14px 16px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.past-card {
+    border-left-color: #9ca3af;
+    opacity: 0.8;
+}
+
+/* ===== CARD TOP ROW ===== */
+.card-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
 }
 
 .card-clinic {
     margin: 0;
     font-size: 15px;
     font-weight: 600;
+    color: #1a1a2e;
 }
 
-/* ===== BUTTONS ===== */
+/* ===== CARD META ===== */
+.card-meta-line {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* ===== CARD ACTIONS ===== */
 .appointment-actions {
     display: flex;
     gap: 8px;
+    margin-top: 6px;
 }
 
 .appointment-actions button {
-    padding: 6px 10px;
-    border-radius: 8px;
     font-size: 12px;
-    border: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 0.5px solid #e5e7eb;
     cursor: pointer;
 }
 
@@ -179,30 +177,19 @@ html, body {
     color: #991b1b;
 }
 
-/* ===== META ===== */
-.card-meta {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.meta-item {
-    display: flex;
-    gap: 6px;
-    font-size: 13px;
-    color: #6b7280;
-}
-
 /* ===== BADGE ===== */
 .badge {
     font-size: 11px;
     padding: 3px 10px;
     border-radius: 20px;
     text-transform: capitalize;
+    font-weight: 500;
 }
+
+.badge-scheduled { background: #e0f2fe; color: #075985; }
+.badge-waiting   { background: #fef9c3; color: #854d0e; }
+.badge-completed { background: #dcfce7; color: #166534; }
+.badge-cancelled { background: #fee2e2; color: #991b1b; }
 
 /* ===== QUEUE CARD ===== */
 .queue-status-card {
@@ -213,6 +200,15 @@ html, body {
     width: 100%;
 }
 
+/* ===== EMPTY STATE ===== */
+.empty-state {
+    list-style: none;
+    padding: 16px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 13px;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
     .container {
@@ -221,11 +217,6 @@ html, body {
 
     .stats-grid {
         grid-template-columns: 1fr;
-    }
-
-    .card-clinic-group {
-        flex-direction: column;
-        align-items: flex-start;
     }
 
     .appointment-actions {
@@ -241,24 +232,20 @@ dialog {
     max-width: 90%;
     padding: 0;
     background: white;
-
-    /* PERFECT CENTER */
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-
+    margin: 0;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
     animation: popIn 0.2s ease-out;
     overflow: hidden;
 }
 
-/* BACKDROP (dark overlay) */
 dialog::backdrop {
     background: rgba(0, 0, 0, 0.6);
 }
 
-/* ANIMATION */
 @keyframes popIn {
     from {
         transform: translate(-50%, -50%) scale(0.9);
@@ -270,7 +257,6 @@ dialog::backdrop {
     }
 }
 
-/* ===== POPUP HEADER ===== */
 dialog header {
     padding: 16px 18px;
     font-size: 16px;
@@ -281,7 +267,6 @@ dialog header {
     border-bottom: 1px solid #eee;
 }
 
-/* ===== POPUP TEXT ===== */
 dialog p {
     padding: 16px 18px;
     margin: 0;
@@ -290,7 +275,6 @@ dialog p {
     line-height: 1.4;
 }
 
-/* ===== FOOTER BUTTONS ===== */
 dialog footer {
     padding: 14px 18px;
     display: flex;
@@ -300,7 +284,6 @@ dialog footer {
     background: #fafafa;
 }
 
-/* ===== BUTTONS ===== */
 .secondary-btn {
     background: #e5e7eb;
     color: #111827;
@@ -325,26 +308,4 @@ dialog footer {
 
 .danger-btn:hover {
     background: #dc2626;
-}
-
-.badge-cancelled {
-    background: #fee2e2;
-    color: #b91c1c;
-    font-weight: 600;
-}
-.empty-state {
-    list-style: none;
-    padding: 16px;
-    text-align: center;
-    color: #9ca3af;
-    font-size: 13px;
-}
-
-#upcoming,
-#past {
-    max-height: 400px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
 }

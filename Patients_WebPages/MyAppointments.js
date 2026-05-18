@@ -135,130 +135,62 @@ function setEmptyState(container, message) {
 // classify it as past or upcoming, and apply the appropriate styling.
 // Fetches the associated clinic name from the clinicsMap.
 function renderAppointment(appointment) {
-
+ 
     const status = (appointment.status || "scheduled")
         .toLowerCase()
         .trim();
-
+ 
     const isPast =
         status === "cancelled" ||
         status === "canceled" ||
         status === "completed";
-
+ 
     const li = document.createElement("li");
     li.classList.add("appointment-card");
-
-    
-
-    if (isPast) {
-        li.classList.add("past-card");
-    } else {
-        li.classList.add("upcoming-card");
-    }
-
- //past appointments section
+    li.classList.add(isPast ? "past-card" : "upcoming-card");
+ 
+    const metaParts = [appointment.date, appointment.time, appointment.reason].filter(Boolean);
+    const metaLine = metaParts.join(" · ");
+ 
     if (isPast) {
         li.innerHTML = `
-            <section class="card-accent accent-past"></section>
-
-            <article class="card-body">
-
-                <header class="card-clinic-group">
-                    <p class="card-clinic">${appointment.clinicName}</p>
-                </header>
-
-                <ul class="card-meta">
-                    <li class="meta-item">
-                        <i class="fa-solid fa-calendar-day meta-icon"></i>
-                        ${appointment.date}
-                    </li>
-                    <li class="meta-item">
-                        <i class="fa-solid fa-clock meta-icon"></i>
-                        ${appointment.time}
-                    </li>
-                    ${appointment.reason ? `
-                    <li class="meta-item">
-                        <i class="fa-solid fa-notes-medical meta-icon"></i>
-                        ${appointment.reason}
-                    </li>` : ""}
-                </ul>
-
-                <footer class="card-footer">
-                    <section class="badge badge-${status}">
-                        ${status}
-                    </section>
-                </footer>
-
-            </article>
-        `;
-
-        pastList.appendChild(li);
-        return;
-    }
-
-   //upcoming appointments section
-    li.innerHTML = `
-        <section class="card-accent accent-upcoming"></section>
-
-        <article class="card-body">
-
-            <header class="card-clinic-group">
+            <div class="card-top">
                 <p class="card-clinic">${appointment.clinicName}</p>
-
-                <nav class="appointment-actions">
-                    <button class="track-btn">Track</button>
-                    <button class="reschedule-btn">Reschedule</button>
-                    <button class="cancel-btn">Cancel</button>
-                </nav>
-            </header>
-
-            <ul class="card-meta">
-                <li class="meta-item">
-                    <i class="fa-solid fa-calendar-day meta-icon"></i>
-                    ${appointment.date}
-                </li>
-                <li class="meta-item">
-                    <i class="fa-solid fa-clock meta-icon"></i>
-                    ${appointment.time}
-                </li>
-                ${appointment.reason ? `
-                <li class="meta-item">
-                    <i class="fa-solid fa-notes-medical meta-icon"></i>
-                    ${appointment.reason}
-                </li>` : ""}
-            </ul>
-
-            <footer class="card-footer">
-                <section class="badge badge-${status}">
-                    ${status}
-                </section>
-            </footer>
-
-        </article>
-    `;
-
-    const cancelBtn = li.querySelector(".cancel-btn");
-    const trackBtn = li.querySelector(".track-btn");
-    const rescheduleBtn = li.querySelector(".reschedule-btn");
-
-
-    //reschedule button redirects user to bookappointments page
-    rescheduleBtn.addEventListener("click", () => {
-        window.location.href = `BookAppointments.html?mode=reschedule&id=${appointment.id}`;
-    });
-
-    cancelBtn.addEventListener("click", () => {
-        selectedAppointment = appointment;
-        selectedElement = li;
-        modal.showModal();
-    });
-
-    //track buttons redirects user to Queues page
-    trackBtn.addEventListener("click", () => {
-        window.location.href = "PatientDashboard.html";
-    });
-
-    upcomingList.appendChild(li);
+                <span class="badge badge-${status}">${status}</span>
+            </div>
+            <p class="card-meta-line">${metaLine}</p>
+        `;
+        pastList.appendChild(li);
+    } else {
+        li.innerHTML = `
+            <div class="card-top">
+                <p class="card-clinic">${appointment.clinicName}</p>
+                <span class="badge badge-${status}">${status}</span>
+            </div>
+            <p class="card-meta-line">${metaLine}</p>
+            <nav class="appointment-actions">
+                <button class="track-btn">Track</button>
+                <button class="reschedule-btn">Reschedule</button>
+                <button class="cancel-btn">Cancel</button>
+            </nav>
+        `;
+ 
+        li.querySelector(".reschedule-btn").addEventListener("click", () => {
+            window.location.href = `BookAppointments.html?mode=reschedule&id=${appointment.id}`;
+        });
+ 
+        li.querySelector(".cancel-btn").addEventListener("click", () => {
+            selectedAppointment = appointment;
+            selectedElement = li;
+            modal.showModal();
+        });
+ 
+        li.querySelector(".track-btn").addEventListener("click", () => {
+            window.location.href = "PatientDashboard.html";
+        });
+ 
+        upcomingList.appendChild(li);
+    }
 }
 
 //shows this everytime page refreshes
@@ -319,7 +251,7 @@ onAuthStateChanged(auth, async (user) => {
             const appointment = {
                 id: docSnap.id,
                 clinicID: data.clinicID,
-                clinicName : data.clinicName,
+                clinicName: data.clinicName || data.clinicID || "Unknown Clinic",
                 date: data.date,
                 time: data.time,
                 status: data.status,
@@ -341,6 +273,8 @@ onAuthStateChanged(auth, async (user) => {
         setEmptyState(upcomingList, "No upcoming appointments");
         setEmptyState(pastList, "No past appointments");
 
+        updateScrollState();
+
     } else {
         nameSurnameEl.textContent = "Guest";
         upcomingList.innerHTML = "<p>Please log in to view your appointments.</p>";
@@ -361,3 +295,10 @@ links.forEach(link => {
 });
 
 
+function updateScrollState() {
+    const upcomingCards = upcomingList.querySelectorAll(".appointment-card");
+    const pastCards = pastList.querySelectorAll(".appointment-card");
+ 
+    upcomingList.classList.toggle("scrollable", upcomingCards.length > 2);
+    pastList.classList.toggle("scrollable", pastCards.length > 2);
+}
