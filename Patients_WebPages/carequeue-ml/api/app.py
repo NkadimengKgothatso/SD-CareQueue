@@ -10,14 +10,22 @@ CORS(app)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "wait_time_model.pkl")
+FEATURES_PATH = os.path.join(BASE_DIR, "model_features.pkl")
+CLINIC_STATS_PATH = os.path.join(BASE_DIR, "clinic_stats.pkl")
 
 if not os.path.exists(MODEL_PATH):
     raise FileNotFoundError(f"Model not found at {MODEL_PATH}")
 
 model = joblib.load(MODEL_PATH)
-print(" Model loaded:", MODEL_PATH)
+feature_names = joblib.load(FEATURES_PATH) if os.path.exists(FEATURES_PATH) else []
 
-FEATURE_COLS = ["clinicID", "queuePosition", "queueLength", "hour", "dayOfWeek"]
+# Load clinic statistics if available (for avgClinicWaitTime)
+clinic_stats = {}
+if os.path.exists(CLINIC_STATS_PATH):
+    clinic_stats = joblib.load(CLINIC_STATS_PATH)
+
+print("Model loaded:", MODEL_PATH)
+print(f"Features: {feature_names}")
 
 
 @app.route("/health", methods=["GET"])
@@ -39,6 +47,7 @@ def predict():
         clinicID = int(data["clinicID"])
         queuePosition = int(data["queuePosition"])
         queueLength = int(data["queueLength"])
+        isWalkIn = int(data.get("isWalkIn", 0))
 
         if queueLength <= 0:
             return jsonify({"error": "queueLength must be > 0"}), 400
@@ -46,19 +55,28 @@ def predict():
         if queuePosition < 1:
             return jsonify({"error": "queuePosition must be >= 1"}), 400
 
-        #  FIX: do NOT silently clamp
         if queuePosition > queueLength:
             return jsonify({
                 "error": "queuePosition cannot exceed queueLength"
             }), 400
 
+        if isWalkIn not in [0, 1]:
+            return jsonify({"error": "isWalkIn must be 0 or 1"}), 400
+
     except ValueError:
         return jsonify({"error": "Invalid numeric input"}), 400
 
-    # ── FIXED TIME FEATURES (consistent with training) ──
+    # Time features
     now = datetime.now()
     hour = now.hour
     day_of_week = now.weekday()
+
+    # Compute engineered features
+    is_weekend = int(day_of_week in [5, 6])
+    is_morning_rush = int(hour in [8, 9, 10])
+    is_afternoon = int(hour in [14, 15, 16])
+    queue_ratio = queuePosition / (queueLength + 1)
+    avg_clinic_wait = clinic_stats.get(clinicID, 30.0)  # Default 30 min if clinic unknown
 
     features_df = pd.DataFrame([{
         "clinicID": clinicID,
@@ -66,7 +84,17 @@ def predict():
         "queueLength": queueLength,
         "hour": hour,
         "dayOfWeek": day_of_week,
-    }], columns=FEATURE_COLS)
+        "isWalkIn": isWalkIn,
+        "isWeekend": is_weekend,
+        "isMorningRush": is_morning_rush,
+        "isAfternoon": is_afternoon,
+        "queueRatio": queue_ratio,
+        "avgClinicWaitTime": avg_clinic_wait,
+    }])
+
+    # Reorder columns to match training
+    if feature_names:
+        features_df = features_df[feature_names]
 
     try:
         prediction = model.predict(features_df)[0]
@@ -83,6 +111,7 @@ def predict():
             "queueLength": queueLength,
             "hour": hour,
             "dayOfWeek": day_of_week,
+            "isWalkIn": isWalkIn,
         }
     })
 
