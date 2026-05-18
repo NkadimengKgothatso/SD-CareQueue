@@ -257,19 +257,16 @@ function getNoShowRateByClinic(list) {
         if (!result[clinic]) {
             result[clinic] = {
                 completed: 0,
-                cancelled: 0,
-                total: 0
+                cancelled: 0
             };
         }
 
         if (a.status === "completed") {
             result[clinic].completed += 1;
-            result[clinic].total += 1;
         }
 
         if (a.status === "cancelled") {
             result[clinic].cancelled += 1;
-            result[clinic].total += 1;
         }
     });
 
@@ -285,18 +282,18 @@ function getNoShowRateByClinic(list) {
 // ================= COMPLETED APPOINTMENTS PER CLINIC =================
 // counts only appointments with status "completed" for each clinic
 // this is used as the volume figure — actual patients seen, not queue entries
-function getVolumeByClinic(list) {
+function getCompletedByClinic(list) {
     const result = {};
 
     list.forEach(a => {
         const clinic = a.clinicID;
 
         if (!result[clinic]) {
-            result[clinic] = { total: 0 };
+            result[clinic] = { completed: 0 };
         }
 
-        if (a.status === "completed" || a.status === "cancelled") {
-            result[clinic].total += 1;
+        if (a.status === "completed") {
+            result[clinic].completed += 1;
         }
     });
 
@@ -326,18 +323,18 @@ function getCurrentExportData(from, to) {
     );
 
     const noShowStats = getNoShowRateByClinic(filteredAppointments);
-    const volumeStats = getVolumeByClinic(filteredAppointments);
+    const completedStats = getCompletedByClinic(filteredAppointments);
 
     return clinics.map(clinic => {
 
         const q = queueStats[clinic.id] || { total: 0, totalWait: 0 };
         const n = noShowStats[clinic.id] || { rate: "0.0" };
-        const v = volumeStats[clinic.id] || { total: 0 };
+        const c = completedStats[clinic.id] || { completed: 0 };
 
         return {
             clinic: clinic.name,
             avgWait: q.total > 0 ? (q.totalWait / q.total).toFixed(1) : "0.0",
-            volume: v.total,
+            volume: c.completed,
             noShowRate: n.rate + "%"
         };
     });
@@ -346,21 +343,27 @@ function getCurrentExportData(from, to) {
 
 function exportCSV(data) {
 
-    const headers = ["Clinic", "Avg Wait", "Volume", "No-Show Rate"];
+    const headers = ["Clinic", "Avg Wait (min)", "Volume", "No-Show Rate", "Status"];
 
-    const rows = data.map(d => [
-        d.clinic,
-        d.avgWait,
-        d.volume,
-        d.noShowRate
-    ]);
+    const rows = data.map(d => {
+        const isInactive = parseFloat(d.avgWait) === 0 && d.volume === 0 && parseFloat(d.noShowRate) === 0;
+        return [
+            `"${d.clinic}"`,
+            d.avgWait,
+            d.volume,
+            d.noShowRate,
+            isInactive ? "No Activity" : "Active"
+        ];
+    });
 
+    // semicolon separator for South African Excel locale
     const csv = [
-        headers.join(","),
-        ...rows.map(r => r.join(","))
+        "sep=;",
+        headers.join(";"),
+        ...rows.map(r => r.join(";"))
     ].join("\n");
 
-    const blob = new Blob([csv], { type: "text/csv" });
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
 
     const a = document.createElement("a");
@@ -373,8 +376,6 @@ function exportCSV(data) {
 
 function exportPDF(data, from = null, to = null) {
 
-    const win = window.open("", "_blank");
-
     const formatDate = (d) => {
         if (!d) return null;
         return new Date(d).toLocaleDateString();
@@ -385,41 +386,129 @@ function exportPDF(data, from = null, to = null) {
             ? `${formatDate(from)} → ${formatDate(to)}`
             : "All time";
 
-    win.document.write(`
+    // show all clinics regardless of activity
+    const activeData = data;
+
+    const rows = activeData.map(d => {
+        const isInactive = parseFloat(d.avgWait) === 0 && d.volume === 0 && parseFloat(d.noShowRate) === 0;
+        const rowStyle = isInactive ? "style='color:#9ca3af;'" : "";
+        return `
+            <tr ${rowStyle}>
+                <td>${d.clinic}</td>
+                <td>${d.avgWait} min</td>
+                <td>${d.volume}</td>
+                <td>${d.noShowRate}</td>
+            </tr>
+        `;
+    }).join("");
+
+    const html = `
+        <!DOCTYPE html>
         <html>
         <head>
             <title>Clinic Analytics Report</title>
             <style>
-                body { font-family: Arial; padding: 20px; }
-                h2 { margin-bottom: 5px; }
+                * { margin: 0; padding: 0; box-sizing: border-box; }
 
-                .date-range {
+                body {
+                    font-family: Arial, sans-serif;
+                    padding: 40px;
+                    color: #1a1a2e;
+                }
+
+                .report-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: 30px;
+                    padding-bottom: 16px;
+                    border-bottom: 2px solid #1D9E75;
+                }
+
+                .report-header h1 {
+                    font-size: 22px;
+                    font-weight: 700;
+                    color: #1a1a2e;
+                }
+
+                .report-header .meta {
+                    font-size: 13px;
+                    color: #6b7280;
+                    text-align: right;
+                    margin-top: 4px;
+                }
+
+                .summary {
+                    font-size: 13px;
+                    color: #6b7280;
                     margin-bottom: 20px;
-                    color: #555;
-                    font-size: 14px;
                 }
 
                 table {
                     width: 100%;
                     border-collapse: collapse;
+                    font-size: 13px;
                 }
 
-                th, td {
-                    border: 1px solid #ddd;
-                    padding: 8px;
+                thead tr {
+                    background: #1D9E75;
+                    color: white;
                 }
 
                 th {
-                    background: #f3f4f6;
+                    padding: 10px 14px;
+                    text-align: left;
+                    font-weight: 600;
+                }
+
+                td {
+                    padding: 10px 14px;
+                    border-bottom: 1px solid #e5e7eb;
+                }
+
+                tbody tr:nth-child(even) {
+                    background: #f9fafb;
+                }
+
+                tbody tr:last-child td {
+                    border-bottom: none;
+                }
+
+                .footer {
+                    margin-top: 30px;
+                    font-size: 11px;
+                    color: #9ca3af;
+                    text-align: center;
+                }
+
+                .note {
+                    margin-top: 0;
+                    margin-bottom: 20px;
+                    padding: 12px 16px;
+                    background: #f9fafb;
+                    border-left: 3px solid #1D9E75;
+                    border-radius: 0 6px 6px 0;
+                    font-size: 12px;
+                    color: #6b7280;
+                    line-height: 1.6;
                 }
             </style>
         </head>
-
         <body>
-            <h2>Clinic Analytics Report</h2>
+            <div class="report-header">
+                <div>
+                    <h1>Clinic Analytics Report</h1>
+                    <p class="meta">Date range: ${dateRangeText}</p>
+                </div>
+                <div class="meta">
+                    Generated: ${new Date().toLocaleDateString()}<br>
+                    Total Clinics: ${activeData.length}
+                </div>
+            </div>
 
-            <div class="date-range">
-                <strong>Date Range:</strong> ${dateRangeText}
+            <div class="note">
+                <strong>Note:</strong> Clinics displayed in grey have not yet recorded any patient activity through CareQueue.
+                Data will populate as clinics begin using the system.
             </div>
 
             <table>
@@ -431,24 +520,30 @@ function exportPDF(data, from = null, to = null) {
                         <th>No-Show Rate</th>
                     </tr>
                 </thead>
-
                 <tbody>
-                    ${data.map(d => `
-                        <tr>
-                            <td>${d.clinic}</td>
-                            <td>${d.avgWait}</td>
-                            <td>${d.volume}</td>
-                            <td>${d.noShowRate}</td>
-                        </tr>
-                    `).join("")}
+                    ${rows}
                 </tbody>
             </table>
+
+            <div class="note">
+                <strong>Note:</strong> Clinics displayed in grey have not yet recorded any patient activity through CareQueue.
+                Data will populate as clinics begin using the system.
+            </div>
+
+            <div class="footer">CareQueue — Confidential</div>
         </body>
         </html>
-    `);
+    `;
 
-    win.document.close();
-    win.print();
+    // use Blob URL to avoid about:blank in the footer
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, "_blank");
+
+    win.addEventListener("load", () => {
+        win.print();
+        URL.revokeObjectURL(url);
+    });
 }
 
 // ================= RENDER DASHBOARD =================
@@ -460,7 +555,7 @@ function renderDashboard(from = null, to = null) {
 
     const queueStats = getQueueAnalytics(data.queues);
     const noShowStats = getNoShowRateByClinic(data.appointments);
-    const volumeStats = getVolumeByClinic(data.appointments);
+    const completedStats = getCompletedByClinic(data.appointments);
 
     const tbody = document.getElementById("waitTableBody");
     tbody.innerHTML = "";
@@ -475,7 +570,7 @@ function renderDashboard(from = null, to = null) {
         };
 
         const n = noShowStats[clinic.id] || { rate: "0.0" };
-        const v = volumeStats[clinic.id] || { total: 0 };
+        const c = completedStats[clinic.id] || { completed: 0 };
         const color = getRateColor(n.rate);
 
         const row = document.createElement("tr");
@@ -483,7 +578,7 @@ function renderDashboard(from = null, to = null) {
         row.innerHTML = `
             <td>${clinic.name}</td>
             <td>${q.total > 0 ? (q.totalWait / q.total).toFixed(1) : "0.0"} min</td>
-            <td>${v.total}</td>
+            <td>${c.completed}</td>
             <td style="color:${color}; font-weight:600;">
                 ${n.rate}%
             </td>
@@ -521,36 +616,6 @@ function getActiveClinicsCount(list) {
     return active.size;
 }
 
-function getPreviousPeriod(from, to) {
-    const fromDate = new Date(from);
-    const toDate = new Date(to);
-    const duration = toDate.getTime() - fromDate.getTime();
-    const previousTo = new Date(fromDate.getTime() - 1);
-    const previousFrom = new Date(previousTo.getTime() - duration);
-
-    return {
-        from: previousFrom.toISOString(),
-        to: previousTo.toISOString()
-    };
-}
-
-function countPatients(list, from, to) {
-    return list.filter(a =>
-        a.status === "completed" && inDateRange(a.date, from, to)
-    ).length;
-}
-
-function calculatePatientsTrend(from, to) {
-    const current = countPatients(appointments, from, to);
-    const previousPeriod = getPreviousPeriod(from, to);
-    const previous = countPatients(appointments, previousPeriod.from, previousPeriod.to);
-
-    if (current === 0 && previous === 0) return "0%";
-    if (previous === 0) return "+100%";
-
-    return (((current - previous) / previous) * 100).toFixed(1) + "%";
-}
-
 function setActiveRow(rows, index) {
     if (!rows.length) return;
 
@@ -564,12 +629,9 @@ function setActiveRow(rows, index) {
 
 export {
     buildDashboard,
-    calculatePatientsTrend,
-    countPatients,
     getActiveClinicsCount,
     getGlobalNoShowRate,
     getNoShowRateByClinic,
-    getPreviousPeriod,
     getQueueAnalytics,
     getRateColor,
     inDateRange,
