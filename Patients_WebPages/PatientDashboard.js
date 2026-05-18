@@ -105,6 +105,10 @@ function setAvatarInitial(name, email) {
 async function loadAppointments(userId) {
 
     const container = document.getElementById("appointmentsContainer");
+    // Stop function if container does not exist on this page
+    if (!container) {
+        return;
+    }
     container.innerHTML = "";
 
     try {
@@ -260,22 +264,38 @@ window.addEventListener("DOMContentLoaded", () => {
                 patientName  = name;
                 patientEmail = email;
 
-                // Populate dashboard header with user info
-                nameEl.textContent    = name || "User";
-                roleEl.textContent    = data.role || "Unknown";
+            // Populate dashboard header with user info
+            if (nameEl) {
+                nameEl.textContent = name || "User";
+            }
+            
+            if (roleEl) {
+                roleEl.textContent = data.role || "Unknown";
+            }
+            
+            if (welcomeEl) {
                 welcomeEl.textContent = `Welcome, ${name || "User"}`;
-                document.getElementById("userEmail").textContent = email;
+            }
+            
+            const userEmailEl = document.getElementById("userEmail");
+            
+            if (userEmailEl) {
+                userEmailEl.textContent = email || "";
+            }
 
                 setAvatarInitial(name, email);
             }
 
             // Display current date in local South African format
-            dateEl.textContent = new Date().toLocaleDateString("en-ZA", {
-                weekday: "long",
-                year:    "numeric",
-                month:   "long",
-                day:     "numeric"
-            });
+                      
+            if (dateEl) {
+                dateEl.textContent = new Date().toLocaleDateString("en-ZA", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
+                });
+            }
 
             // Load and display patient's appointments
             await loadAppointments(user.uid);

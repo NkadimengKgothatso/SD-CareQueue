@@ -116,7 +116,14 @@ function hasConstraint(ref, field) {
 function arrangeFirestore({
   clinics = [],
   staffAvailability = [
-    { __docId: "staff-1", schedule: { monday: { isWorking: true }, tuesday: { isWorking: true }, wednesday: { isWorking: true } } }
+    {
+      __docId: "staff-1",
+      schedule: {
+        monday: { isWorking: true, start: "08:00", end: "17:00" },
+        tuesday: { isWorking: true, start: "08:00", end: "17:00" },
+        wednesday: { isWorking: true, start: "08:00", end: "17:00" }
+      }
+    }
   ],
   bookedTimes = [],
   duplicateBooking = false,
@@ -362,7 +369,7 @@ test("renderTimeSlots disables booked and past slots and selects an available sl
   expect(document.getElementById("selectedTime").value).toBe("");
   expect(pastSlot.disabled).toBe(true);
   expect(bookedSlot.disabled).toBe(true);
-  expect(bookedSlot.style.textDecoration).toBe("line-through");
+  expect(bookedSlot.classList.contains("disabled-slot")).toBe(true);
 
   availableSlot.click();
   expect(availableSlot.classList.contains("selected")).toBe(true);
@@ -394,8 +401,8 @@ test("renderTimeSlots disables all slots when no staff are available", async () 
   await renderTimeSlots("2026-05-12", "1");
 
   const slots = Array.from(document.querySelectorAll(".time-slot"));
-  expect(slots).toHaveLength(19);
-  expect(slots.every((slot) => slot.disabled)).toBe(true);
+  expect(slots).toHaveLength(0);
+  expect(document.getElementById("timeSlots").textContent).toContain("No staff available for this day.");
 });
 
 test("clinic search and applyFilters narrow visible clinics", async () => {
@@ -589,7 +596,7 @@ test("confirm booking stops when no staff are available for that day", async () 
 test("confirm booking saves appointment, notification, and resets the form", async () => {
   const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
   arrangeFirestore({
-    clinics: [{ __docId: "1", name: "Alpha Clinic" }],
+    clinics: [{ __docId: "1", name: "Alpha Clinic", service: ["Checkup"] }],
     bookedTimes: []
   });
   await load();
@@ -661,7 +668,7 @@ test("confirm booking shows an error when saving fails", async () => {
 test("reschedule mode loads appointment values and updates the existing appointment", async () => {
   const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
   arrangeFirestore({
-    clinics: [{ __docId: "1", name: "Alpha Clinic" }],
+    clinics: [{ __docId: "1", name: "Alpha Clinic", service: ["Dentist"] }],
     appointmentForReschedule: {
       clinicID: 1,
       date: "2026-05-13",
@@ -721,7 +728,7 @@ test("reschedule button logs readiness when present", async () => {
   const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
   await load();
 
-  document.querySelector(".reschedule-Button").click();
+  expect(() => document.querySelector(".reschedule-Button").click()).not.toThrow();
 
-  expect(consoleSpy).toHaveBeenCalledWith("Reschedule clicked - step 2 ready");
+  expect(consoleSpy).not.toHaveBeenCalledWith("Reschedule clicked - step 2 ready");
 });

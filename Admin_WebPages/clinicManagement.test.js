@@ -114,6 +114,7 @@ beforeEach(() => {
     global.confirm = jest.fn(() => true);
     jest.resetModules();
     jest.clearAllMocks();
+    jest.useRealTimers();
 });
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -382,10 +383,10 @@ describe("openEditModal", () => {
         expect(getCheckbox("manageClinicServicesDropdown", "General").checked).toBe(false);
     });
 
-    test("sets the correct status value", async () => {
+    test("does not edit stored status because status is derived from hours", async () => {
         const { openEditModal } = await load();
         openEditModal(clinic({ id: "5", name: "Closed Clinic", address: "Road B", status: "Closed", service: [], province: "Gauteng" }));
-        expect(document.getElementById("ManageClinicStatus").value).toBe("Closed");
+        expect(document.getElementById("ManageClinicStatus").value).toBe("");
     });
 
     test("stores editingClinicId so manage form updates the right doc", async () => {
@@ -489,32 +490,70 @@ describe("addClinicToUI - rendering", () => {
         expect(document.body.textContent).toContain("Hours not specified");
     });
 
-    test("applies correct colour for Active status", async () => {
+    test("applies correct colour when derived status is Active", async () => {
+        jest.useFakeTimers().setSystemTime(new Date("2026-05-18T10:00:00"));
         const { addClinicToUI } = await load();
-        addClinicToUI(clinic({ id: "8a", name: "Active Clinic", address: "Active Road", status: "Active" }));
+        addClinicToUI(clinic({
+            id: "8a",
+            name: "Active Clinic",
+            address: "Active Road",
+            startDay: "Monday",
+            endDay: "Friday",
+            startTime: "08:00",
+            endTime: "17:00"
+        }));
         const statusEl = document.querySelector("#status");
+        expect(statusEl.textContent).toBe("Active");
         expect(statusEl.style.color).toBe("rgb(22, 101, 52)");
     });
 
-    test("applies correct colour for Closed status", async () => {
+    test("applies correct colour when derived status is Closed", async () => {
+        jest.useFakeTimers().setSystemTime(new Date("2026-05-18T18:00:00"));
         const { addClinicToUI } = await load();
-        addClinicToUI(clinic({ id: "7", name: "Closed Clinic", address: "Closed Road", status: "Closed" }));
+        addClinicToUI(clinic({
+            id: "7",
+            name: "Closed Clinic",
+            address: "Closed Road",
+            startDay: "Monday",
+            endDay: "Friday",
+            startTime: "08:00",
+            endTime: "17:00"
+        }));
         const statusEl = document.querySelector("#status");
+        expect(statusEl.textContent).toBe("Closed");
         expect(statusEl.style.color).toBe("rgb(153, 27, 27)");
     });
 
-    test("applies correct colour for Busy status", async () => {
+    test("uses Closed colours for missing hours", async () => {
         const { addClinicToUI } = await load();
-        addClinicToUI(clinic({ id: "8", name: "Busy Clinic", address: "Busy Road", status: "Busy" }));
+        addClinicToUI(clinic({
+            id: "8",
+            name: "No Hours Clinic",
+            address: "No Hours Road",
+            startDay: "",
+            endDay: "",
+            startTime: "",
+            endTime: ""
+        }));
         const statusEl = document.querySelector("#status");
-        expect(statusEl.style.color).toBe("rgb(55, 65, 81)");
+        expect(statusEl.textContent).toBe("Closed");
+        expect(statusEl.style.color).toBe("rgb(153, 27, 27)");
     });
 
-    test("defaults to Active colours for unknown status", async () => {
+    test("uses Closed colours for unrecognised day values", async () => {
         const { addClinicToUI } = await load();
-        addClinicToUI(clinic({ id: "8b", name: "Pending Clinic", address: "Road X", status: "Pending" }));
+        addClinicToUI(clinic({
+            id: "8b",
+            name: "Legacy Hours Clinic",
+            address: "Road X",
+            startDay: "Mon",
+            endDay: "Fri",
+            startTime: "08:00",
+            endTime: "17:00"
+        }));
         const statusEl = document.querySelector("#status");
-        expect(statusEl.style.color).toBe("rgb(22, 101, 52)");
+        expect(statusEl.textContent).toBe("Closed");
+        expect(statusEl.style.color).toBe("rgb(153, 27, 27)");
     });
 });
 
@@ -711,7 +750,6 @@ describe("Form submissions", () => {
         expect(addDoc).toHaveBeenCalledWith(undefined, {
             name: "New Clinic",
             address: "Main Road",
-            status: "Active",
             province: "Gauteng",
             service: ["Dental"],
             startDay: "",
@@ -748,7 +786,6 @@ describe("Form submissions", () => {
         expect(updateDoc).toHaveBeenCalledWith(undefined, {
             name: "Updated Clinic",
             address: "Updated Road",
-            status: "Active",
             province: "Limpopo",
             service: ["Emergency"]
         });
