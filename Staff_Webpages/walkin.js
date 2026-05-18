@@ -73,6 +73,67 @@ async function getStaffProfile(email) {
     };
 }
 
+
+// CLINIC DATA FETCH
+// fetches the clinic's startTime, endTime, and services array from clinicsObjects
+// matches by the numeric clinic id stored on the staff profile
+// returns an object with startTime, endTime, and services (e.g. ["General", "HIV/AIDS"])
+// falls back to default hours and an empty services array if the clinic record cannot be found
+async function getClinicData(id) {
+    try {
+        const snapshot = await getDocs(
+            query(
+                collection(db, "clinicsObjects"),
+                where("id", "==", id)
+            )
+        );
+
+        if (snapshot.empty) {
+            console.warn("Clinic record not found in clinicsObjects, using defaults");
+            return { startTime: "08:00", endTime: "17:00", services: [] };
+        }
+
+        const data = snapshot.docs[0].data();
+
+       
+
+        return {
+            startTime: data.startTime || "08:00",
+            endTime: data.endTime || "17:00",
+            services: Array.isArray(data.service) ? data.service : []
+        };
+    } catch (err) {
+        console.error("Failed to fetch clinic data:", err);
+        return { startTime: "08:00", endTime: "17:00", services: [] };
+    }
+}
+
+
+// POPULATE REASON DROPDOWN
+// clears any existing options from the reasonInput select element
+// populates it with the services fetched from this clinic's record
+// falls back to a hardcoded default list if no services were returned
+function populateReasonDropdown(services) {
+
+    const select = document.getElementById("reasonInput");
+    if (!select) return;
+
+    select.innerHTML = "";
+
+    const options = services.length > 0
+        ? services
+        : ["General Checkup", "Vaccination", "Follow up", "Prescription Refill",
+           "Family Planning", "Child Health", "Chronic Medication", "Other"];
+
+    options.forEach(service => {
+        const opt = document.createElement("option");
+        opt.value = service;
+        opt.textContent = service;
+        select.appendChild(opt);
+    });
+}
+
+
 // takes a time string in the format "hh:mm"
 // splits it into hours and minutes
 // converts both parts into numbers
@@ -119,25 +180,35 @@ function roundToNextSlot(minutes, slot) {
 
 
 // finds the next available appointment time in the clinic schedule
-// defines clinic working hours (START to END) and fixed time slot size
+// accepts dynamic startTime and endTime strings (e.g. "07:00", "18:00") from the clinic record
+// converts those strings into total minutes for comparison
+// defines a fixed time slot size of 30 minutes
 // gets the current time and converts it into total minutes for comparison
+// returns "CLOSED" immediately if the current time is already past the clinic's closing time
 // filters out invalid or cancelled appointments so they are not counted
 // stores all used appointment times in a set for quick lookup
 // starts searching from the next valid time slot after the current time
 // loops through each slot and checks if it is already taken
 // returns the first available time slot in "hh:mm" format
 // returns "FULL" if no slots are available within working hours
-function getNextAvailableTime(appointments) {
+function getNextAvailableTime(appointments, startTime, endTime) {
 
-    const START = 8 * 60;
-    const END = 17 * 60;
+    const START = timeToMinutes(startTime);
+    const END = timeToMinutes(endTime);
     const SLOT = 30;
 
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
+    // if the clinic is already closed for the day, return immediately
+    if (currentMinutes >= END) {
+        console.log(" CLINIC IS CLOSED");
+        return "CLOSED";
+    }
+
     console.log(" CURRENT TIME:", now.toString());
     console.log(" CURRENT MINUTES:", currentMinutes);
+    console.log(" CLINIC HOURS:", startTime, "→", endTime, `(${START}–${END} mins)`);
 
     // extract valid booked times
     const usedArray = appointments.filter(a =>
@@ -366,15 +437,21 @@ addBtn?.addEventListener("click", async () => {
         const count = walkinSnap.size + 1;
         const ticketNumber = `W-${String(count).padStart(3, "0")}`;
 
-        // 4. CORRECT SLOT CALCULATION (USES ALL APPOINTMENTS)
-        const assignedTime = getNextAvailableTime(existingAppointments);
+        // 4. FETCH DYNAMIC CLINIC HOURS THEN CALCULATE SLOT
+        const { startTime, endTime } = await getClinicData(clinicId);
+        const assignedTime = getNextAvailableTime(existingAppointments, startTime, endTime);
 
         console.log(" ASSIGNED TIME RESULT:", assignedTime);
 
         
 
-        if (assignedTime === "FULL") {   //full slots
-            alert("No available slots for today. Patient cannot be added.");
+        if (assignedTime === "CLOSED") {   //clinic is past closing time
+            alert(`${clinicName} is closed for today. No more walk-ins can be added.`);
+            return;
+        }
+
+        if (assignedTime === "FULL") {   //all slots within hours are booked
+            alert("No available slots for today. The clinic is fully booked.");
             return;
         }
 
@@ -469,8 +546,11 @@ onAuthStateChanged(auth, async (user) => {
             clinicName || "No clinic assigned";
     }
 
-    console.log("🏥 clinicId:", clinicId);
-    console.log("🏥 clinicName:", clinicName);
+    // ─── POPULATE REASON DROPDOWN FROM CLINIC SERVICES ───
+    const clinicData = await getClinicData(clinicId);
+    populateReasonDropdown(clinicData.services);
+
+   
 
     // ─── LOAD WALK-IN APPOINTMENTS ───────────────────
     loadAppointments();

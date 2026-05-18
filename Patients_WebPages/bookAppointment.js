@@ -120,20 +120,104 @@ async function getBookedSlots(db, selectedDate, selectedClinic) {
 }
 
 
+// Get clinic working hours based on staff availability
+async function getClinicWorkingHours(selectedClinic, dayName) {
+
+    const q = query(
+        collection(db, "StaffAvailability"),
+        where("clinicID", "==", Number(selectedClinic))
+    );
+
+    const snapshot = await getDocs(q);
+
+  
+    let earliestStart = null;
+    let latestEnd = null;
+    let hasWorkingStaff = false;
+
+    // Loop through all staff records
+    snapshot.forEach((doc) => {
+
+    const data = doc.data();
+
+    // Get the selected day's schedule from the schedule object
+    const dayData = data.schedule?.[dayName];
+
+  
+
+    if (!dayData) {
+        return;
+    }
+
+    if (dayData.isWorking === true) {
+        hasWorkingStaff = true;
+
+        if (!earliestStart || dayData.start < earliestStart) {
+            earliestStart = dayData.start;
+        }
+
+        if (!latestEnd || dayData.end > latestEnd) {
+            latestEnd = dayData.end;
+        }
+    }
+    });
+
+    // If no staff are working return null values
+    if (!hasWorkingStaff) {
+        return {
+            startTime: null,
+            endTime: null
+        };
+    }
+
+    // Return clinic operating hours for that day
+    return {
+        startTime: earliestStart,
+        endTime: latestEnd
+    };
+}
+
+
+
+
+
+
+//Display Time Slots
 async function renderTimeSlots(selectedDate, selectedClinic) {
     timeSlotsContainer.innerHTML = "";
 
+    // Get selected day name from the selected date
     const dateObj = new Date(selectedDate);
     const dayName = dateObj
         .toLocaleDateString("en-US", { weekday: "long" })
         .toLowerCase();
 
+    // Get clinic working hours for the selected day
+    const { startTime, endTime } = await getClinicWorkingHours(
+        selectedClinic,
+        dayName
+    );
+  
+
+
+    // If no staff are working on this day, show a message
+    if (!startTime || !endTime) {
+        timeSlotsContainer.innerHTML =
+            "<p>No staff available for this day.</p>";
+        return;
+    }
+
+    const [startHour, startMinute] = startTime.split(":").map(Number);
+    const [endHour, endMinute] = endTime.split(":").map(Number);
+
+    // Count how many staff members are available on this day
     const availableStaff = await getStaffAvailableForDay(
         db,
         selectedClinic,
         dayName
     );
 
+    // Get all appointments for the selected clinic and date
     const q = query(
         collection(db, "Appointments"),
         where("date", "==", selectedDate),
@@ -144,6 +228,7 @@ async function renderTimeSlots(selectedDate, selectedClinic) {
 
     const slotCounts = {};
 
+    // Count bookings per time slot
     snapshot.forEach(doc => {
         const data = doc.data();
 
@@ -152,53 +237,70 @@ async function renderTimeSlots(selectedDate, selectedClinic) {
         }
     });
 
+    const current = new Date();
+    current.setHours(startHour, startMinute, 0, 0);
+
+    const end = new Date();
+    end.setHours(endHour, endMinute, 0, 0);
+
     const now = new Date();
-    const today = now.toISOString().split("T")[0];
+    const today = now.toLocaleDateString("en-CA");
 
-    for (let hour = 8; hour <= 17; hour++) {
-        for (let minute of [0, 30]) {
-            if (hour === 17 && minute === 30) continue;
+    while (current <= end) {
+        const hour = current.getHours();
+        const minute = current.getMinutes();
 
-            const formattedTime = formatTime(hour, minute);
+        const formattedTime = formatTime(hour, minute);
 
-            const slotBtn = document.createElement("button");
-            slotBtn.classList.add("time-slot");
-            slotBtn.textContent = formattedTime;
+        const slotBtn = document.createElement("button");
+        slotBtn.classList.add("time-slot");
+        slotBtn.textContent = formattedTime;
 
-            let isPast = false;
+        let isPast = false;
 
-            if (selectedDate === today) {
-                const slotTime = new Date();
-                slotTime.setHours(hour, minute, 0, 0);
+        // Disable past times only if the selected date is today
+        if (selectedDate === today) {
+            const slotTime = new Date();
+            slotTime.setHours(hour, minute, 0, 0);
 
-                if (slotTime < now) {
-                    isPast = true;
-                }
+            if (slotTime <= now) {
+                isPast = true;
             }
-
-            const bookingsForThisSlot = slotCounts[formattedTime] || 0;
-            const isFullyBooked = bookingsForThisSlot >= availableStaff;
-
-            if (isFullyBooked || isPast || availableStaff === 0) {
-                slotBtn.style.textDecoration = "line-through";
-                slotBtn.style.color = "#999";
-                slotBtn.style.backgroundColor = "#f2f2f2";
-                slotBtn.style.cursor = "not-allowed";
-                slotBtn.disabled = true;
-            }
-
-            slotBtn.addEventListener("click", () => {
-                if (slotBtn.disabled) return;
-
-                document.querySelectorAll(".time-slot")
-                    .forEach(btn => btn.classList.remove("selected"));
-
-                slotBtn.classList.add("selected");
-                selectedTimeInput.value = formattedTime;
-            });
-
-            timeSlotsContainer.appendChild(slotBtn);
         }
+
+    
+
+        const bookingsForThisSlot = slotCounts[formattedTime] || 0;
+        const isFullyBooked = bookingsForThisSlot >= availableStaff;
+
+        // Check if the current logged-in patient already booked this same time slot
+        const userAlreadyBooked = snapshot.docs.some(doc => {
+            const data = doc.data();
+            const status = (data.status || "").toLowerCase();
+
+            return (data.userID === auth.currentUser?.uid && data.time === formattedTime && status !== "cancelled" && status !== "completed");
+        });
+
+        // Disable slot if it is past, fully booked, no staff are available,
+        // or this patient already booked it
+        if (isFullyBooked || isPast || availableStaff === 0 || userAlreadyBooked) {
+            slotBtn.classList.add("disabled-slot");
+            slotBtn.disabled = true;
+        }
+
+        slotBtn.addEventListener("click", () => {
+            if (slotBtn.disabled) return;
+
+            document.querySelectorAll(".time-slot")
+                .forEach(btn => btn.classList.remove("selected"));
+
+            slotBtn.classList.add("selected");
+            selectedTimeInput.value = formattedTime;
+        });
+
+        timeSlotsContainer.appendChild(slotBtn);
+
+        current.setMinutes(current.getMinutes() + 30);
     }
 }
 
@@ -228,7 +330,7 @@ let selectedClinicName;
 // Fetch clinics from firestore
 async function loadClinics() {
     try {
-        // 🔥 Get clinics from Firestore
+        //Get clinics from Firestore
         const snapshot = await getDocs(collection(db, "clinicsObjects"));
 
         // Convert Firebase docs → usable array
@@ -264,7 +366,7 @@ async function loadAppointmentForReschedule() {
     // Find the clinic object so we can populate its services
     const matchingClinic = clinics.find(c => String(c.id) === String(data.clinicID));
     if (matchingClinic) {
-        // ✅ Restore services dropdown before setting the selected reason
+        //  Restore services dropdown before setting the selected reason
         populateReasonSelect(matchingClinic.service);
     }
 
@@ -314,7 +416,7 @@ function displayClinics(clinicList) {
             btn.style.backgroundColor = "#1D9E75";
             btn.style.color           = "#fff";
 
-            // ✅ Populate reason dropdown with this clinic's services from the DB
+            // Populate reason dropdown with this clinic's services from the DB
             populateReasonSelect(clinic.service);
 
             // Only render time slots if a date is already selected
@@ -614,6 +716,9 @@ confirmBtn.addEventListener("click", async () => {
         return;
     }
 
+    // Check if this patient already has an active appointment on this date
+   
+
     // RESCHEDULE MODE
     if (isRescheduleMode) {
         const ref = doc(db, "Appointments", appointmentId);
@@ -752,7 +857,7 @@ const rescheduleBtn = document.querySelector(".reschedule-Button");
 
 if (rescheduleBtn) {
     rescheduleBtn.addEventListener("click", () => {
-        console.log("Reschedule clicked - step 2 ready");
+      
     });
 }
 // ================= highlight active page =================

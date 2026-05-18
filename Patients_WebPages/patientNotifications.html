@@ -12,6 +12,15 @@
     <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#2563eb">
     <script type="module" src="../pwa.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" >
+        <link rel="stylesheet" href="../Staff_Webpages/Staff.css">
+        <link rel="manifest" href="../manifest.json">
+        <meta name="theme-color" content="#2563eb">
+        <script type="module" src="../pwa.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+        <link rel="stylesheet" href="a-sidebar.css">
+        <link rel="stylesheet" href="patientDashboard.css">
 
     
 </head>
@@ -28,7 +37,20 @@
     </button>
 </header>
 
-<main class="container">
+<!-- TOP BAR -->
+<header class="top-bar">
+    <section class="logo">
+        <section class="logo-icon"></section>
+        <section class="logo-name">Care Queue</section>
+    </section>
+
+    <button class="sign-out-btn" onclick="signOut()">
+        <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+    </button>
+</header>
+
+<!-- MAIN LAYOUT -->
+<section class="admin-container">
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
@@ -71,8 +93,6 @@
         </section>
     </aside>
 
-
-
         <main class="main-content">
 
           <section class="page-head">
@@ -89,10 +109,7 @@
           <section class="filters" id="filters">
             <button class="filter-btn active" data-filter="all">All <section class="count" id="count-all">0</section></button>
             <button class="filter-btn" data-filter="unread">Unread <section class="count" id="count-unread">0</section></button>
-            <button class="filter-btn" data-filter="appointment">Appointments</button>
-            <button class="filter-btn" data-filter="queue">Queue</button>
-            <button class="filter-btn" data-filter="reminder">Reminders</button>
-            <button class="filter-btn" data-filter="alert">Alerts</button>
+            
           </section>
 
           <section class="notif-list" id="notifList"></section>

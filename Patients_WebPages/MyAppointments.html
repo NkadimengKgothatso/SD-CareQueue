@@ -11,42 +11,56 @@
     <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#2563eb">
     <script type="module" src="../pwa.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" >
+        <link rel="stylesheet" href="../Staff_Webpages/Staff.css">
+        <link rel="manifest" href="../manifest.json">
+        <meta name="theme-color" content="#2563eb">
+        <script type="module" src="../pwa.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+        <link rel="stylesheet" href="a-sidebar.css">
+        <link rel="stylesheet" href="patientDashboard.css">
     
     
     
 </head>
 <body>
+<!-- TOP BAR -->
+<header class="top-bar">
+    <section class="logo">
+        <section class="logo-icon"></section>
+        <section class="logo-name">Care Queue</section>
+    </section>
 
-    <header class="top-bar">
-        <nav class="logo">
-            <section class="logo-icon"></section>
-            <section class="logo-name">Care Queue</section>
-        </nav>
-    </header>
+    <button class="sign-out-btn" onclick="signOut()">
+        <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+    </button>
+</header>
 
-    <main class="container">
+<!-- MAIN LAYOUT -->
+<section class="admin-container">
 
-       <!-- SIDEBAR -->
+    <!-- SIDEBAR -->
     <aside class="sidebar">
         <nav class="sidebar-nav">
 
             <section class="nav-item" onclick="window.location.href='PatientDashboard.html'">
-                <section class=""></section>
+                <section class="nav-dot"></section>
                 <section>Dashboard</section>
             </section>
 
             <section class="nav-item" onclick="window.location.href='BookAppointments.html'">
-                <section class=""></section>
+                <section class="nav-dot"></section>
                 <section>Book Appointment</section>
             </section>
 
             <section class="nav-item active" onclick="window.location.href='MyAppointments.html'">
-                <section class=""></section>
+                <section class="nav-dot"></section>
                 <section>My Appointments</section>
             </section>
 
             <section class="nav-item" onclick="window.location.href='patientNotifications.html'">
-                <section class=""></section>
+                <section class="nav-dot"></section>
                 <section>Notifications</section>
                 <section id="sidebarUnreadCount" class="sidebar-badge">0</section>
             </section>

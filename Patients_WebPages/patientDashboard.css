@@ -355,7 +355,7 @@ body {
 
 .stat-card p {
     font-family: var(--font-display);
-   font-size: 16px;
+   font-size: 12px;
     font-weight: 900;
     color: var(--color-text-primary);
     line-height: 1;
@@ -399,7 +399,7 @@ body {
     color: var(--color-brand-deeper);
     padding: 3px 10px;
     border-radius: 20px;
-    font-size: 16px;
+    font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
