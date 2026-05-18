@@ -212,22 +212,8 @@ function renderKPIs(data, from, to) {
     document.getElementById("noShowValue").textContent =
         getGlobalNoShowRate(data.appointments);
 
-    let trend;
-
-    if (from && to) {
-        trend = calculatePatientsTrend(from, to);
-    } else {
-        const now = new Date();
-        const start = new Date();
-        start.setDate(now.getDate() - 30);
-
-        trend = calculatePatientsTrend(
-            start.toISOString(),
-            now.toISOString()
-        );
-    }
-
-    document.getElementById("trendValue").textContent = trend;
+    document.getElementById("trendValue").textContent =
+        getActiveClinicsCount(data.appointments);
 }
 
 // ================= QUEUE ANALYTICS =================
@@ -519,42 +505,17 @@ setActiveRow(rows, 0); // default first row
 }
 
 
-// ================= TREND =================
-function getPreviousPeriod(from, to) {
+// ================= ACTIVE CLINICS COUNT =================
+// counts clinics that have at least one completed or cancelled appointment
+// within the selected date range, reflecting real platform adoption
+function getActiveClinicsCount(list) {
+    const active = new Set(
+        list
+            .filter(a => a.status === "completed" || a.status === "cancelled")
+            .map(a => a.clinicID)
+    );
 
-    const start = new Date(from);
-    const end = new Date(to);
-
-    const diff = end.getTime() - start.getTime();
-
-    const prevEnd = new Date(start.getTime() - 1);
-    const prevStart = new Date(prevEnd.getTime() - diff);
-
-    return {
-        from: prevStart.toISOString(),
-        to: prevEnd.toISOString()
-    };
-}
-
-function countPatients(list, from, to) {
-    return list.filter(a =>
-        a.status === "completed" &&
-        inDateRange(a.date, from, to)
-    ).length;
-}
-
-function calculatePatientsTrend(from, to) {
-
-    const prev = getPreviousPeriod(from, to);
-
-    const current = countPatients(appointments, from, to);
-    const previous = countPatients(appointments, prev.from, prev.to);
-
-    if (previous === 0) return current > 0 ? "+100%" : "0%";
-
-    const change = ((current - previous) / previous) * 100;
-
-    return `${change.toFixed(1)}%`;
+    return active.size;
 }
 
 function setActiveRow(rows, index) {
@@ -570,11 +531,9 @@ function setActiveRow(rows, index) {
 
 export {
     buildDashboard,
-    calculatePatientsTrend,
-    countPatients,
+    getActiveClinicsCount,
     getGlobalNoShowRate,
     getNoShowRateByClinic,
-    getPreviousPeriod,
     getQueueAnalytics,
     getRateColor,
     inDateRange,
