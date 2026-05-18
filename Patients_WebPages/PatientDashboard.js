@@ -105,6 +105,10 @@ function setAvatarInitial(name, email) {
 async function loadAppointments(userId) {
 
     const container = document.getElementById("appointmentsContainer");
+    // Stop function if container does not exist on this page
+    if (!container) {
+        return;
+    }
     container.innerHTML = "";
 
     try {
