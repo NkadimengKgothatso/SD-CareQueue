@@ -260,11 +260,24 @@ window.addEventListener("DOMContentLoaded", () => {
                 patientName  = name;
                 patientEmail = email;
 
-                // Populate dashboard header with user info
-                nameEl.textContent    = name || "User";
-                roleEl.textContent    = data.role || "Unknown";
+            // Populate dashboard header with user info
+            if (nameEl) {
+                nameEl.textContent = name || "User";
+            }
+            
+            if (roleEl) {
+                roleEl.textContent = data.role || "Unknown";
+            }
+            
+            if (welcomeEl) {
                 welcomeEl.textContent = `Welcome, ${name || "User"}`;
-                document.getElementById("userEmail").textContent = email;
+            }
+            
+            const userEmailEl = document.getElementById("userEmail");
+            
+            if (userEmailEl) {
+                userEmailEl.textContent = email || "";
+            }
 
                 setAvatarInitial(name, email);
             }
