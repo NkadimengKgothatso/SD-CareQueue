@@ -339,3 +339,12 @@ dialog footer {
     color: #9ca3af;
     font-size: 13px;
 }
+
+#upcoming,
+#past {
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
