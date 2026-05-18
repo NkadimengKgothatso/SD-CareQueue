@@ -677,6 +677,62 @@ select:focus-visible {
     }
 }
 
+/* Small Mobile */
+@media (max-width: 480px) {
+    .top-bar {
+        padding: 0 12px;
+        height: 52px;
+    }
+
+    .layout-wrapper {
+        min-height: calc(100vh - 52px);
+    }
+
+    .sidebar {
+        top: 52px;
+        height: calc(100vh - 52px);
+    }
+
+    .logo-icon {
+        width: 22px;
+        height: 22px;
+    }
+
+    .logo-name {
+        font-size: 14px;
+    }
+
+    .main-content {
+        padding: 14px 10px;
+    }
+
+    .page-title {
+        font-size: 16px;
+    }
+
+    .card {
+        padding: 12px;
+    }
+
+    .data-table {
+        font-size: 11px;
+    }
+
+    .data-table th {
+        padding: 8px 4px;
+        font-size: 10px;
+    }
+
+    .data-table td {
+        padding: 8px 4px;
+        font-size: 11px;
+    }
+
+    .btn {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+}
 /* ══════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════ */
