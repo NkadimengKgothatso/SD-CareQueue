@@ -525,9 +525,3 @@ main {
     color: white;
 }
 
-/* ── Responsive ─────────────────────────────────────────────── */
-@media (max-width: 768px) {
-    .time-slots {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
