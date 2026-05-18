@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Appointment Page</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="a-sidebar.css">
     <link rel="stylesheet" href="patientDashboard.css">
@@ -17,25 +18,31 @@
 </head>
 <body>
 
+<!-- TOP BAR -->
 <header class="top-bar">
-    <nav class="logo">
+    <section class="logo">
         <section class="logo-icon"></section>
         <section class="logo-name">Care Queue</section>
-    </nav>
+    </section>
+
+    <button class="sign-out-btn" onclick="signOut()">
+        <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+    </button>
 </header>
 
-<main class="container">
+<!-- MAIN LAYOUT -->
+<section class="admin-container">
 
-     <!-- SIDEBAR -->
+    <!-- SIDEBAR -->
     <aside class="sidebar">
         <nav class="sidebar-nav">
 
-            <section class="nav-item" onclick="window.location.href='PatientDashboard.html'">
+            <section class="nav-item active" onclick="window.location.href='PatientDashboard.html'">
                 <section class="nav-dot"></section>
                 <section>Dashboard</section>
             </section>
 
-            <section class="nav-item active" onclick="window.location.href='BookAppointments.html'">
+            <section class="nav-item" onclick="window.location.href='BookAppointments.html'">
                 <section class="nav-dot"></section>
                 <section>Book Appointment</section>
             </section>
@@ -66,6 +73,7 @@
             </section>
         </section>
     </aside>
+
         <main class="main-content">
             <h2 id="pageTitle">Book Appointment</h2>
             <p class="FindClinic-Text">Find a clinic & select a slot</p>

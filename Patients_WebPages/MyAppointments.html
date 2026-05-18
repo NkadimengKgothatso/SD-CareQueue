@@ -16,37 +16,42 @@
     
 </head>
 <body>
+<!-- TOP BAR -->
+<header class="top-bar">
+    <section class="logo">
+        <section class="logo-icon"></section>
+        <section class="logo-name">Care Queue</section>
+    </section>
 
-    <header class="top-bar">
-        <nav class="logo">
-            <section class="logo-icon"></section>
-            <section class="logo-name">Care Queue</section>
-        </nav>
-    </header>
+    <button class="sign-out-btn" onclick="signOut()">
+        <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+    </button>
+</header>
 
-    <main class="container">
+<!-- MAIN LAYOUT -->
+<section class="admin-container">
 
-       <!-- SIDEBAR -->
+    <!-- SIDEBAR -->
     <aside class="sidebar">
         <nav class="sidebar-nav">
 
-            <section class="nav-item" onclick="window.location.href='PatientDashboard.html'">
-                <section class=""></section>
+            <section class="nav-item active" onclick="window.location.href='PatientDashboard.html'">
+                <section class="nav-dot"></section>
                 <section>Dashboard</section>
             </section>
 
             <section class="nav-item" onclick="window.location.href='BookAppointments.html'">
-                <section class=""></section>
+                <section class="nav-dot"></section>
                 <section>Book Appointment</section>
             </section>
 
-            <section class="nav-item active" onclick="window.location.href='MyAppointments.html'">
-                <section class=""></section>
+            <section class="nav-item" onclick="window.location.href='MyAppointments.html'">
+                <section class="nav-dot"></section>
                 <section>My Appointments</section>
             </section>
 
             <section class="nav-item" onclick="window.location.href='patientNotifications.html'">
-                <section class=""></section>
+                <section class="nav-dot"></section>
                 <section>Notifications</section>
                 <section id="sidebarUnreadCount" class="sidebar-badge">0</section>
             </section>
