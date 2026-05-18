@@ -577,7 +577,30 @@ select:focus-visible {
         display: block !important;
     }
 
+    /* ── Sidebar footer ── */
+    .sidebar-footer {
+        padding: 14px 16px;
+    }
 
+    .sidebar-footer .user-details {
+        display: none;
+    }
+
+    .user-avatar {
+        width: 34px;
+        height: 34px;
+        font-size: 12px;
+        background: var(--color-brand-soft);
+        color: var(--color-brand-deeper);
+    }
+
+    .user-name {
+        font-size: 13px;
+    }
+
+    .user-email {
+        font-size: 11px;
+    }
 
     /* ── Main content — full width below sidebar ── */
     .main-content {
@@ -628,4 +651,34 @@ select:focus-visible {
     }
 }
 
+/* ── Small Mobile (480px and below) ────── */
+@media (max-width: 480px) {
 
+    .admin-container {
+        padding-top: 52px;
+    }
+
+    .top-bar {
+        padding: 0 12px;
+        height: 52px;
+    }
+
+    .logo-icon { width: 22px; height: 22px; }
+    .logo-name { font-size: 14px; }
+
+    .nav-item {
+        padding: 12px 14px;
+        font-size: 13px;
+    }
+
+    .main-content { padding: 14px 12px; }
+    .page-title   { font-size: 16px; }
+
+    .card         { padding: 12px; }
+
+    .data-table   { font-size: 11px; }
+    .data-table th { padding: 8px 4px; font-size: 10px; }
+    .data-table td { padding: 8px 4px; font-size: 11px; }
+
+    .btn { padding: 6px 12px; font-size: 11px; }
+}
