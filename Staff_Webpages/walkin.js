@@ -74,12 +74,12 @@ async function getStaffProfile(email) {
 }
 
 
-// CLINIC HOURS FETCH
-// fetches the clinic's startTime and endTime from the clinicsObjects collection
+// CLINIC DATA FETCH
+// fetches the clinic's startTime, endTime, and services array from clinicsObjects
 // matches by the numeric clinic id stored on the staff profile
-// returns an object with startTime and endTime strings (e.g. "07:00", "18:00")
-// falls back to "08:00"/"17:00" if the clinic record cannot be found
-async function getClinicHours(id) {
+// returns an object with startTime, endTime, and services (e.g. ["General", "HIV/AIDS"])
+// falls back to default hours and an empty services array if the clinic record cannot be found
+async function getClinicData(id) {
     try {
         const snapshot = await getDocs(
             query(
@@ -89,22 +89,48 @@ async function getClinicHours(id) {
         );
 
         if (snapshot.empty) {
-            console.warn("Clinic record not found in clinicsObjects, using default hours");
-            return { startTime: "08:00", endTime: "17:00" };
+            console.warn("Clinic record not found in clinicsObjects, using defaults");
+            return { startTime: "08:00", endTime: "17:00", services: [] };
         }
 
         const data = snapshot.docs[0].data();
 
-        console.log("🕐 Clinic hours fetched:", data.startTime, "→", data.endTime);
+       
 
         return {
             startTime: data.startTime || "08:00",
-            endTime: data.endTime || "17:00"
+            endTime: data.endTime || "17:00",
+            services: Array.isArray(data.service) ? data.service : []
         };
     } catch (err) {
-        console.error("Failed to fetch clinic hours:", err);
-        return { startTime: "08:00", endTime: "17:00" };
+        console.error("Failed to fetch clinic data:", err);
+        return { startTime: "08:00", endTime: "17:00", services: [] };
     }
+}
+
+
+// POPULATE REASON DROPDOWN
+// clears any existing options from the reasonInput select element
+// populates it with the services fetched from this clinic's record
+// falls back to a hardcoded default list if no services were returned
+function populateReasonDropdown(services) {
+
+    const select = document.getElementById("reasonInput");
+    if (!select) return;
+
+    select.innerHTML = "";
+
+    const options = services.length > 0
+        ? services
+        : ["General Checkup", "Vaccination", "Follow up", "Prescription Refill",
+           "Family Planning", "Child Health", "Chronic Medication", "Other"];
+
+    options.forEach(service => {
+        const opt = document.createElement("option");
+        opt.value = service;
+        opt.textContent = service;
+        select.appendChild(opt);
+    });
 }
 
 
@@ -412,7 +438,7 @@ addBtn?.addEventListener("click", async () => {
         const ticketNumber = `W-${String(count).padStart(3, "0")}`;
 
         // 4. FETCH DYNAMIC CLINIC HOURS THEN CALCULATE SLOT
-        const { startTime, endTime } = await getClinicHours(clinicId);
+        const { startTime, endTime } = await getClinicData(clinicId);
         const assignedTime = getNextAvailableTime(existingAppointments, startTime, endTime);
 
         console.log(" ASSIGNED TIME RESULT:", assignedTime);
@@ -520,8 +546,11 @@ onAuthStateChanged(auth, async (user) => {
             clinicName || "No clinic assigned";
     }
 
-    // console.log(" clinicId:", clinicId);
-    // console.log("clinicName:", clinicName);
+    // ─── POPULATE REASON DROPDOWN FROM CLINIC SERVICES ───
+    const clinicData = await getClinicData(clinicId);
+    populateReasonDropdown(clinicData.services);
+
+   
 
     // ─── LOAD WALK-IN APPOINTMENTS ───────────────────
     loadAppointments();
