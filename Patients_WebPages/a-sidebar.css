@@ -449,52 +449,236 @@ select:focus-visible {
 
     white-space: nowrap;
 }
-
 /* ══════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════ */
-@media (max-width: 640px) {
 
-    .admin-container {
-        flex-direction: column;
-    }
+/* ── Tablet (769px and below) ──────────── */
+@media (max-width: 768px) {
 
-    /* Remove the fixed positioning & slide-out behaviour */
     .sidebar {
-        position: static;          /* no longer fixed */
-        width: 100%;
-        height: auto;              /* shrinks to fit nav items */
-        max-width: none;
+        width: var(--sidebar-width);
+        position: static;
+        height: auto;
         transform: none !important;
         box-shadow: none;
         border-right: none;
         border-bottom: 1px solid var(--color-border-tertiary);
     }
 
-    .sidebar-nav {
-        padding: 12px 16px;
-        gap: 4px;
-    }
-
-    /* Nav items full-width, left-aligned */
-    .nav-item {
-        justify-content: flex-start;
-        padding: 12px 16px;
-        font-size: 14px;
-        border-radius: 10px;
-    }
-
-    .logo-name,
-    .nav-item section:not(.nav-dot),
-    .user-details {
-        display: none;
-    }
-    /* Main content takes full width below sidebar */
     .main-content {
         margin-left: 0;
-        margin-top: 0;
-        width: 100%;
         padding: 20px 16px;
     }
 
+    .page-title {
+        font-size: 20px;
+    }
+
+    .card {
+        padding: 16px;
+    }
+}
+
+/* ── Mobile (640px and below) ─────────── */
+@media (max-width: 640px) {
+
+    .admin-container {
+        flex-direction: column;
+        padding-top: 56px; /* offset for fixed top-bar */
+    }
+
+    /* ── Top Bar ── */
+    .top-bar {
+        padding: 0 16px;
+        height: 56px;
+    }
+
+    .logo-icon {
+        width: 26px;
+        height: 26px;
+    }
+
+    .logo-icon::before {
+        width: 2.5px;
+        height: 12px;
+        left: 11.75px;
+        top: 7px;
+    }
+
+    .logo-icon::after {
+        width: 12px;
+        height: 2.5px;
+        left: 7px;
+        top: 11.75px;
+    }
+
+    .logo-name {
+        font-size: 16px;
+        color: var(--color-brand);
+    }
+
+    .sign-out-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    /* ── Sidebar — always visible, stacked above content ── */
+    .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        max-width: none;
+        transform: none !important;
+        box-shadow: none;
+        border-right: none;
+        border-bottom: 1px solid var(--color-border-tertiary);
+        background: var(--color-background-primary);
+        z-index: auto;
+    }
+
+    .sidebar-nav {
+        padding: 12px 16px;
+        gap: 4px;
+        overflow-y: visible;
+    }
+
+    /* ── Nav items — full width, left-aligned ── */
+    .nav-item {
+        justify-content: flex-start;
+        padding: 13px 16px;
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: var(--border-radius-lg);
+        transform: none !important;
+        color: var(--color-text-secondary);
+    }
+
+    .nav-item:hover {
+        background: var(--color-brand-subtle);
+        color: var(--color-brand-dark);
+        transform: none !important;
+    }
+
+    /* ── Active — green pill matching brand ── */
+    .nav-item.active {
+        background: var(--color-brand);
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.30);
+    }
+
+    .nav-item.active .nav-dot {
+        background: #ffffff;
+        opacity: 1;
+    }
+
+    /* Always show text labels */
+    .nav-item span:not(.nav-dot) {
+        display: block !important;
+    }
+
+    /* ── Sidebar footer ── */
+    .sidebar-footer {
+        padding: 14px 16px;
+    }
+
+    .sidebar-footer .user-details {
+        display: flex !important;
+    }
+
+    .user-avatar {
+        width: 34px;
+        height: 34px;
+        font-size: 12px;
+        background: var(--color-brand-soft);
+        color: var(--color-brand-deeper);
+    }
+
+    .user-name {
+        font-size: 13px;
+    }
+
+    .user-email {
+        font-size: 11px;
+    }
+
+    /* ── Main content — full width below sidebar ── */
+    .main-content {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 0;
+        padding: 20px 16px;
+        min-height: auto;
+    }
+
+    /* ── Page elements ── */
+    .page-header { margin-bottom: 20px; }
+    .page-title  { font-size: 18px; font-weight: 700; }
+    .page-subtitle { font-size: 13px; }
+
+    .card {
+        padding: 16px;
+        margin-bottom: 14px;
+        border-radius: var(--border-radius-lg);
+    }
+
+    .card-title  { font-size: 11px; }
+    .data-table  { font-size: 12px; }
+
+    .data-table th {
+        padding: 10px 6px 10px 0;
+        font-size: 11px;
+    }
+
+    .data-table td {
+        padding: 10px 6px 10px 0;
+        font-size: 12px;
+    }
+
+    .btn       { padding: 7px 14px; font-size: 12px; }
+    .btn-small { padding: 4px 10px; font-size: 11px; }
+
+    .form-input { padding: 8px 10px; font-size: 13px; }
+    .form-group label { font-size: 11px; margin-bottom: 5px; }
+
+    .empty-state { padding: 32px 16px; }
+
+    .toast {
+        bottom: 16px;
+        right: 16px;
+        padding: 10px 18px;
+        font-size: 12px;
+    }
+}
+
+/* ── Small Mobile (480px and below) ────── */
+@media (max-width: 480px) {
+
+    .admin-container {
+        padding-top: 52px;
+    }
+
+    .top-bar {
+        padding: 0 12px;
+        height: 52px;
+    }
+
+    .logo-icon { width: 22px; height: 22px; }
+    .logo-name { font-size: 14px; }
+
+    .nav-item {
+        padding: 12px 14px;
+        font-size: 13px;
+    }
+
+    .main-content { padding: 14px 12px; }
+    .page-title   { font-size: 16px; }
+
+    .card         { padding: 12px; }
+
+    .data-table   { font-size: 11px; }
+    .data-table th { padding: 8px 4px; font-size: 10px; }
+    .data-table td { padding: 8px 4px; font-size: 11px; }
+
+    .btn { padding: 6px 12px; font-size: 11px; }
 }
