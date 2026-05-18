@@ -603,3 +603,42 @@ select:focus-visible {
 
     .btn { padding: 6px 12px; font-size: 11px; }
 }
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-header h1 {
+        font-size: 22px;
+    }
+
+    .stat-card p {
+        font-size: 24px;
+    }
+
+    .queue-status-card,
+    .appointment-card {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .appointment-actions {
+        flex-direction: column;
+    }
+
+    .primary-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
