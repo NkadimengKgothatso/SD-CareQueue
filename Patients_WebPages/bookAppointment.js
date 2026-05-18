@@ -268,11 +268,22 @@ async function renderTimeSlots(selectedDate, selectedClinic) {
             }
         }
 
+    
+
         const bookingsForThisSlot = slotCounts[formattedTime] || 0;
         const isFullyBooked = bookingsForThisSlot >= availableStaff;
 
-        // Disable slot if it is past, fully booked, or no staff are available
-        if (isFullyBooked || isPast || availableStaff === 0) {
+        // Check if the current logged-in patient already booked this same time slot
+        const userAlreadyBooked = snapshot.docs.some(doc => {
+            const data = doc.data();
+            const status = (data.status || "").toLowerCase();
+
+            return (data.userID === auth.currentUser?.uid && data.time === formattedTime && status !== "cancelled" && status !== "completed");
+        });
+
+        // Disable slot if it is past, fully booked, no staff are available,
+        // or this patient already booked it
+        if (isFullyBooked || isPast || availableStaff === 0 || userAlreadyBooked) {
             slotBtn.classList.add("disabled-slot");
             slotBtn.disabled = true;
         }
@@ -704,6 +715,9 @@ confirmBtn.addEventListener("click", async () => {
         alert("Please fill in all fields");
         return;
     }
+
+    // Check if this patient already has an active appointment on this date
+   
 
     // RESCHEDULE MODE
     if (isRescheduleMode) {
