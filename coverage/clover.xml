@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1779102786050" clover="3.2.0">
-  <project timestamp="1779102786050" name="All files">
-    <metrics statements="1921" coveredstatements="1769" conditionals="1205" coveredconditionals="931" methods="379" coveredmethods="333" elements="3505" coveredelements="3033" complexity="0" loc="1921" ncloc="1921" packages="4" files="12" classes="12"/>
+<coverage generated="1779109796663" clover="3.2.0">
+  <project timestamp="1779109796664" name="All files">
+    <metrics statements="1924" coveredstatements="1771" conditionals="1205" coveredconditionals="931" methods="380" coveredmethods="333" elements="3509" coveredelements="3035" complexity="0" loc="1924" ncloc="1924" packages="4" files="12" classes="12"/>
     <package name="Admin_WebPages">
       <metrics statements="523" coveredstatements="487" conditionals="289" coveredconditionals="247" methods="124" coveredmethods="109"/>
       <file name="StaffManagement.js" path="C:\Users\reale\Documents\School\Third Year\COMS3009A-SD\SDproject\Admin_WebPages\StaffManagement.js">
@@ -1172,7 +1172,7 @@
       </file>
     </package>
     <package name="Staff_Webpages">
-      <metrics statements="785" coveredstatements="713" conditionals="567" coveredconditionals="412" methods="146" coveredmethods="126"/>
+      <metrics statements="788" coveredstatements="715" conditionals="567" coveredconditionals="412" methods="147" coveredmethods="126"/>
       <file name="Appointments.js" path="C:\Users\reale\Documents\School\Third Year\COMS3009A-SD\SDproject\Staff_Webpages\Appointments.js">
         <metrics statements="196" coveredstatements="196" conditionals="137" coveredconditionals="107" methods="48" coveredmethods="43"/>
         <line num="17" count="48" type="stmt"/>
@@ -1556,7 +1556,7 @@
         <line num="410" count="0" type="stmt"/>
       </file>
       <file name="Queues.js" path="C:\Users\reale\Documents\School\Third Year\COMS3009A-SD\SDproject\Staff_Webpages\Queues.js">
-        <metrics statements="226" coveredstatements="210" conditionals="215" coveredconditionals="158" methods="49" coveredmethods="40"/>
+        <metrics statements="229" coveredstatements="212" conditionals="215" coveredconditionals="158" methods="50" coveredmethods="40"/>
         <line num="20" count="18" type="stmt"/>
         <line num="29" count="18" type="stmt"/>
         <line num="30" count="18" type="stmt"/>
@@ -1733,56 +1733,59 @@
         <line num="465" count="4" type="stmt"/>
         <line num="466" count="4" type="cond" truecount="1" falsecount="1"/>
         <line num="467" count="4" type="cond" truecount="2" falsecount="0"/>
-        <line num="468" count="4" type="stmt"/>
-        <line num="481" count="2" type="stmt"/>
-        <line num="482" count="1" type="stmt"/>
-        <line num="485" count="5" type="stmt"/>
-        <line num="492" count="5" type="stmt"/>
-        <line num="493" count="2" type="stmt"/>
-        <line num="494" count="2" type="stmt"/>
-        <line num="495" count="2" type="stmt"/>
-        <line num="496" count="2" type="stmt"/>
-        <line num="497" count="2" type="cond" truecount="1" falsecount="1"/>
-        <line num="498" count="2" type="stmt"/>
-        <line num="508" count="2" type="stmt"/>
-        <line num="509" count="1" type="stmt"/>
-        <line num="513" count="18" type="stmt"/>
-        <line num="514" count="4" type="stmt"/>
-        <line num="516" count="4" type="cond" truecount="2" falsecount="0"/>
-        <line num="517" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="518" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="519" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="520" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="521" count="1" type="stmt"/>
-        <line num="522" count="1" type="stmt"/>
-        <line num="523" count="1" type="stmt"/>
-        <line num="526" count="3" type="cond" truecount="2" falsecount="0"/>
-        <line num="527" count="3" type="cond" truecount="1" falsecount="1"/>
-        <line num="529" count="3" type="stmt"/>
-        <line num="530" count="3" type="stmt"/>
-        <line num="531" count="3" type="stmt"/>
-        <line num="533" count="3" type="cond" truecount="1" falsecount="1"/>
-        <line num="534" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="468" count="2" type="stmt"/>
+        <line num="469" count="2" type="stmt"/>
+        <line num="473" count="0" type="stmt"/>
+        <line num="476" count="4" type="stmt"/>
+        <line num="489" count="2" type="stmt"/>
+        <line num="490" count="1" type="stmt"/>
+        <line num="493" count="5" type="stmt"/>
+        <line num="500" count="5" type="stmt"/>
+        <line num="501" count="2" type="stmt"/>
+        <line num="502" count="2" type="stmt"/>
+        <line num="503" count="2" type="stmt"/>
+        <line num="504" count="2" type="stmt"/>
+        <line num="505" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="506" count="2" type="stmt"/>
+        <line num="516" count="2" type="stmt"/>
+        <line num="517" count="1" type="stmt"/>
+        <line num="521" count="18" type="stmt"/>
+        <line num="522" count="4" type="stmt"/>
+        <line num="524" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="525" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="526" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="527" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="528" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="529" count="1" type="stmt"/>
+        <line num="530" count="1" type="stmt"/>
+        <line num="531" count="1" type="stmt"/>
+        <line num="534" count="3" type="cond" truecount="2" falsecount="0"/>
         <line num="535" count="3" type="cond" truecount="1" falsecount="1"/>
-        <line num="536" count="3" type="stmt"/>
-        <line num="537" count="5" type="stmt"/>
-        <line num="540" count="3" type="stmt"/>
-        <line num="541" count="3" type="stmt"/>
-        <line num="545" count="3" type="stmt"/>
-        <line num="546" count="2" type="cond" truecount="2" falsecount="0"/>
-        <line num="548" count="1" type="stmt"/>
-        <line num="549" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="550" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="551" count="1" type="stmt"/>
-        <line num="554" count="1" type="stmt"/>
-        <line num="557" count="2" type="cond" truecount="1" falsecount="1"/>
-        <line num="559" count="2" type="cond" truecount="2" falsecount="0"/>
-        <line num="560" count="1" type="stmt"/>
-        <line num="565" count="1" type="stmt"/>
+        <line num="537" count="3" type="stmt"/>
+        <line num="538" count="3" type="stmt"/>
+        <line num="539" count="3" type="stmt"/>
+        <line num="541" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="542" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="543" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="544" count="3" type="stmt"/>
+        <line num="545" count="5" type="stmt"/>
+        <line num="548" count="3" type="stmt"/>
+        <line num="549" count="3" type="stmt"/>
+        <line num="553" count="3" type="stmt"/>
+        <line num="554" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="556" count="1" type="stmt"/>
+        <line num="557" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="558" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="559" count="1" type="stmt"/>
+        <line num="562" count="1" type="stmt"/>
+        <line num="565" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="567" count="2" type="cond" truecount="2" falsecount="0"/>
         <line num="568" count="1" type="stmt"/>
-        <line num="569" count="1" type="stmt"/>
-        <line num="573" count="4" type="stmt"/>
-        <line num="574" count="5" type="stmt"/>
+        <line num="573" count="1" type="stmt"/>
+        <line num="576" count="1" type="stmt"/>
+        <line num="577" count="1" type="stmt"/>
+        <line num="581" count="4" type="stmt"/>
+        <line num="582" count="5" type="stmt"/>
       </file>
       <file name="walkin.js" path="C:\Users\reale\Documents\School\Third Year\COMS3009A-SD\SDproject\Staff_Webpages\walkin.js">
         <metrics statements="183" coveredstatements="175" conditionals="87" coveredconditionals="68" methods="26" coveredmethods="26"/>
