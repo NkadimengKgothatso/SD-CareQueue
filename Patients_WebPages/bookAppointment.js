@@ -1,11 +1,12 @@
-// Import Firebase (MODULAR SDK)
+// APPOINTMENT BOOKING MODULE
+// Handles patient appointment booking and rescheduling with clinic search, time slot management, and geolocation features
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { 
-    getFirestore, 
-    collection, 
-    addDoc, 
+import {
+    getFirestore,
+    collection,
+    addDoc,
     serverTimestamp,
     query,
     where,
@@ -28,9 +29,9 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// =========================
-// RESCHEDULE MODE (ADDED)
-// =========================
+// RESCHEDULE MODE DETECTION
+// Check if user is accessing this page to reschedule an existing appointment
+// URL params: mode=reschedule&id=<appointmentId>
 const urlParams = new URLSearchParams(window.location.search);
 const mode = urlParams.get("mode");
 const appointmentId = urlParams.get("id");
@@ -42,21 +43,20 @@ if (isRescheduleMode && pageTitle) {
     pageTitle.textContent = "Reschedule Appointment";
 }
 
-// =========================
-// TIME SLOT FUNCTIONALITY
-// =========================
+// TIME SLOT MANAGEMENT
+// Tracks user selections and filter states for displaying available appointment times
 const timeSlotsContainer = document.getElementById("timeSlots");
 const selectedTimeInput = document.getElementById("selectedTime");
 
 const nearMeBtn = document.getElementById("nearMeBtn");
 const openNowBtn = document.getElementById("openNowBtn");
 
-let nearMeActive = false;   // Tracks if "Near Me" filter is active
-let openNowActive = false;  // Tracks if "Open Now" filter is active
-let userLocation = null;    // Stores user's coordinates
+let nearMeActive = false;   // User activated "Near Me" location-based sorting
+let openNowActive = false;  // User activated "Open Now" filter for currently operating clinics
+let userLocation = null;    // Cached user coordinates from geolocation API
 
 
-//Count Number Of Staff
+//Counts total staff members available to work on a specific day at a clinic
 async function getStaffAvailableForDay(db, clinicId, dayName) {
     const q = query(
         collection(db, "StaffAvailability"),
@@ -78,6 +78,8 @@ async function getStaffAvailableForDay(db, clinicId, dayName) {
     return availableStaff;
 }
 
+// Retrieves all time slots that are fully booked for a given date and clinic
+// A slot is fully booked when appointments equal available staff count
 async function getBookedSlots(db, selectedDate, selectedClinic) {
     const dateObj = new Date(selectedDate);
     const dayName = dateObj
@@ -183,6 +185,8 @@ async function getClinicWorkingHours(selectedClinic, dayName) {
 
 
 //Display Time Slots
+// Generates 30-minute interval time slots between clinic operating hours
+// Disables slots that are past, fully booked, or already booked by current user
 async function renderTimeSlots(selectedDate, selectedClinic) {
     timeSlotsContainer.innerHTML = "";
 
@@ -315,19 +319,19 @@ function formatTime(hour, minute) {
 
 
 
-// =========================
 // CLINIC SEARCH FUNCTIONALITY
-// =========================
+// Allows users to search and filter clinics by name, address, status, province, or services
 const clinicSearchInput = document.getElementById("clinicSearch");
-const clinicResults = document.getElementById("clinicResults"); 
+const clinicResults = document.getElementById("clinicResults");
 
-let clinics = [];
-let selectedClinicId;
-let selectedClinicName;
+let clinics = [];           // Master list of all clinics from database
+let selectedClinicId;       // Currently selected clinic ID
+let selectedClinicName;     // Currently selected clinic name
 
 
 
 // Fetch clinics from firestore
+// Loads clinic data and triggers rescheduling flow if in reschedule mode
 async function loadClinics() {
     try {
         //Get clinics from Firestore
@@ -351,6 +355,8 @@ async function loadClinics() {
     }
 }
 
+// Loads existing appointment data when rescheduling
+// Pre-populates form fields with current appointment details
 async function loadAppointmentForReschedule() {
     if (!appointmentId) return;
 
@@ -377,6 +383,8 @@ async function loadAppointmentForReschedule() {
     renderTimeSlots(data.date, data.clinicID);
 }
 
+// Renders clinic cards with select functionality
+// Each card displays clinic info (name, distance if available) and selection button
 function displayClinics(clinicList) {
     clinicResults.innerHTML = "";
 
@@ -446,9 +454,8 @@ clinicSearchInput.addEventListener("input", () => {
 });
 
 
-// =========================
 // HAVERSINE FORMULA
-// =========================
+// Calculates great-circle distance between two geographic points in kilometers
 function calculateDistance(lat1, lon1, lat2, lon2) {
 
     // Radius of Earth in kilometers
@@ -471,9 +478,8 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * c;
 }
 
-// =========================
 // GET USER LOCATION
-// =========================
+// Requests browser geolocation permission and returns user coordinates
 function getUserLocation() {
     return new Promise((resolve, reject) => {
 
@@ -498,10 +504,8 @@ function getUserLocation() {
     });
 }
 
-// =========================
 // CHECK IF CLINIC IS OPEN NOW
-// Supports format: "Mo-Fr 08:00-17:00"
-// =========================
+// Parses opening hours format (e.g., "Mo-Fr 08:00-17:00") and checks if clinic is currently open
 function isClinicOpenNow(openingHours) {
 
     // If no opening hours provided → assume closed
@@ -562,9 +566,8 @@ function isClinicOpenNow(openingHours) {
     }
 }
 
-// =========================
 // APPLY FILTERS
-// =========================
+// Combines search, "Open Now", and "Near Me" filters to display matching clinics
 function applyFilters() {
 
     // Start with all clinics
@@ -609,16 +612,12 @@ function applyFilters() {
     displayClinics(filteredClinics);
 }
 
-// =========================
 // SEARCH EVENT
-// =========================
-
-// Trigger filtering when user types
+// Trigger filtering when user types in clinic search box
 clinicSearchInput.addEventListener("input", applyFilters);
 
-// =========================
 // NEAR ME BUTTON
-// =========================
+// Toggles location-based clinic sorting when clicked
 nearMeBtn.addEventListener("click", async () => {
     try {
         if (!nearMeActive) {
@@ -644,9 +643,8 @@ nearMeBtn.addEventListener("click", async () => {
     }
 });
 
-// =========================
 // OPEN NOW BUTTON
-// =========================
+// Toggles filter to show only currently operating clinics
 openNowBtn.addEventListener("click", () => {
 
     // Toggle state
@@ -660,7 +658,8 @@ openNowBtn.addEventListener("click", () => {
 
 loadClinics();
 
-// display patient name on side bar
+// Display patient name and email on sidebar
+// Updates when authentication state changes
 const nameSurnameEl = document.getElementById("userName");
 const emailEl =  document.getElementById("userEmail");
 
@@ -675,6 +674,7 @@ onAuthStateChanged(auth, (user) => {
 });
 
 // SET MIN DATE TO TOMORROW
+// Prevents users from booking appointments in the past
 const dateInput = document.getElementById("appt-date");
 
 const today = new Date();
@@ -686,6 +686,7 @@ dateInput.setAttribute("min", minDate);
 
 
 // CONFIRM APPOINTMENT BUTTON
+// Validates form inputs and saves new appointment or updates existing one for reschedule
 const confirmBtn = document.querySelector(".confirm-Button");
 
 confirmBtn.addEventListener("click", async () => {
@@ -873,7 +874,7 @@ links.forEach(link => {
     }
 });
 
-//on change of selected date render the times accordingly
+// Trigger time slot refresh when user selects a different appointment date
 dateInput.addEventListener("change", () => {
     if (dateInput.value && selectedClinicId) {
         renderTimeSlots(dateInput.value, selectedClinicId);
@@ -881,6 +882,7 @@ dateInput.addEventListener("change", () => {
 });
 
 
+// Generates user avatar with initials from name or email
 function setAvatarInitial(name, email) {
     let initials = "";
     if (name && name.trim().length > 0) {
@@ -893,12 +895,9 @@ function setAvatarInitial(name, email) {
     document.getElementById("patientAvatar").textContent = initials.toUpperCase();
 }
 
-// =========================
 // POPULATE REASON SELECT
-// =========================
-
-// Populates the reason dropdown with the selected clinic's services from the database
-// Falls back to a default list if the clinic has no services stored
+// Fills appointment reason dropdown with services from selected clinic
+// Falls back to default message if clinic has no services available
 function populateReasonSelect(services) {
     const reasonSelect = document.querySelector(".reason-select");
 
