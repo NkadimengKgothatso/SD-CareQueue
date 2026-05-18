@@ -309,3 +309,14 @@ dialog footer {
 .danger-btn:hover {
     background: #dc2626;
 }
+
+.carousel-outer,
+.past-outer {
+    overflow-y: hidden;
+}
+
+.carousel-outer.scrollable,
+.past-outer.scrollable {
+    max-height: 280px;
+    overflow-y: auto;
+}

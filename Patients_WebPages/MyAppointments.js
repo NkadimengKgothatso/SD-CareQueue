@@ -298,7 +298,7 @@ links.forEach(link => {
 function updateScrollState() {
     const upcomingCards = upcomingList.querySelectorAll(".appointment-card");
     const pastCards = pastList.querySelectorAll(".appointment-card");
- 
-    upcomingList.classList.toggle("scrollable", upcomingCards.length > 2);
-    pastList.classList.toggle("scrollable", pastCards.length > 2);
+
+    document.querySelector(".carousel-outer").classList.toggle("scrollable", upcomingCards.length > 2);
+    document.querySelector(".past-outer").classList.toggle("scrollable", pastCards.length > 2);
 }
