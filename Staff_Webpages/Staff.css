@@ -63,6 +63,85 @@ main {
     height: calc(100vh - 60px);
 }
 
+/* ── Top Bar ────────────────────────────────────────────── */
+.top-bar {
+    height: 60px;
+
+    background: #ffffff;
+
+    border-bottom: 1px solid var(--clr-border);
+
+    display: flex;
+    align-items: center;
+
+    justify-content: space-between;
+    padding: 0 24px;
+
+    position: sticky;
+    top: 0;
+
+    z-index: 100;
+}
+
+/* ── Logo ───────────────────────────────────────────────── */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-icon {
+    width: 28px;
+    height: 28px;
+
+    background: var(--clr-primary);
+
+    border-radius: 7px;
+
+    position: relative;
+
+    display: inline-block;
+}
+
+.logo-icon::before {
+    content: '';
+
+    position: absolute;
+
+    background: white;
+
+    width: 3px;
+    height: 13px;
+
+    left: 12px;
+    top: 7px;
+
+    border-radius: 1px;
+}
+
+.logo-icon::after {
+    content: '';
+
+    position: absolute;
+
+    background: white;
+
+    width: 13px;
+    height: 3px;
+
+    left: 7px;
+    top: 12px;
+
+    border-radius: 1px;
+}
+
+.logo-name {
+    font-size: 18px;
+    font-weight: 700;
+
+    color: var(--clr-primary);
+}
+
 /* ─────────────────────────────────────────────
    Modern Sidebar
 ───────────────────────────────────────────── */
