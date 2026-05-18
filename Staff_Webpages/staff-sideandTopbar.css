@@ -1,182 +1,96 @@
 /* ══════════════════════════════════════════════════════
-   a-sidebar.css  —  Care Queue | Shared Patient Layout
-   Shared across all patient-facing pages
+   staff-unified.css — Unified Staff Styling
+   Combines admin sidebar with staff/patient top bar
 ══════════════════════════════════════════════════════ */
 
-/* ── Google Font ───────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* ══════════════════════════════════════════
-   CSS VARIABLES
-══════════════════════════════════════════ */
-:root {
-
-    /* ── Brand Colors ───────────────────── */
-    --color-brand: #10b981;
-    --color-brand-dark: #059669;
-    --color-brand-deeper: #047857;
-    --color-brand-soft: #d1fae5;
-    --color-brand-subtle: #ecfdf5;
-
-    /* ── Backgrounds ────────────────────── */
-    --color-bg-canvas: #f0fdf8;
-    --color-background-primary: #ffffff;
-
-    /* ── Text ───────────────────────────── */
-    --color-text-primary: #0f172a;
-    --color-text-secondary: #64748b;
-    --color-text-tertiary: #94a3b8;
-
-    /* ── Borders ────────────────────────── */
-    --color-border-primary: #cbd5e1;
-    --color-border-secondary: #cbd5e1;
-    --color-border-tertiary: #e2e8f0;
-
-    /* ── Shadows ────────────────────────── */
-    --shadow-sm:
-        0 1px 3px rgba(0, 0, 0, 0.07),
-        0 1px 2px rgba(0, 0, 0, 0.05);
-
-    --shadow-md:
-        0 4px 12px rgba(16, 185, 129, 0.10),
-        0 1px 3px rgba(0, 0, 0, 0.06);
-
-    --shadow-lg:
-        0 10px 30px rgba(16, 185, 129, 0.12),
-        0 2px 8px rgba(0, 0, 0, 0.06);
-
-    /* ── Radius ─────────────────────────── */
-    --border-radius-sm: 6px;
-    --border-radius-md: 8px;
-    --border-radius-lg: 14px;
-    --border-radius-xl: 20px;
-
-    /* ── Layout ─────────────────────────── */
-    --sidebar-width: 240px;
-    --sidebar-collapsed: 72px;
-    --topbar-height: 64px;
-
-    /* ── Typography ─────────────────────── */
-    --font-sans:
-        'Inter',
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        'Segoe UI',
-        sans-serif;
-
-    --font-body: var(--font-sans);
-
-    /* ── Transitions ────────────────────── */
-    --transition-fast: 0.15s ease;
-    --transition-base: 0.25s ease;
-}
-
-/* ══════════════════════════════════════════
-   RESET & BASE
-══════════════════════════════════════════ */
-*,
-*::before,
-*::after {
+* {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
-html,
-body {
-    height: 100%;
+:root {
+    /* ── Colors ── */
+    --color-background-primary:   #ffffff;
+    --color-background-secondary: #f8f7fc;
+    --color-text-primary:         #111827;
+    --color-text-secondary:       #6b7280;
+    --color-text-tertiary:        #9ca3af;
+    --color-border-tertiary:      #e5e7eb;
+    --color-border-secondary:     #d1d5db;
+
+    /* ── Brand blue ── */
+    --color-brand:      #4584c4;
+    --color-brand-dark: #114880;
+    --color-brand-soft: #e8f0fa;
+    --brand-mid:        #4584c4;
+    --brand-tag:        #7ba3d4;
+    --brand-light-text: #a3bfdf;
+
+    /* ── Radii ── */
+    --border-radius-md: 8px;
+    --border-radius-lg: 14px;
+
+    /* ── Typography ── */
+    --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --transition: 0.2s ease;
 }
 
 body {
-    font-family: var(--font-body);
-    background: var(--color-bg-canvas);
+    background: var(--color-background-secondary);
+    font-family: var(--font-sans);
     color: var(--color-text-primary);
-    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
 }
 
-/* ── Default typography ────────────────── */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    color: var(--color-text-primary);
-}
-
-p {
-    color: var(--color-text-secondary);
-    font-size: 14px;
-}
-
-button,
-input,
-select,
-textarea {
-    font: inherit;
-}
-
 /* ══════════════════════════════════════════
-   APP CONTAINER
+   LAYOUT
 ══════════════════════════════════════════ */
 .admin-container {
     display: flex;
     min-height: 100vh;
+    flex-direction: column;
 }
 
 /* ══════════════════════════════════════════
    TOP BAR
 ══════════════════════════════════════════ */
 .top-bar {
-    height: var(--topbar-height);
+    height: 60px;
     background: var(--color-background-primary);
     border-bottom: 1px solid var(--color-border-tertiary);
-
     display: flex;
-    justify-content: space-between;
     align-items: center;
-
+    justify-content: space-between;
     padding: 0 24px;
-
-    position: fixed;
-    inset: 0 0 auto 0;
-
-    z-index: 200;
-
-    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-/* ── Logo ──────────────────────────────── */
+/* ── Logo ── */
 .logo {
     display: flex;
     align-items: center;
     gap: 10px;
-
-    text-decoration: none;
-    color: inherit;
 }
 
 .logo-icon {
-    width: 30px;
-    height: 30px;
-
+    width: 28px;
+    height: 28px;
     background: var(--color-brand);
-
     border-radius: var(--border-radius-md);
-
     position: relative;
-
     flex-shrink: 0;
 }
 
 .logo-icon::before,
 .logo-icon::after {
-    content: "";
+    content: '';
     position: absolute;
     background: white;
     border-radius: 2px;
@@ -185,48 +99,38 @@ textarea {
 .logo-icon::before {
     width: 3px;
     height: 13px;
-    left: 13px;
-    top: 8px;
+    left: 12px;
+    top: 7px;
 }
 
 .logo-icon::after {
     width: 13px;
     height: 3px;
-    left: 8px;
-    top: 13px;
+    left: 7px;
+    top: 12px;
 }
-
 
 .logo-name {
     font-size: 17px;
     font-weight: 600;
-    font-family: var(--font-sans);
     color: var(--color-text-primary);
 }
 
-/* ── Sign Out Button ───────────────────── */
+/* ── Sign Out Button ── */
 .sign-out-btn {
     display: flex;
     align-items: center;
     gap: 7px;
-
     background: transparent;
     color: var(--color-text-secondary);
-
     border: 1px solid var(--color-border-tertiary);
-    border-radius: var(--border-radius-md);
-
     padding: 7px 14px;
-
+    border-radius: var(--border-radius-md);
     cursor: pointer;
-
+    font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 500;
-
-    transition:
-        background var(--transition-fast),
-        color var(--transition-fast),
-        border-color var(--transition-fast);
+    transition: var(--transition);
 }
 
 .sign-out-btn:hover {
@@ -236,125 +140,109 @@ textarea {
 }
 
 /* ══════════════════════════════════════════
+   MAIN LAYOUT WRAPPER
+══════════════════════════════════════════ */
+.layout-wrapper {
+    display: flex;
+    flex: 1;
+    min-height: calc(100vh - 60px);
+}
+
+/* ══════════════════════════════════════════
    SIDEBAR
 ══════════════════════════════════════════ */
 .sidebar {
-    width: var(--sidebar-width);
-
+    width: 240px;
     background: var(--color-background-primary);
-
     border-right: 1px solid var(--color-border-tertiary);
-
-    position: fixed;
-    top: var(--topbar-height);
-    left: 0;
-
-    height: calc(100vh - var(--topbar-height));
-
     display: flex;
     flex-direction: column;
-
-    z-index: 100;
-
-    box-shadow: var(--shadow-sm);
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
-/* ── Sidebar Navigation ────────────────── */
+.sidebar-header {
+    padding: 22px 20px;
+    border-bottom: 1px solid var(--color-border-tertiary);
+}
+
+.sidebar-header .logo-icon {
+    width: 30px;
+    height: 30px;
+    background: var(--color-brand);
+}
+
+.sidebar-header .logo-icon::before {
+    width: 3px;
+    height: 13px;
+    left: 13px;
+    top: 8px;
+}
+
+.sidebar-header .logo-icon::after {
+    width: 13px;
+    height: 3px;
+    left: 8px;
+    top: 13px;
+}
+
+.sidebar-header .logo-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+/* Nav */
 .sidebar-nav {
-    padding: 16px 12px;
-
     flex: 1;
-
+    padding: 16px 12px;
     overflow-y: auto;
-
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
 }
 
 .nav-item {
     display: flex;
     align-items: center;
     gap: 12px;
-
-    padding: 11px 14px;
-
+    padding: 10px 14px;
     border-radius: var(--border-radius-md);
-
-    text-decoration: none;
-
+    cursor: pointer;
+    font-size: 14px;
     color: var(--color-text-secondary);
-
-    font-size: 13px;
-    font-weight: 500;
-
-    transition:
-        background var(--transition-fast),
-        color var(--transition-fast),
-        transform var(--transition-fast);
-
-    user-select: none;
+    margin-bottom: 2px;
+    transition: all var(--transition);
+    font-weight: 400;
+    text-decoration: none;
 }
 
 .nav-item:hover {
-    background: var(--color-brand-subtle);
+    background: var(--color-brand-soft);
     color: var(--color-brand-dark);
-    transform: translateX(2px);
 }
 
 .nav-item.active {
-    background: var(--color-brand-soft);
-    color: var(--color-text-primary);
-    box-shadow: 0 3px 10px rgba(16, 185, 129, 0.20);
-}
-
-/* ── Nav Dot ───────────────────────────── */
-.nav-dot {
-    width: 6px;
-    height: 6px;
-
-    border-radius: 50%;
-
-    background: currentColor;
-
-    opacity: 0.7;
-
-    flex-shrink: 0;
-
-    transition: var(--transition-fast);
-}
-
-.nav-item.active .nav-dot {
-    opacity: 1;
-}
-
-/* ── Sidebar Badge ─────────────────────── */
-.sidebar-badge {
-    margin-left: auto;
-
-    background: var(--color-brand-dark);
+    background: var(--color-brand);
     color: white;
-
-    padding: 2px 7px;
-
-    border-radius: 999px;
-
-    font-size: 11px;
     font-weight: 500;
 }
 
-.sidebar-badge.hidden {
-    display: none;
+.nav-item.active .nav-dot {
+    background: white;
 }
 
-/* ── Sidebar Footer ────────────────────── */
+.nav-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+}
+
+/* Sidebar footer */
 .sidebar-footer {
     padding: 16px;
-
     border-top: 1px solid var(--color-border-tertiary);
 }
 
-/* ── User Info ─────────────────────────── */
 .user-info {
     display: flex;
     align-items: center;
@@ -364,38 +252,26 @@ textarea {
 .user-avatar {
     width: 36px;
     height: 36px;
-
     border-radius: 50%;
-
-    background: var(--color-brand);
-
+    background: var(--color-brand-soft);
     display: flex;
     align-items: center;
     justify-content: center;
-
-    color: white;
-
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-
-    letter-spacing: 0.03em;
-
+    color: var(--color-brand-dark);
     flex-shrink: 0;
 }
 
 .user-details {
-    display: flex;
-    flex-direction: column;
-
+    flex: 1;
     min-width: 0;
 }
 
 .user-name {
     font-size: 13px;
-    font-weight: 600;
-
+    font-weight: 500;
     color: var(--color-text-primary);
-
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -403,52 +279,13 @@ textarea {
 
 .user-email {
     font-size: 11px;
-
     color: var(--color-text-tertiary);
-
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* ══════════════════════════════════════════
-   MAIN CONTENT
-══════════════════════════════════════════ */
-.main-content {
-    flex: 1;
 
-    margin-left: var(--sidebar-width);
-    margin-top: var(--topbar-height);
-
-    padding: 28px 32px;
-
-    min-height: calc(100vh - var(--topbar-height));
-}
-
-/* ══════════════════════════════════════════
-   ACCESSIBILITY
-══════════════════════════════════════════ */
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-select:focus-visible {
-    outline: 2px solid var(--color-brand);
-    outline-offset: 2px;
-}
-
-/* ── Screen-reader only ────────────────── */
-.sr-only {
-    position: absolute;
-
-    width: 1px;
-    height: 1px;
-
-    overflow: hidden;
-
-    clip: rect(0, 0, 0, 0);
-
-    white-space: nowrap;
-}
 
 /* ══════════════════════════════════════════
    RESPONSIVE
@@ -706,30 +543,6 @@ select:focus-visible {
         padding: 14px 10px;
     }
 
-    .page-title {
-        font-size: 16px;
-    }
 
-    .card {
-        padding: 12px;
-    }
-
-    .data-table {
-        font-size: 11px;
-    }
-
-    .data-table th {
-        padding: 8px 4px;
-        font-size: 10px;
-    }
-
-    .data-table td {
-        padding: 8px 4px;
-        font-size: 11px;
-    }
-
-    .btn {
-        padding: 6px 12px;
-        font-size: 11px;
-    }
+   
 }
