@@ -363,6 +363,10 @@ test("mergeAndRender deduplicates appointments, resolves names, assigns position
     expect.objectContaining({ position: 2 }),
     { merge: true }
   );
+  expect(mockUpdateDoc).toHaveBeenCalledWith(
+    "Appointments/r1",
+    { status: "waiting", updatedAt: "TIMESTAMP" }
+  );
   expect(mockUpdateDoc).toHaveBeenCalledWith("Queues/w1", { estimateWait: 0 });
   expect(mockUpdateDoc).toHaveBeenCalledWith("Queues/r1", { estimateWait: 14 });
 });

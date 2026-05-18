@@ -182,6 +182,18 @@ test("init loads staff and clinics", async () => {
   ]));
 });
 
+test("init failure logs and shows an error toast", async () => {
+  const error = new Error("admin init failed");
+  const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  mockInitAdminPage.mockRejectedValueOnce(error);
+
+  await load();
+
+  expect(consoleSpy).toHaveBeenCalledWith("init staff management error:", error);
+  expect(document.getElementById("toast").textContent).toBe("Failed to initialise staff management");
+  expect(document.getElementById("toast").className).toContain("error");
+});
+
 test("loadStaff renders the empty-state row for an empty snapshot", async () => {
   const { loadStaff } = await load();
 
@@ -233,6 +245,25 @@ test("loadClinics logs errors without crashing", async () => {
   expect(consoleSpy).toHaveBeenCalledWith("loadClinics error:", error);
 });
 
+test("clinic input stores the matching datalist option id and clears unknown clinics", async () => {
+  await load();
+
+  const input = document.getElementById("staffClinicInput");
+  const option = document.createElement("option");
+  option.value = "Clinic A";
+  option.setAttribute("data-id", "1");
+  document.getElementById("clinicList").appendChild(option);
+  const hiddenId = document.getElementById("staffClinicId");
+
+  input.value = "Clinic A";
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+  expect(hiddenId.value).toBe("1");
+
+  input.value = "Unknown Clinic";
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+  expect(hiddenId.value).toBe("");
+});
+
 test("addStaff validates missing fields and invalid email before saving", async () => {
   await load();
 
@@ -270,7 +301,7 @@ test("addStaff saves normalized payload, clears the form, closes modal, reloads 
       name: "Jane Doe",
       email: "jane@test.com",
       clinicName: "Clinic A",
-      clinicId: "1",
+      clinicId: 1,
       addedBy: "admin@test.com",
       addedAt: "TIMESTAMP"
     }
@@ -284,20 +315,20 @@ test("addStaff saves normalized payload, clears the form, closes modal, reloads 
   expect(document.getElementById("toast").className).toContain("success");
 });
 
-test("addStaff uses the typed clinic name and hidden clinic id", async () => {
+test("addStaff uses the typed clinic name and numeric hidden clinic id", async () => {
   await load();
 
   document.getElementById("staffName").value = "Jane";
   document.getElementById("staffEmail").value = "jane@test.com";
   document.getElementById("staffClinicInput").value = "Typed Clinic";
-  document.getElementById("staffClinicId").value = "clinic-typed";
+  document.getElementById("staffClinicId").value = "42";
 
   await window.addStaff();
 
   expect(mockAddDoc).toHaveBeenCalledWith(
     "ApprovedStaff",
     expect.objectContaining({
-      clinicId: "clinic-typed",
+      clinicId: 42,
       clinicName: "Typed Clinic"
     })
   );
@@ -365,6 +396,23 @@ test("openInviteModal and closeInviteModal toggle the modal display", async () =
 
   window.closeInviteModal();
   expect(document.getElementById("inviteModal").style.display).toBe("none");
+});
+
+test("selectStaffRow marks one row selected and clears previous selections", async () => {
+  await load();
+  document.getElementById("staffTableBody").innerHTML = `
+    <tr class="selected"><td>Existing</td></tr>
+    <tr><td>Target</td></tr>
+  `;
+
+  const rows = document.querySelectorAll("#staffTableBody tr");
+  window.selectStaffRow(rows[1]);
+
+  expect(rows[0].classList.contains("selected")).toBe(false);
+  expect(rows[1].classList.contains("selected")).toBe(true);
+
+  expect(() => window.selectStaffRow(null)).not.toThrow();
+  expect(rows[1].classList.contains("selected")).toBe(false);
 });
 
 test("showToast displays a message, resets after three seconds, and tolerates a missing toast", async () => {

@@ -464,7 +464,15 @@ function startQueueListeners() {
         snapshot.forEach(docSnap => {
             const d = docSnap.data();
             let status = (d.status || "waiting").toLowerCase().trim();
-            if (status === "scheduled") status = "waiting";
+            if (status === "scheduled") {
+                status = "waiting";
+                updateDoc(doc(db, "Appointments", docSnap.id), {
+                    status: "waiting",
+                    updatedAt: serverTimestamp()
+                }).catch(err => {
+                    console.error("Failed to move scheduled appointment into queue:", err);
+                });
+            }
             regularAppts.push({
                 id:           docSnap.id,
                 time:         d.time         || "",

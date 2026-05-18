@@ -318,7 +318,7 @@ function renderClinics(filteredClinics = clinics) {
             isClinicOpen(clinic);
 
         const statusClass =
-            isOpen ? "active" : "closed";
+            isOpen ? "open" : "closed";
 
         const card =
             document.createElement("section");
@@ -343,7 +343,7 @@ function renderClinics(filteredClinics = clinics) {
                 </section>
 
                 <p class="status-pill ${statusClass}">
-                    ${isOpen ? "Active" : "Closed"}
+                    ${isOpen ? "Open" : "Closed"}
                 </p>
 
             </section>
@@ -395,6 +395,8 @@ function initSearch() {
         const value =
             e.target.value.toLowerCase().trim();
 
+        const waitingMap = getWaitingByClinic();
+
         const filtered = clinics.filter(c => {
 
             const name =
@@ -403,11 +405,17 @@ function initSearch() {
             const address =
                 (c.address || "").toLowerCase();
 
-            // REAL-TIME STATUS
             const liveStatus =
                 isClinicOpen(c)
-                    ? "active"
+                    ? "open"
                     : "closed";
+
+            const hasQueue =
+                (waitingMap[c.id] || 0) > 0;
+
+            if (value === "active") {
+                return hasQueue;
+            }
 
             return (
                 name.includes(value) ||

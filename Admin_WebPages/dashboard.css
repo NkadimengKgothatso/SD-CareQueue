@@ -320,7 +320,7 @@
 }
 
 /* Active */
-.status-pill.active {
+.status-pill.open {
     background: #DCFCE7;
     color: #166534;
 }

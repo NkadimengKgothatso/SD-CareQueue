@@ -139,7 +139,7 @@ window.addStaff = async function () {
     const name = document.getElementById("staffName").value.trim();
     const email = document.getElementById("staffEmail").value.trim().toLowerCase();
     const clinicName = document.getElementById("staffClinicInput").value.trim();
-    const clinicId = document.getElementById("staffClinicId").value;
+    const clinicId = Number(document.getElementById("staffClinicId").value);
     const validationError = validateStaffForm(name, email, clinicId);
 
     if (validationError) {
