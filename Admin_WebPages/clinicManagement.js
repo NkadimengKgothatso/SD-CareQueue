@@ -121,7 +121,7 @@ function deriveStatus(startDay, endDay, startTime, endTime) {
 
     const isTimeOpen = currentMinutes >= openMinutes && currentMinutes < closeMinutes;
 
-    return isTimeOpen ? "Active" : "Closed";
+    return isTimeOpen ? "Open" : "Closed";
 }
 
 // =========================
@@ -191,7 +191,7 @@ function addClinicToUI(clinic) {
 
     // Status badge colours — Busy removed as it is no longer a valid status
     const statusColors = {
-        Active: { background: "#DCFCE7", color: "#166534" },
+        Open: { background: "#DCFCE7", color: "#166534" },
         Closed: { background: "#FEE2E2", color: "#991B1B" }
     };
 
