@@ -27,7 +27,189 @@ SD CareQueue is a web-based appointment and queue management system designed to 
 - Track estimated waiting times
 
 The system also enables clinic staff and administrators to efficiently manage patient flow, clinic operations, reporting, and scheduling.
+---
+# Local Setup & Installation Guide
 
+## Prerequisites
+
+Before running the project locally, ensure you have the following installed:
+
+- Node.js
+- Python 3.10+
+- Git
+- Firebase project configuration
+- pip
+
+---
+
+## 1. Clone the Repository
+
+```bash
+git clone https://github.com/NkadimengKgothatso/SD-CareQueue.git
+cd SD-CareQueue
+```
+
+---
+
+## 2. Install Frontend Dependencies
+
+If your project uses npm packages:
+
+```bash
+npm install
+```
+
+If no package.json exists, you can skip this step.
+
+---
+
+## 3. Firebase Configuration
+
+Create a Firebase configuration file:
+
+```text
+firebase-config.js
+```
+
+Add your Firebase credentials:
+
+```javascript
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+```
+
+Important:
+
+- Never commit Firebase secret keys
+- Configure Firestore security rules
+- Enable Firebase Authentication
+
+---
+
+## 4. Install Python Dependencies
+
+Navigate to the ML API directory:
+
+```bash
+cd ml-api
+```
+
+Create a virtual environment.
+
+### Windows
+
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+### macOS/Linux
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Install required packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 5. Run the Flask ML API
+
+Start the prediction API server:
+
+```bash
+python app.py
+```
+
+The API will run locally on:
+
+```text
+http://127.0.0.1:5000/predict
+```
+
+---
+
+## 6. Run the Frontend Application
+
+Open the frontend project directory and launch the application.
+
+If using a simple local server:
+
+```bash
+npx serve .
+```
+
+Or use the VS Code Live Server extension.
+
+The application will typically run on:
+
+```text
+http://localhost:3000
+```
+
+---
+
+## 7. Configure API Endpoint
+
+Update the frontend ML endpoint configuration.
+
+Example:
+
+```javascript
+const ML_API_URL = "http://127.0.0.1:5000/predict";
+```
+
+---
+
+# Running Tests
+
+## Run Jest Tests
+
+```bash
+npm test
+```
+
+## Run Coverage
+
+```bash
+npm run coverage
+```
+
+---
+
+# Project Structure
+
+```text
+SD-CareQueue/
+│
+├── frontend/
+│   ├── css/
+│   ├── js/
+│   ├── pages/
+│   └── assets/
+│
+├── ml-api/
+│   ├── app.py
+│   ├── wait_time_model.pkl
+│   ├── requirements.txt
+│   └── scripts/
+│
+├── tests/
+├── firebase/
+├── docs/
+└── README.md
+```
 ---
 
 # Project Objectives
