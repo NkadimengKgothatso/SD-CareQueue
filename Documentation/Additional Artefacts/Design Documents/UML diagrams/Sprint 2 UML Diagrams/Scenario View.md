@@ -1,1 +1,1 @@
-![Scenario View](../../../../../../images/CareQueue_ScenarioView.drawio.png) 
+![Scenario View](../../../../../images/CareQueue_ScenarioView.drawio.png) 
