@@ -417,7 +417,7 @@ function startAppointmentsListener() {
     );
 
     unsubscribe = onSnapshot(q, async (snapshot) => {
-        console.log("📋 Appointments:", snapshot.size);
+        //console.log("📋 Appointments:", snapshot.size);
 
         const incoming       = [];
         const detailPromises = [];
@@ -521,7 +521,7 @@ onAuthStateChanged(auth, async (user) => {
         const snapshot = await getDocs(staffQuery);
         if (!snapshot.empty) {
             staffClinicID = snapshot.docs[0].data().clinicId || null;
-            console.log("🏥 staffClinicID:", staffClinicID);
+            //console.log("🏥 staffClinicID:", staffClinicID);
         }
     } catch (err) {
         console.error("Failed to fetch staff clinic:", err);

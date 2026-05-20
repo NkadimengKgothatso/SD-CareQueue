@@ -69,7 +69,7 @@ async function fetchClinicHours(clinicName) {
     try {
         const snapshot = await getDocs(collection(db, "clinicsObjects"));
 
-        console.log("Searching", snapshot.size, "clinics for name:", clinicName);
+        //console.log("Searching", snapshot.size, "clinics for name:", clinicName);
 
         let result = null;
 
@@ -80,12 +80,12 @@ async function fetchClinicHours(clinicName) {
                 (data.name || "").toLowerCase().trim() ===
                 (clinicName || "").toLowerCase().trim()
             ) {
-                console.log("Matched clinic:", data.name, 
+                /*console.log("Matched clinic:", data.name, 
                     "| startTime:", data.startTime, 
                     "| endTime:", data.endTime,
                     "| startDay:", data.startDay,
                     "| endDay:", data.endDay
-                );
+                );*/
 
                 result = {
                     openTime:  data.startTime || null,
@@ -360,7 +360,7 @@ onAuthStateChanged(auth, async (user) => {
             });
         }
 
-        console.log("Staff clinicID:", clinicID, "| assignedClinic:", assignedClinic);
+        //console.log("Staff clinicID:", clinicID, "| assignedClinic:", assignedClinic);
 
     } catch (err) {
         console.error("Failed to fetch staff profile:", err);
