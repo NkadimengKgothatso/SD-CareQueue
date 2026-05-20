@@ -32,10 +32,12 @@ const auth = getAuth(app);
 
 
 /* ================= PREVENT DOUBLE LOAD ================= */
+// This stops the dashboard from loading the same data more than once.
 let hasLoaded = false;
 
 
 /* ================= AUTH LISTENER ================= */
+// Runs after Firebase checks whether a staff member is signed in.
 onAuthStateChanged(auth, async (user) => {
     if (!user || hasLoaded) return;
     hasLoaded = true;
@@ -49,7 +51,7 @@ onAuthStateChanged(auth, async (user) => {
         const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
-            console.log("No staff found");
+            
             return;
         }
 
@@ -63,7 +65,7 @@ onAuthStateChanged(auth, async (user) => {
             clinicID = Number(data.clinicId);
             staffName = data.name || "Staff";
 
-            // top bar name
+            // Display the staff name in the top bar.
             document.querySelectorAll(".name-Surname").forEach(el => {
                 el.textContent = staffName;
             });
@@ -94,9 +96,8 @@ onAuthStateChanged(auth, async (user) => {
             staffAvatarEl.textContent = initials;
         }
 
-        // ─── Load page data ─────────────────────────────────────
+        // Load the dashboard data only after the staff clinic has been found.
         if (!clinicID) {
-            console.log("No clinicID found");
             return;
         }
 
@@ -110,6 +111,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 let cancelledAppointments=0; 
+
 /* ================= LOAD APPOINTMENTS ================= */
 async function loadAppointments(clinicID) {
     try {
@@ -148,7 +150,7 @@ async function loadAppointments(clinicID) {
                 docDateStr = new Date(data.date).toLocaleDateString("en-CA");
             }
 
-            // ONLY today's appointments
+            // Only show appointments that belong to today.
             if (docDateStr !== todayStr) continue;
 
             let displayName = "Unknown";
@@ -202,7 +204,6 @@ window.signOut = async function () {
 
 
 /* ================= Load Staff Notifications ================= */
-
 async function loadStaffNotifications(clinicID) {
     try {
         const container = document.getElementById("notificationsContainer");
@@ -229,7 +230,7 @@ async function loadStaffNotifications(clinicID) {
             ...doc.data()
         }));
 
-        // newest first
+        // Show the newest notifications first.
         notifications.sort((a, b) => {
             const aTime = a.createdAt?.seconds || 0;
             const bTime = b.createdAt?.seconds || 0;
@@ -272,6 +273,7 @@ async function loadStaffNotifications(clinicID) {
                 </p>
             `;
 
+            // When staff clicks a notification, mark it as read and remove it from the list.
             article.addEventListener("click", async () => {
                 try {
                     if (!data.read) {
@@ -324,16 +326,14 @@ async function loadStats(clinicID) {
 
             let docDateStr = null;
 
-            // Handle Firestore Timestamp
+            // Support both Firestore Timestamp dates and normal string dates.
             if (data.date?.toDate) {
                 docDateStr = data.date.toDate().toLocaleDateString("en-CA");
             }
-            // Handle string dates
             else if (data.date) {
                 docDateStr = new Date(data.date).toLocaleDateString("en-CA");
             }
 
-            // ONLY today's appointments
             if (docDateStr !== todayStr) return;
 
             const status = String(data.status || "").toLowerCase().trim();
@@ -349,7 +349,7 @@ async function loadStats(clinicID) {
             }
         });
 
-        // UPDATE UI
+        // Update the summary cards on the dashboard.
         document.getElementById("totalToday").textContent = totalToday;
         document.getElementById("inQueue").textContent = inQueue;
         document.getElementById("completed").textContent = completed;
