@@ -7,7 +7,7 @@ Implement notifications, analytics, filtering, staff scheduling, appointment upd
 
 ## Burndown Chart  
 
-![Sprint 2 Burndown Chart](../images/chart3.jepg)
+![Sprint 3 Burndown Chart](../../images/chart3.jpeg)
 
 ---
 

@@ -7,7 +7,7 @@ Improve clinic management, queue handling, staff access control, dashboard navig
 
 ## Burndown Chart  
 
-![Sprint 2 Burndown Chart](../images/chart2.jepg)
+![Sprint 2 Burndown Chart](../../images/chart2.jpeg)
 
 ---
 
