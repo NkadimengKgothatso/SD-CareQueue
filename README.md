@@ -25,7 +25,6 @@ SD CareQueue is a web-based appointment and queue management system designed to 
 - Join virtual queues remotely
 - Receive real-time queue updates
 - Track estimated waiting times
-
 The system also enables clinic staff and administrators to efficiently manage patient flow, clinic operations, reporting, and scheduling.
 ---
 # Local Setup & Installation Guide
