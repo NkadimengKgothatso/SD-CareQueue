@@ -7,7 +7,7 @@ Implement admin dashboards, reporting, clinic operating hours, booking constrain
 
 ## Burndown Chart  
 
-![Sprint 4 Burndown Chart](../../images/chart4.jepg)
+![Sprint 4 Burndown Chart](../../images/chart4.jpeg)
 
 ---
 
