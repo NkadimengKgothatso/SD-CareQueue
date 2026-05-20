@@ -4,15 +4,6 @@
 
 Community Clinic Appointment and Queue Management System
 
----
-
-# Release v4.0.0
-
-CareQueue v4.0.0 — Progressive Clinic Management & Smart Scheduling Update
-
-Version 4 introduces major improvements focused on clinic operating hours management, intelligent appointment scheduling, report exporting, and Progressive Web Application support.
-
-This release improves clinic administration, appointment reliability, reporting capabilities, mobile accessibility, and overall patient experience.
 
 ---
 
