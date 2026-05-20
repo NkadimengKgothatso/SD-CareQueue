@@ -1,6 +1,7 @@
 import { initAdminPage, db } from "/Admin_WebPages/admin.js";
 import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+
 let appointments = [];
 let queues = [];
 let clinics = [];
@@ -12,7 +13,7 @@ let dataLoaded = {
     clinics: false
 };
 
-// ================= LOAD APPOINTMENTS =================
+// LOAD APPOINTMENTS from database before using them
 async function loadAppointments() {
     try {
         const snapshot = await getDocs(collection(db, "Appointments"));
@@ -30,11 +31,15 @@ async function loadAppointments() {
     }
 }
 
-// ================= LOAD QUEUES =================
+// Loads queue data from the Firestore database before it is used anywhere else
 async function loadQueues() {
     try {
+
+         // Fetch all documents from the "Queues" collection in Firestore
         const snapshot = await getDocs(collection(db, "Queues"));
 
+
+        // Convert Firestore documents into a usable JavaScript array
         queues = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
@@ -43,12 +48,13 @@ async function loadQueues() {
         dataLoaded.queues = true;
         checkAndRender();
 
-    } catch (error) {
+    // Log any errors that occur during data fetching
+    } catch (error) { 
         console.error("Error loading queues:", error);
     }
 }
 
-// ================= LOAD CLINICS =================
+//  load clinics from database before using them since they are key to everything
 async function loadClinics() {
     try {
         const snapshot = await getDocs(collection(db, "clinicsObjects"));
@@ -66,19 +72,28 @@ async function loadClinics() {
     }
 }
 
-// ================= INIT =================
+// Wait until the full HTML page has loaded before running any JavaScript
 document.addEventListener("DOMContentLoaded", () => {
 
     try {
+
+        // Initializes the admin dashboard page
         initAdminPage();
 
+        // Loads clinic data into the dashboard
         loadClinics();
+
+         // Loads appointments
         loadAppointments();
+
+        // Loads queue/waiting list data
         loadQueues();
 
         const form = document.getElementById("filterForm");
 
         form?.addEventListener("submit", (e) => {
+
+            // Prevents page refresh
             e.preventDefault();
 
             const from = document.getElementById("dateFrom").value;
@@ -87,12 +102,14 @@ document.addEventListener("DOMContentLoaded", () => {
             renderDashboard(from, to);
         });
 
-        // ================= KEYBOARD NAV =================
+        // enables keyboard navigation to scroll through the clinics table
         document.addEventListener("keydown", (e) => {
 
             const rows = document.querySelectorAll("#waitTableBody tr");
             if (!rows.length) return;
 
+
+            // Moves selection down when ArrowDown is pressed
             if (e.key === "ArrowDown") {
                 activeRowIndex = Math.min(activeRowIndex + 1, rows.length - 1);
                 setActiveRow(rows, activeRowIndex);
@@ -106,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // ================= EXPORT BUTTONS =================
+        // EXPORT BUTTONS
         const csvBtn = document.getElementById("exportCSV");
         const pdfBtn = document.getElementById("exportPDF");
 
@@ -124,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
     exportPDF(getCurrentExportData(from, to), from, to);
 });
 
-        // ================= SEARCH =================
+        //  Search functionality 
         const search = document.getElementById("clinicSearch");
 
         search?.addEventListener("input", (e) => {
@@ -141,14 +158,14 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("INIT ERROR:", err);
     }
 });
-// ================= CHECK + RENDER =================
+//  CHECK + RENDER 
 function checkAndRender() {
     if (dataLoaded.appointments && dataLoaded.queues && dataLoaded.clinics) {
         renderDashboard();
     }
 }
 
-// ================= DATE HELPER =================
+//  DATE HELPER
 function inDateRange(date, from, to) {
     if (!from || !to) return true;
 
@@ -159,7 +176,7 @@ function inDateRange(date, from, to) {
     return d >= f && d <= t;
 }
 
-// ================= DASHBOARD ENGINE =================
+// DASHBOARD ENGINE, this functions builds everything on the page
 function buildDashboard(from = null, to = null) {
 
     const filteredAppointments = (from && to)
@@ -192,8 +209,10 @@ function buildDashboard(from = null, to = null) {
     };
 }
 
-// ================= GLOBAL NO-SHOW RATE =================
+// Calculates the global no-show / cancellation rate across all appointments
 function getGlobalNoShowRate(list) {
+
+    // Count how many appointments were cancelled (treated as no-shows)
     const cancelled = list.filter(a => a.status === "cancelled").length;
     const completed = list.filter(a => a.status === "completed").length;
     const resolved = completed + cancelled;
@@ -203,7 +222,7 @@ function getGlobalNoShowRate(list) {
     return ((cancelled / resolved) * 100).toFixed(1) + "%";
 }
 
-// ================= KPIs =================
+// KPIs showing global details
 function renderKPIs(data, from, to) {
 
     document.getElementById("patientsValue").textContent = data.patientsSeen;
@@ -216,7 +235,7 @@ function renderKPIs(data, from, to) {
         getActiveClinicsCount(data.appointments);
 }
 
-// ================= QUEUE ANALYTICS =================
+// Generates analytics for queues grouped by clinic 
 function getQueueAnalytics(list) {
     const result = {};
 
@@ -247,7 +266,7 @@ function getQueueAnalytics(list) {
     return result;
 }
 
-// ================= NO SHOW RATE PER CLINIC =================
+// Calculates no-show (cancelled) rate per clinic
 function getNoShowRateByClinic(list) {
     const result = {};
 
@@ -261,11 +280,11 @@ function getNoShowRateByClinic(list) {
             };
         }
 
-        if (a.status === "completed") {
-            result[clinic].completed += 1;
+        if (a.status === "completed") {        
+            result[clinic].completed += 1;   //increments number if status is completed
         }
 
-        if (a.status === "cancelled") {
+        if (a.status === "cancelled") {    //increments number if status is cancelled
             result[clinic].cancelled += 1;
         }
     });
@@ -279,7 +298,7 @@ function getNoShowRateByClinic(list) {
     return result;
 }
 
-// ================= COMPLETED APPOINTMENTS PER CLINIC =================
+//  COMPLETED APPOINTMENTS PER CLINIC 
 // counts only appointments with status "completed" for each clinic
 // this is used as the volume figure — actual patients seen, not queue entries
 function getCompletedByClinic(list) {
@@ -300,7 +319,7 @@ function getCompletedByClinic(list) {
     return result;
 }
 
-// ================= COLOR HELPERS =================
+//COLOR HELPERS for the Analytics table, depending 
 function getRateColor(rate) {
     const r = parseFloat(rate);
 
@@ -313,9 +332,11 @@ function getRateColor(rate) {
 function getCurrentExportData(from, to) {
 
     const filteredAppointments = (from && to)
-        ? appointments.filter(a => inDateRange(a.date, from, to))
+        ? appointments.filter(a => inDateRange(a.date, from, to))     //defines filtered appointments depending on date
         : appointments;
 
+
+        //defines queue statuses depending on date
     const queueStats = getQueueAnalytics(
         (from && to)
             ? queues.filter(q => inDateRange(q.date, from, to))
@@ -331,17 +352,20 @@ function getCurrentExportData(from, to) {
         const n = noShowStats[clinic.id] || { rate: "0.0" };
         const c = completedStats[clinic.id] || { completed: 0 };
 
+
+        //returns percentage of no show rates per clinic, local to each clinic
         return {
             clinic: clinic.name,
             avgWait: q.total > 0 ? (q.totalWait / q.total).toFixed(1) : "0.0",
             volume: c.completed,
-            noShowRate: n.rate + "%"
+            noShowRate: n.rate + "%"   
         };
     });
 }
 
 
-function exportCSV(data) {
+//exporting to CSV function depending on date filters
+function exportCSV(data) { 
 
     const headers = ["Clinic", "Avg Wait (min)", "Volume", "No-Show Rate", "Status"];
 
@@ -374,7 +398,7 @@ function exportCSV(data) {
     URL.revokeObjectURL(url);
 }
 
-function exportPDF(data, from = null, to = null) {
+function exportPDF(data, from = null, to = null) {   //exporting to PDF function depending on date filters
 
     const formatDate = (d) => {
         if (!d) return null;
@@ -546,7 +570,7 @@ function exportPDF(data, from = null, to = null) {
     });
 }
 
-// ================= RENDER DASHBOARD =================
+//  RENDER DASHBOARD 
 function renderDashboard(from = null, to = null) {
 
     const data = buildDashboard(from, to);
@@ -558,7 +582,7 @@ function renderDashboard(from = null, to = null) {
     const completedStats = getCompletedByClinic(data.appointments);
 
     const tbody = document.getElementById("waitTableBody");
-    tbody.innerHTML = "";
+    tbody.innerHTML = "";      //empties body if the table
 
     clinics.forEach(clinic => {
 
@@ -603,7 +627,7 @@ setActiveRow(rows, 0); // default first row
 }
 
 
-// ================= ACTIVE CLINICS COUNT =================
+// ACTIVE CLINICS COUNT 
 // counts clinics that have at least one completed or cancelled appointment
 // within the selected date range, reflecting real platform adoption
 function getActiveClinicsCount(list) {
