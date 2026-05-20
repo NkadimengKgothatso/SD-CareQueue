@@ -93,7 +93,7 @@
 
   <tr>
     <td>15</td>
-    <td>As a user, I want to filter clinics by province or services so that I can easily find relevant clinics.</td>
+    <td>As a user, I want to filter clinics by services so that I can easily find relevant clinics.</td>
     <td>9</td>
   </tr>
 
