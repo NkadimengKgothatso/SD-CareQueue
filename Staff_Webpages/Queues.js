@@ -117,7 +117,7 @@ async function sendPositionTwoNotification(appointment) {
             createdAt:  serverTimestamp()
         });
 
-        console.log("Position 2 email and notification sent");
+        //console.log("Position 2 email and notification sent");
     } catch (error) {
         console.error("Failed to send position 2 notification:", error);
         sendingPositionTwo.delete(appointment.id);
@@ -202,7 +202,7 @@ function buildCard(appointment, positionLabel) {
 
     if (positionLabel === 2 && !appointment.emailSent && !sendingPositionTwo.has(appointment.id)) {
         sendingPositionTwo.add(appointment.id);
-        console.log("FINAL APPOINTMENT OBJECT:", appointment);
+        //console.log("FINAL APPOINTMENT OBJECT:", appointment);
         sendPositionTwoNotification(appointment);
     }
 
@@ -367,7 +367,7 @@ async function deleteOldQueueEntries() {
             }
         });
         await Promise.all(deletions);
-        if (deletions.length) console.log(`🗑️ Deleted ${deletions.length} old queue entries`);
+        //if (deletions.length) console.log(`🗑️ Deleted ${deletions.length} old queue entries`);
     } catch (err) {
         console.error("Failed to delete old queue entries:", err);
     }
@@ -406,7 +406,7 @@ async function syncAppointmentsToQueues(appointments) {
 
     try {
         await Promise.all(baseWrites);
-        console.log(`✅ Synced ${baseWrites.length} appointments to Queues`);
+        //console.log(`✅ Synced ${baseWrites.length} appointments to Queues`);
     } catch (err) {
         console.error("Failed to sync appointments to Queues:", err);
         return;
@@ -431,7 +431,7 @@ async function syncAppointmentsToQueues(appointments) {
 
         try {
             await updateDoc(doc(db, "Queues", appt.id), { estimateWait });
-            console.log(`🤖 ML wait for position ${appt.queuePosition}: ${estimateWait} min`);
+            //console.log(`🤖 ML wait for position ${appt.queuePosition}: ${estimateWait} min`);
         } catch (err) {
             console.warn(`Could not write estimateWait for ${appt.id}:`, err);
         }
@@ -449,7 +449,7 @@ function startQueueListeners() {
         </li>`;
 
     const today = getTodayString();
-    console.log("🔍 Starting listeners | clinicID:", staffClinicID, "| today:", today);
+    //console.log("🔍 Starting listeners | clinicID:", staffClinicID, "| today:", today);
 
     // Regular appointments (clinicID as number)
     const regQuery = query(
@@ -459,7 +459,7 @@ function startQueueListeners() {
     );
 
     unsubscribeReg = onSnapshot(regQuery, (snapshot) => {
-        console.log("📋 Regular appointments:", snapshot.size);
+        //console.log("📋 Regular appointments:", snapshot.size);
         regularAppts = [];
         snapshot.forEach(docSnap => {
             const d = docSnap.data();
@@ -498,7 +498,7 @@ function startQueueListeners() {
     );
 
     unsubscribeWalkIn = onSnapshot(walkInQuery, (snapshot) => {
-        console.log("🚶 Walk-in appointments:", snapshot.size);
+        //console.log("🚶 Walk-in appointments:", snapshot.size);
         walkInAppts = [];
         snapshot.forEach(docSnap => {
             const d = docSnap.data();
@@ -553,10 +553,10 @@ onAuthStateChanged(auth, async (user) => {
         const snapshot = await getDocs(staffQuery);
         if (runId !== authRunId) return;
 
-        console.log("📄 Snapshot empty?", snapshot.empty);
+        //console.log("📄 Snapshot empty?", snapshot.empty);
         if (!snapshot.empty) {
             staffClinicID = snapshot.docs[0].data().clinicId || null;
-            console.log("🏥 staffClinicID:", staffClinicID);
+            //console.log("🏥 staffClinicID:", staffClinicID);
         }
     } catch (err) {
         console.error("Failed to fetch staff clinic:", err);
