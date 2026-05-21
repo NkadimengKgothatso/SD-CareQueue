@@ -318,5 +318,5 @@ The automated test suite passed successfully.
 
 ```bash
 npm test
-```
+```md 
 (../../../../../images/Testing_results.png)
