@@ -372,7 +372,6 @@ async function loadAppointmentForReschedule() {
     // Find the clinic object so we can populate its services
     const matchingClinic = clinics.find(c => String(c.id) === String(data.clinicID));
     if (matchingClinic) {
-        //  Restore services dropdown before setting the selected reason
         populateReasonSelect(matchingClinic.service);
     }
 
@@ -381,6 +380,23 @@ async function loadAppointmentForReschedule() {
     document.querySelector(".reason-select").value     = data.reason;
 
     renderTimeSlots(data.date, data.clinicID);
+
+    const cards = document.querySelectorAll(".clinic-card");
+    cards.forEach(card => {
+        const name = card.querySelector(".clinic-name").textContent;
+        if (name === matchingClinic?.name) {
+            const btn = card.querySelector(".open-btn");
+            btn.textContent = "Selected";
+            btn.style.backgroundColor = "#1D9E75";
+            btn.style.color = "#fff";
+        } else {
+            card.style.display = "none";
+        }
+    });
+
+    clinicSearchInput.style.display = "none";
+    nearMeBtn.style.display = "none";
+    openNowBtn.style.display = "none";
 }
 
 // Renders clinic cards with select functionality
