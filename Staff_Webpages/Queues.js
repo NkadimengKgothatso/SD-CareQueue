@@ -105,6 +105,10 @@ async function sendPositionTwoNotification(appointment) {
 
         await updateDoc(doc(db, "Queues", appointment.id), { emailSent: true });
 
+        emailjs.init("jWEiS_k1FnVa1Zz5S");
+
+        
+
         const clinicName = appointment.clinicName?.trim() || "Clinic";
         await addDoc(collection(db, "Notifications"), {
             userID:     appointment.userID,
@@ -115,6 +119,15 @@ async function sendPositionTwoNotification(appointment) {
             message:    `Your ${appointment.reason || "appointment"} at ${clinicName} is in an hour. You are position 2. Please make your way to the clinic.`,
             read:       false,
             createdAt:  serverTimestamp()
+        });
+
+        await emailjs.send("service_j8zb3jh", "template_neu0ubc", {
+            email: appointment.patientEmail,
+            name: appointment.patientName || "Patient",
+            clinic_name: clinicName || "Clinic",
+            appointment_reason: appointment.reason || "Appointment",
+            appointment_date: appointment.date || "",
+            appointment_time: appointment.time || ""
         });
 
         //console.log("Position 2 email and notification sent");
