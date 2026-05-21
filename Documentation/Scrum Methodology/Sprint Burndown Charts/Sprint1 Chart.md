@@ -7,7 +7,7 @@ Implement core system foundations including authentication, patient dashboard, c
 
 ## Burndown Chart  
 
-![Sprint 1 Burndown Chart](../../images/chart1.jpeg)
+![Sprint 1 Burndown Chart](../../../images/chart1.jpeg)
 
 ---
 
