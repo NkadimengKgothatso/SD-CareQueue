@@ -318,5 +318,14 @@ The automated test suite passed successfully.
 
 ```bash
 npm test
-```md 
-(../../../../../images/Testing_results.png)
+```
+
+The test result was:
+
+```text
+Test Suites: 14 passed, 14 total
+Tests: 349 passed, 349 total
+Snapshots: 0 total
+```
+
+![Testing Results](../../../../../images/Testing_results.png)
