@@ -328,4 +328,4 @@ Tests: 349 passed, 349 total
 Snapshots: 0 total
 ```
 
-![Testing Results](../../../../../images/Testing_results.png)
+![Testing Results]![Testing Results](images/Testing_results.png)
