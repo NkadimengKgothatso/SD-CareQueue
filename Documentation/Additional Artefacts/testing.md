@@ -1,32 +1,37 @@
 # Test Plan and Results 
 
 ## Testing Strategy
-This system was tested using automated unit and integration_style tests which were written with Jest and the jsdom test environment. The objective of testing is to verifiy that the main user workflows work correctly across all roles of the system.
+This system was tested using automated unit and integration-style tests which were written with Jest and the jsdom test environment. The objective of testing was to verify that the main user workflows work correctly across all roles of the system.
 
-The tests main focus was on:
-<li> Checking that each helper function return correct values
-<li> Validating form input before the data is saved
-<li> Confirming that the pages return render the correct information in the DOM
-<li> Testing Firebase inteeracting using the mocked Firestore and Authentication functions
-<li> Checking how well the Firebase handles errors when Firebase fails
-<li> Verifying the intended behaviour of each role
-<li> Testing the ML logic for wait-time
+The tests mainly focused on:
+<ul>
+<li>Checking that each helper function returns correct values.</li>
+<li>Validating form input before the data is saved.</li>
+<li>Confirming that the pages render the correct information in the DOM.</li>
+<li>Testing Firebase interactions using mocked Firestore and Authentication functions.</li>
+<li>Checking how well the system handles errors when Firebase fails.</li>
+<li>Verifying the intended behaviour of each role.</li>
+<li>Testing the ML logic for wait-time.</li>
+</ul>
 
-Firebase services were mocked so that tests could run without connecting to the real database which was at first a challenge. 
+Firebase services were mocked so that tests could run without connecting to the real database, which was initially a challenge.
 
-The tests are stored in the 'testing' folder and can be run with "npm test" or "npm run coverage" in the terminal. 
+The tests are stored in the `testing/` folder and can be run with `npm test` or `npm run coverage` in the terminal.
 
-You could also run coverage for specific scripts, for example: "npm run coverage: analytics"
+You could also run coverage for specific scripts, for example: `npm run coverage:analytics`.
 
 ## Test Environment
 The testing was done using the following:
-<li> Test Framework: Jest
-<li> Test Environment: jsdom
-<li> Mocked Services: Firebase Authentication, Firestore, browser APIs, fetch, geolocation, alerts, confirms, alerts, confirms and DOM events
-<li> Test location: testing/
-<li> Application areas tested: Admin pages, Staff Pages and Patient Pages,
+<ul>
+<li><b>Test Framework:</b> Jest</li>
+<li><b>Test Environment:</b> jsdom</li>
+<li><b>Mocked Services:</b> Firebase Authentication, Firestore, browser APIs, fetch, geolocation, alerts, confirms, and DOM events</li>
+<li><b>Test location:</b> <code>testing/</code></li>
+<li><b>Application areas tested:</b> Admin pages, Staff pages, Patient pages, notifications, queues, appointments, analytics, and ML wait-time prediction</li>
+</ul>
 
 ## Test Cases 
+
 <h2>Test Cases</h2>
 
 <table>
@@ -266,14 +271,52 @@ The testing was done using the following:
 </table>
 
 ## Types of Testing Performed
-1. Unit tests were used for small functions such as:
 
-<li>date formatting
-<li>time formatting
-<li>no-show rate calculation
-<li>queue analytics calculation
-<li>distance calculation
-<li>status colour selection
-<li>next available walk-in slot <li>calculation
-<li>patient notification icon <li>selection
-<li>wait-time prediction <li>payload formatting
+1. Unit tests - they were used for small functions such as:
+
+<ul>
+<li>Date formatting.</li>
+<li>Time formatting.</li>
+<li>No-show rate calculation.</li>
+<li>Queue analytics calculation.</li>
+<li>Distance calculation.</li>
+<li>Status colour selection.</li>
+<li>Next available walk-in slot calculation.</li>
+<li>Patient notification icon selection.</li>
+<li>Wait-time prediction payload formatting.</li>
+</ul>
+
+2. Integration-style tests - they were used where multiple behaviours work together, such as:
+
+<ul>
+<li>Loading Firestore data and rendering it into the page.</li>
+<li>Submitting forms and checking Firestore write calls.</li>
+<li>Authenticating users and loading role-specific data.</li>
+<li>Listening to appointment or queue updates and updating the DOM.</li>
+<li>Filtering clinic, queue, appointment, and notification lists.</li>
+<li>Exporting analytics data to CSV and PDF.</li>
+</ul>
+
+3. Error Handling Testing
+
+The tests also checked failure scenarios, including:
+
+<ul>
+<li>Firestore <code>getDocs</code>, <code>getDoc</code>, <code>setDoc</code>, <code>addDoc</code>, <code>updateDoc</code>, and <code>deleteDoc</code> failures.</li>
+<li>Failed staff clinic lookup.</li>
+<li>Failed appointment cancellation or rescheduling.</li>
+<li>Failed notification updates.</li>
+<li>Failed ML prediction requests.</li>
+<li>Missing user data.</li>
+<li>Empty snapshots.</li>
+<li>Invalid form input.</li>
+</ul>
+
+## Test Results
+
+The automated test suite passed successfully.
+
+```bash
+npm test -- --runInBand
+
+(../../../../../images/Testing_results.png) 
