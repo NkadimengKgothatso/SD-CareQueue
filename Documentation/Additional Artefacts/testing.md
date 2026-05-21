@@ -317,6 +317,7 @@ The tests also checked failure scenarios, including:
 The automated test suite passed successfully.
 
 ```bash
-npm test -- --runInBand
+npm test
 
+![Testing proof]
 (../../../../../images/Testing_results.png) 
