@@ -319,4 +319,4 @@ The automated test suite passed successfully.
 ```bash
 npm test
 ```
-![Testing proof](../../../../../images/Testing_results.png)
+(../../../../../images/Testing_results.png)
