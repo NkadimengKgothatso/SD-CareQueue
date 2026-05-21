@@ -55,7 +55,7 @@ jest.mock(
   { virtual: true }
 );
 
-jest.mock("./carequeue-ml/js/waitTimeML.js", () => ({
+jest.mock("../Patients_WebPages/carequeue-ml/js/waitTimeML.js", () => ({
   loadQueueStatusML: mockLoadQueueStatusML
 }));
 
@@ -172,7 +172,7 @@ let domContentLoadedHandler;
 let originalAddEventListener;
 
 async function loadModule({ runDomReady = true } = {}) {
-  const mod = await import("./PatientDashboard.js");
+  const mod = await import("../Patients_WebPages/PatientDashboard.js");
 
   if (runDomReady) {
     domContentLoadedHandler();

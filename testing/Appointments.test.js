@@ -117,7 +117,7 @@ beforeEach(() => {
 
 // ── Helper ────────────────────────────────────────────────────
 async function load() {
-  return import("./Appointments.js");
+  return import("../Staff_Webpages/Appointments.js");
 }
 
 // =============================================================
@@ -535,7 +535,6 @@ test("openRescheduleModal reports update errors and restores the confirm button"
 });
 
 test("startAppointmentsListener renders non-cancelled appointments and resolves missing patient names", async () => {
-  const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
   let snapshotSuccess;
   mockOnSnapshot.mockImplementation((_query, success) => {
     snapshotSuccess = success;
@@ -555,7 +554,6 @@ test("startAppointmentsListener renders non-cancelled appointments and resolves 
   ]));
   await flushPromises();
 
-  expect(consoleSpy).toHaveBeenCalledWith("📋 Appointments:", 3);
   expect(document.getElementById("appointmentList").textContent).toContain("Fetched Patient");
   expect(document.getElementById("appointmentList").textContent).toContain("Named Patient");
   expect(document.getElementById("appointmentList").textContent).not.toContain("Skip Me");
@@ -647,7 +645,6 @@ test("auth bootstrap handles signed-out users", async () => {
 });
 
 test("auth bootstrap fills staff profile and starts appointment listener", async () => {
-  const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
   mockOnAuthStateChanged.mockImplementation((_auth, callback) => {
     callback({ email: "staff@test.com", displayName: "Jane Staff" });
     return jest.fn();
@@ -662,7 +659,6 @@ test("auth bootstrap fills staff profile and starts appointment listener", async
   expect(document.querySelector(".name-Surname").textContent).toBe("Jane Staff");
   expect(document.getElementById("staffEmail").textContent).toBe("staff@test.com");
   expect(document.getElementById("staffAvatar").textContent).toBe("JS");
-  expect(consoleSpy).toHaveBeenCalledWith("🏥 staffClinicID:", 7);
   expect(mockOnSnapshot).toHaveBeenCalled();
 });
 

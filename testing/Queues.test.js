@@ -68,7 +68,7 @@ async function flushPromises(times = 4) {
 }
 
 async function load() {
-  const mod = await import("./Queues.js");
+  const mod = await import("../Staff_Webpages/Queues.js");
   await flushPromises();
   return mod;
 }
@@ -140,7 +140,6 @@ test("buildCard creates waiting and completed cards", async () => {
 });
 
 test("buildCard triggers position-two notification only once per appointment", async () => {
-  const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
   const { buildCard, __setStaffClinicIDForTest } = await load();
   __setStaffClinicIDForTest(3);
 
@@ -170,7 +169,6 @@ test("buildCard triggers position-two notification only once per appointment", a
   buildCard({ id: "notify-1", userID: "user-1", patientEmail: "patient@test.com" }, 2);
   await flushPromises();
   expect(mockAddDoc).toHaveBeenCalledTimes(1);
-  expect(consoleSpy).toHaveBeenCalledWith("Position 2 email and notification sent");
 });
 
 test("sendPositionTwoNotification skips missing user or email and clears guard on failure", async () => {
@@ -251,7 +249,6 @@ test("updateStatus alerts when update fails", async () => {
 });
 
 test("deleteOldQueueEntries deletes stale queue records for the staff clinic", async () => {
-  const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
   const { deleteOldQueueEntries, getTodayString, __setStaffClinicIDForTest } = await load();
   __setStaffClinicIDForTest(5);
   mockGetDocs.mockResolvedValue(snapshotFrom([
@@ -264,7 +261,6 @@ test("deleteOldQueueEntries deletes stale queue records for the staff clinic", a
 
   expect(mockDeleteDoc).toHaveBeenCalledWith("Queues/old");
   expect(mockDeleteDoc).toHaveBeenCalledTimes(1);
-  expect(consoleSpy).toHaveBeenCalledWith("🗑️ Deleted 1 old queue entries");
 });
 
 test("deleteOldQueueEntries logs failures", async () => {
@@ -279,7 +275,6 @@ test("deleteOldQueueEntries logs failures", async () => {
 });
 
 test("syncAppointmentsToQueues writes active and completed queue snapshots", async () => {
-  const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
   const { syncAppointmentsToQueues, __setStaffClinicIDForTest } = await load();
   __setStaffClinicIDForTest(4);
 
@@ -307,7 +302,6 @@ test("syncAppointmentsToQueues writes active and completed queue snapshots", asy
     { merge: true }
   );
   expect(mockUpdateDoc).toHaveBeenCalledWith("Queues/a1", { estimateWait: 14 });
-  expect(consoleSpy).toHaveBeenCalledWith("✅ Synced 2 appointments to Queues");
 });
 
 test("syncAppointmentsToQueues logs write failures", async () => {
@@ -463,7 +457,6 @@ test("auth bootstrap handles signed-out users", async () => {
 });
 
 test("auth bootstrap loads staff clinic and starts queue listeners", async () => {
-  const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
   mockOnAuthStateChanged.mockImplementation((_auth, callback) => {
     callback({ email: "staff@test.com", displayName: "Jane Staff" });
     return jest.fn();
@@ -476,8 +469,6 @@ test("auth bootstrap loads staff clinic and starts queue listeners", async () =>
   expect(document.querySelector(".name-Surname").textContent).toBe("Jane Staff");
   expect(document.getElementById("staffEmail").textContent).toBe("staff@test.com");
   expect(document.getElementById("staffAvatar").textContent).toBe("JS");
-  expect(consoleSpy).toHaveBeenCalledWith("📄 Snapshot empty?", false);
-  expect(consoleSpy).toHaveBeenCalledWith("🏥 staffClinicID:", 8);
   expect(mockOnSnapshot).toHaveBeenCalled();
 });
 
