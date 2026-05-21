@@ -816,7 +816,7 @@ confirmBtn.addEventListener("click", async () => {
             createdAt: serverTimestamp()
         });
 
-/*        emailjs.init("jWEiS_k1FnVa1Zz5S");
+        emailjs.init("jWEiS_k1FnVa1Zz5S");
 
         await emailjs.send("service_j8zb3jh", "template_4onbz1h", {
             email: user.email,
@@ -825,7 +825,7 @@ confirmBtn.addEventListener("click", async () => {
             appointment_reason: reason,
             appointment_date: date,
             appointment_time: time
-        });*/
+        });
 
 
         alert("Appointment booked successfully!");
