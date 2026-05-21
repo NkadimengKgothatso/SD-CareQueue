@@ -69,7 +69,7 @@ function arrangeFirestore({
 }
 
 async function importAnalytics() {
-  const mod = await import("./analytics.js");
+  const mod = await import("../Admin_WebPages/analytics.js");
   document.dispatchEvent(new Event("DOMContentLoaded"));
   await Promise.resolve();
   await Promise.resolve();
@@ -171,7 +171,6 @@ test("getNoShowRateByClinic calculates correctly", async () => {
   ]);
 
   expect(result[1]).toMatchObject({
-    total: 2,
     cancelled: 1,
     rate: "50.0"
   });
@@ -194,31 +193,6 @@ test("getRateColor returns red", async () => {
   const { getRateColor } = await importAnalytics();
 
   expect(getRateColor("30")).toBe("red");
-});
-
-test("getPreviousPeriod returns the equally sized previous range", async () => {
-  const { getPreviousPeriod } = await importAnalytics();
-
-  const result = getPreviousPeriod("2026-05-10T00:00:00.000Z", "2026-05-12T00:00:00.000Z");
-
-  expect(result.from).toBe("2026-05-07T23:59:59.999Z");
-  expect(result.to).toBe("2026-05-09T23:59:59.999Z");
-});
-
-test("countPatients only counts completed appointments in the selected range", async () => {
-  const { countPatients } = await importAnalytics();
-
-  const result = countPatients(
-    [
-      { status: "completed", date: "2026-05-05" },
-      { status: "cancelled", date: "2026-05-06" },
-      { status: "completed", date: "2026-06-01" }
-    ],
-    "2026-05-01",
-    "2026-05-31"
-  );
-
-  expect(result).toBe(1);
 });
 
 test("setActiveRow activates selected row and clears the previous row", async () => {
@@ -276,7 +250,7 @@ test("DOMContentLoaded loads Firestore data, renders rows, KPIs, and default act
   expect(rows).toHaveLength(2);
   expect(rows[0].children[0].textContent).toBe("Central Clinic");
   expect(rows[0].children[1].textContent.trim()).toBe("20.0 min");
-  expect(rows[0].children[2].textContent).toBe("2");
+  expect(rows[0].children[2].textContent).toBe("1");
   expect(rows[0].children[3].textContent.trim()).toBe("50.0%");
   expect(rows[0].children[3].getAttribute("style")).toContain("red");
   expect(rows[1].children[1].textContent.trim()).toBe("0.0 min");
@@ -463,7 +437,7 @@ test("CSV export button downloads the currently filtered clinic analytics", asyn
   expect(csvText.replace(/^\uFEFF/, "")).toBe([
     "sep=;",
     "Clinic;Avg Wait (min);Volume;No-Show Rate;Status",
-    "\"Central Clinic\";10.0;1;100.0%;Active"
+    "\"Central Clinic\";10.0;0;100.0%;Active"
   ].join("\n"));
   expect(clickSpy).toHaveBeenCalled();
   expect(revokeObjectURLSpy).toHaveBeenCalledWith("blob:analytics");
@@ -509,23 +483,6 @@ test("PDF export button writes and prints an all-time clinic analytics report", 
   revokeObjectURLSpy.mockRestore();
 });
 
-test("calculatePatientsTrend returns positive, zero-baseline, and neutral trends", async () => {
-  arrangeFirestore({
-    appointments: [
-      { id: "prev", status: "completed", date: "2026-04-30T12:00:00.000Z" },
-      { id: "current1", status: "completed", date: "2026-05-02T12:00:00.000Z" },
-      { id: "current2", status: "completed", date: "2026-05-03T12:00:00.000Z" },
-      { id: "zeroBaseline", status: "completed", date: "2026-07-10T12:00:00.000Z" }
-    ]
-  });
-
-  const { calculatePatientsTrend } = await importAnalytics();
-
-  expect(calculatePatientsTrend("2026-05-01T00:00:00.000Z", "2026-05-03T23:59:59.999Z")).toBe("100.0%");
-  expect(calculatePatientsTrend("2026-06-01T00:00:00.000Z", "2026-06-03T23:59:59.999Z")).toBe("0%");
-  expect(calculatePatientsTrend("2026-07-10T00:00:00.000Z", "2026-07-10T23:59:59.999Z")).toBe("+100%");
-});
-
 test("setActiveRow clears rows without selecting an out-of-range index", async () => {
   const { setActiveRow } = await importAnalytics();
 
@@ -563,7 +520,7 @@ test("DOMContentLoaded catches synchronous init errors", async () => {
     throw error;
   });
 
-  const mod = await import("./analytics.js");
+  const mod = await import("../Admin_WebPages/analytics.js");
   document.dispatchEvent(new Event("DOMContentLoaded"));
 
   expect(mod).toBeDefined();

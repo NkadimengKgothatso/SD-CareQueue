@@ -79,7 +79,7 @@ test("getWaitTime posts normalized queue data to the prediction endpoint", async
     json: async () => ({ estimatedWaitTime: 10 })
   });
 
-  const { getWaitTime } = await import("./waitTimeML.js");
+  const { getWaitTime } = await import("../Patients_WebPages/carequeue-ml/js/waitTimeML.js");
 
   await getWaitTime({
     clinicID: "7",
@@ -108,7 +108,7 @@ test("getWaitTime returns the estimatedWaitTime on success", async () => {
     json: async () => ({ estimatedWaitTime: 15 })
   });
 
-  const { getWaitTime } = await import("./waitTimeML.js");
+  const { getWaitTime } = await import("../Patients_WebPages/carequeue-ml/js/waitTimeML.js");
 
   const result = await getWaitTime({
     clinicID: 1,
@@ -126,7 +126,7 @@ test("getWaitTime sends isWalkIn as true when true", async () => {
     json: async () => ({ estimatedWaitTime: 10 })
   });
 
-  const { getWaitTime } = await import("./waitTimeML.js");
+  const { getWaitTime } = await import("../Patients_WebPages/carequeue-ml/js/waitTimeML.js");
 
   await getWaitTime({ clinicID: 1, queuePosition: 1, queueLength: 3, isWalkIn: true });
 
@@ -140,7 +140,7 @@ test("getWaitTime sends isWalkIn as false when false", async () => {
     json: async () => ({ estimatedWaitTime: 10 })
   });
 
-  const { getWaitTime } = await import("./waitTimeML.js");
+  const { getWaitTime } = await import("../Patients_WebPages/carequeue-ml/js/waitTimeML.js");
 
   await getWaitTime({ clinicID: 1, queuePosition: 1, queueLength: 3, isWalkIn: false });
 
@@ -154,7 +154,7 @@ test("getWaitTime defaults missing isWalkIn to false", async () => {
     json: async () => ({ estimatedWaitTime: 10 })
   });
 
-  const { getWaitTime } = await import("./waitTimeML.js");
+  const { getWaitTime } = await import("../Patients_WebPages/carequeue-ml/js/waitTimeML.js");
 
   await getWaitTime({ clinicID: 1, queuePosition: 1, queueLength: 3 });
 
@@ -168,7 +168,7 @@ test("getWaitTime returns null when estimatedWaitTime is absent", async () => {
     json: async () => ({})
   });
 
-  const { getWaitTime } = await import("./waitTimeML.js");
+  const { getWaitTime } = await import("../Patients_WebPages/carequeue-ml/js/waitTimeML.js");
 
   const result = await getWaitTime({ clinicID: 1, queuePosition: 1, queueLength: 1 });
 
@@ -181,7 +181,7 @@ test("getWaitTime returns null when response is not ok", async () => {
     json: async () => ({ error: "bad request" })
   });
 
-  const { getWaitTime } = await import("./waitTimeML.js");
+  const { getWaitTime } = await import("../Patients_WebPages/carequeue-ml/js/waitTimeML.js");
 
   const result = await getWaitTime({
     clinicID: 1,
@@ -195,7 +195,7 @@ test("getWaitTime returns null when response is not ok", async () => {
 test("getWaitTime returns null on network error", async () => {
   fetch.mockRejectedValue(new Error("network"));
 
-  const { getWaitTime } = await import("./waitTimeML.js");
+  const { getWaitTime } = await import("../Patients_WebPages/carequeue-ml/js/waitTimeML.js");
 
   const result = await getWaitTime({
     clinicID: 1,
@@ -209,7 +209,7 @@ test("getWaitTime returns null on network error", async () => {
 test("getWaitTime returns null on timeout", async () => {
   fetch.mockRejectedValue(new Error("timeout"));
 
-  const { getWaitTime } = await import("./waitTimeML.js");
+  const { getWaitTime } = await import("../Patients_WebPages/carequeue-ml/js/waitTimeML.js");
 
   const result = await getWaitTime({ clinicID: 1, queuePosition: 1, queueLength: 1 });
 
@@ -222,7 +222,7 @@ test("queue meter element exists in DOM", () => {
 
 test("loadQueueStatusML clears queue display when the appointment has no active queue entry", async () => {
   const { callbacks } = captureSnapshotCallbacks();
-  const { loadQueueStatusML } = await import("./waitTimeML.js");
+  const { loadQueueStatusML } = await import("../Patients_WebPages/carequeue-ml/js/waitTimeML.js");
 
   document.getElementById("queueCount").textContent = "old";
   document.getElementById("queueProgressText").textContent = "old";
@@ -250,7 +250,7 @@ test("loadQueueStatusML updates queue position, ML wait time, and estimateWait",
   });
   const { callbacks, unsubs } = captureSnapshotCallbacks();
   const db = { name: "db" };
-  const { loadQueueStatusML } = await import("./waitTimeML.js");
+  const { loadQueueStatusML } = await import("../Patients_WebPages/carequeue-ml/js/waitTimeML.js");
 
   const cleanup = loadQueueStatusML("user-1", "appt-1", 7, db);
   callbacks[0](snapshot([
@@ -294,7 +294,7 @@ test("loadQueueStatusML uses formula fallback when prediction is missing and rep
   });
   mockUpdateDoc.mockRejectedValueOnce(new Error("write failed"));
   const { callbacks } = captureSnapshotCallbacks();
-  const { loadQueueStatusML } = await import("./waitTimeML.js");
+  const { loadQueueStatusML } = await import("../Patients_WebPages/carequeue-ml/js/waitTimeML.js");
 
   loadQueueStatusML("user-1", "appt-1", 7, {});
   callbacks[0](snapshot([
@@ -323,7 +323,7 @@ test("loadQueueStatusML handles a single-person queue", async () => {
     json: async () => ({ estimatedWaitTime: 8 })
   });
   const { callbacks } = captureSnapshotCallbacks();
-  const { loadQueueStatusML } = await import("./waitTimeML.js");
+  const { loadQueueStatusML } = await import("../Patients_WebPages/carequeue-ml/js/waitTimeML.js");
 
   loadQueueStatusML("user-1", "appt-1", 7, {});
   callbacks[0](snapshot([
@@ -346,7 +346,7 @@ test("loadQueueStatusML can use the string clinicID fallback path", async () => 
     json: async () => ({ estimatedWaitTime: 12 })
   });
   const { callbacks } = captureSnapshotCallbacks();
-  const { loadQueueStatusML } = await import("./waitTimeML.js");
+  const { loadQueueStatusML } = await import("../Patients_WebPages/carequeue-ml/js/waitTimeML.js");
 
   loadQueueStatusML("user-1", "appt-1", 7, {});
   callbacks[0](snapshot([
@@ -375,7 +375,7 @@ test("loadQueueStatusML can use the string clinicID fallback path", async () => 
 
 test("loadQueueStatusML clears display when the current appointment is missing from the clinic queue", async () => {
   const { callbacks } = captureSnapshotCallbacks();
-  const { loadQueueStatusML } = await import("./waitTimeML.js");
+  const { loadQueueStatusML } = await import("../Patients_WebPages/carequeue-ml/js/waitTimeML.js");
 
   document.getElementById("queueCount").textContent = "old";
   document.getElementById("waitTime").textContent = "old";
@@ -408,7 +408,7 @@ test("loadQueueStatusML ignores stale ML responses from older queue snapshots", 
       json: async () => ({ estimatedWaitTime: 5 })
     });
   const { callbacks } = captureSnapshotCallbacks();
-  const { loadQueueStatusML } = await import("./waitTimeML.js");
+  const { loadQueueStatusML } = await import("../Patients_WebPages/carequeue-ml/js/waitTimeML.js");
 
   loadQueueStatusML("user-1", "appt-1", 7, {});
   callbacks[0](snapshot([

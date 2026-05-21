@@ -15,7 +15,7 @@ const mockDoc         = jest.fn();
 const mockOnAuthStateChanged = jest.fn();
 
 jest.mock(
-  "./firebase.js",
+  "../Patients_WebPages/firebase.js",
   () => ({ db: {}, auth: {} }),
   { virtual: true }
 );
@@ -86,7 +86,7 @@ beforeEach(() => {
 
 // ── Helper: import module and seed test data ──────────────────
 async function loadModule(notifications = [], filter = "all") {
-  const mod = await import("./patientNotifications.js");
+  const mod = await import("../Patients_WebPages/patientNotifications.js");
   mod.__setNotificationsForTest(notifications);
   mod.__setCurrentFilterForTest(filter);
   return mod;

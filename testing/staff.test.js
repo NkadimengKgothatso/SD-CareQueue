@@ -72,7 +72,7 @@ async function flushPromises(times = 6) {
 }
 
 async function load() {
-  const mod = await import("./StaffManagement.js");
+  const mod = await import("../Admin_WebPages/StaffManagement.js");
   await flushPromises();
   return mod;
 }

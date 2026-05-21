@@ -191,7 +191,7 @@ async function flushPromises(times = 8) {
 
 async function load(url = "/Patients_WebPages/BookAppointments.html") {
   window.history.pushState({}, "", url);
-  const mod = await import("./bookAppointment.js");
+  const mod = await import("../Patients_WebPages/bookAppointment.js");
   await flushPromises();
   return mod;
 }

@@ -119,7 +119,7 @@ beforeEach(() => {
 
 // ── Helpers ───────────────────────────────────────────────────
 async function load() {
-  return import("./clinicManagement.js");
+  return import("../Admin_WebPages/clinicManagement.js");
 }
 
 async function flushPromises() {
@@ -490,7 +490,7 @@ describe("addClinicToUI - rendering", () => {
         expect(document.body.textContent).toContain("Hours not specified");
     });
 
-    test("applies correct colour when derived status is Active", async () => {
+    test("applies correct colour when derived status is Open", async () => {
         jest.useFakeTimers().setSystemTime(new Date("2026-05-18T10:00:00"));
         const { addClinicToUI } = await load();
         addClinicToUI(clinic({
@@ -503,7 +503,7 @@ describe("addClinicToUI - rendering", () => {
             endTime: "17:00"
         }));
         const statusEl = document.querySelector("#status");
-        expect(statusEl.textContent).toBe("Active");
+        expect(statusEl.textContent).toBe("Open");
         expect(statusEl.style.color).toBe("rgb(22, 101, 52)");
     });
 

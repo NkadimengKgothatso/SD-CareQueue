@@ -83,7 +83,7 @@ function triggerAuth(user) {
     cb(user);
     return jest.fn(); // unsubscribe function
   });
-  return import("./admin.js").then((mod) => mod.initAdminPage());
+  return import("../Admin_WebPages/admin.js").then((mod) => mod.initAdminPage());
 }
 
 // ── Setup / teardown ──────────────────────────────────────────
@@ -110,7 +110,7 @@ beforeEach(() => {
 // =============================================================
 test("initialises Firebase app with the project config", async () => {
   mockOnAuthStateChanged.mockImplementation(() => jest.fn());
-  await import("./admin.js");
+  await import("../Admin_WebPages/admin.js");
 
   expect(mockInitializeApp).toHaveBeenCalledWith(
     expect.objectContaining({
@@ -121,7 +121,7 @@ test("initialises Firebase app with the project config", async () => {
 
 test("exports auth and db", async () => {
   mockOnAuthStateChanged.mockImplementation(() => jest.fn());
-  const mod = await import("./admin.js");
+  const mod = await import("../Admin_WebPages/admin.js");
 
   expect(mod.auth).toBe(mockAuth);
   expect(mod.db).toBe(mockDb);
@@ -132,7 +132,7 @@ test("creates auth and Firestore from the initialized app", async () => {
   mockInitializeApp.mockReturnValue(app);
   mockOnAuthStateChanged.mockImplementation(() => jest.fn());
 
-  await import("./admin.js");
+  await import("../Admin_WebPages/admin.js");
 
   expect(mockGetAuth).toHaveBeenCalledWith(app);
   expect(mockGetFirestore).toHaveBeenCalledWith(app);
@@ -152,7 +152,7 @@ test("does not resolve and does not call signOut when no user is signed in", asy
     return jest.fn();
   });
 
-  const mod = await import("./admin.js");
+  const mod = await import("../Admin_WebPages/admin.js");
 
   let resolved = false;
   mod.initAdminPage().then(() => { resolved = true; });
@@ -178,7 +178,7 @@ test("calls signOut when signed-in user is not an admin", async () => {
     return jest.fn();
   });
 
-  const mod = await import("./admin.js");
+  const mod = await import("../Admin_WebPages/admin.js");
   let resolved = false;
   mod.initAdminPage().then(() => { resolved = true; });
 
@@ -244,7 +244,7 @@ test("ignores admin documents with missing or blank email fields", async () => {
     return jest.fn();
   });
 
-  const mod = await import("./admin.js");
+  const mod = await import("../Admin_WebPages/admin.js");
   let resolved = false;
   mod.initAdminPage().then(() => { resolved = true; });
   await flushPromises();
@@ -268,7 +268,7 @@ test("calls signOut when getDocs throws (treats user as non-admin)", async () =>
     return jest.fn();
   });
 
-  const mod = await import("./admin.js");
+  const mod = await import("../Admin_WebPages/admin.js");
   let resolved = false;
   mod.initAdminPage().then(() => { resolved = true; });
 

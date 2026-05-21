@@ -60,7 +60,7 @@ async function flushPromises(times = 4) {
 }
 
 async function load() {
-  const mod = await import("./walkin.js");
+  const mod = await import("../Staff_Webpages/walkin.js");
   await flushPromises();
   return mod;
 }

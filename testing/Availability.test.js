@@ -62,7 +62,7 @@ async function flushPromises(times = 3) {
 }
 
 async function load() {
-  const mod = await import("./Availability.js");
+  const mod = await import("../Staff_Webpages/Availability.js");
   await flushPromises();
   return mod;
 }
