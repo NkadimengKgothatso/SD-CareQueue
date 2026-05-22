@@ -13,7 +13,7 @@
 <td>1</td>
 <td>🔹 Sprint 1</td>
 <td>
-<a href="https://trello.com/invite/b/69ceae16a72ae9c023bd6ecc/ATTIcd54fd9ea92d8ef163504bf03cefd162072B7FD7/sprint-1" target="_blank">
+<a href="https://trello.com/b/gDgOTlWi" target="_blank">
 Trello Board
 </a>
 </td>
@@ -23,7 +23,7 @@ Trello Board
 <td>2</td>
 <td>🔹 Sprint 2</td>
 <td>
-<a href="https://trello.com/invite/b/69ceae7fd4b5dee82effd4f5/ATTI8cd7efe47228a4569b0f88a50d72eb843C2BD908/sprint-2" target="_blank">
+<a href="https://trello.com/b/LdG1Xfhy" target="_blank">
 Trello Board
 </a>
 </td>
@@ -33,7 +33,7 @@ Trello Board
 <td>3</td>
 <td>🔹 Sprint 3</td>
 <td>
-<a href="https://trello.com/invite/b/69ceaea0ab551cab7a5f8f0c/ATTId0501356f8aea8a40bf180dc6f9bb797338637D9/sprint-3" target="_blank">
+<a href="https://trello.com/b/gUQwNZWw" target="_blank">
 Trello Board
 </a>
 </td>
@@ -43,7 +43,7 @@ Trello Board
 <td>4</td>
 <td>🔹 Sprint 4</td>
 <td>
-<a href="https://trello.com/invite/b/69ceaeba11636aa7139fbb24/ATTI5c9fc15c8739ca1fd3aa16413914f771C42011F0/sprint-4" target="_blank">
+<a href="https://trello.com/b/Q8vzBzIa" target="_blank">
 Trello Board
 </a>
 </td>
