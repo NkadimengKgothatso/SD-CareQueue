@@ -185,30 +185,7 @@ npm test
 npm run coverage
 ```
 
----
 
-# Project Structure
-
-```text
-SD-CareQueue/
-│
-├── frontend/
-│   ├── css/
-│   ├── js/
-│   ├── pages/
-│   └── assets/
-│
-├── ml-api/
-│   ├── app.py
-│   ├── wait_time_model.pkl
-│   ├── requirements.txt
-│   └── scripts/
-│
-├── tests/
-├── firebase/
-├── docs/
-└── README.md
-```
 ---
 
 # Project Objectives
