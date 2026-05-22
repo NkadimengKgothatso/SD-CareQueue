@@ -1,1 +1,0 @@
-![Component Diagram](../../../../../images/CareQueue_UML_Component_Standard_With_Interfaces.png) 
