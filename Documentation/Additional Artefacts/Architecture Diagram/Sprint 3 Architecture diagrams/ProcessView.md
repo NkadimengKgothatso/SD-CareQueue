@@ -34,7 +34,7 @@ The queue tracking activity diagram shows how the system allows a patient to vie
 ---
 
 ### 6. AppointmentStatuses
-![AppointmentStatuses](../../../../../images/AppointmentStatuses.png)  
+![AppointmentStatuses](../../../../images/AppointmentStatuses.png)  
 The clinic search activity diagram shows how an admin or patient searches for clinics by selecting filters such as province or services, after which the system processes and displays the filtered clinic results.
 
 
