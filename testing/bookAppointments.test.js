@@ -633,8 +633,19 @@ test("confirm booking saves appointment, notification, and resets the form", asy
       createdAt: "TIMESTAMP"
     })
   );
-  expect(global.emailjs.init).not.toHaveBeenCalled();
-  expect(global.emailjs.send).not.toHaveBeenCalled();
+  expect(global.emailjs.init).toHaveBeenCalledWith("jWEiS_k1FnVa1Zz5S");
+  expect(global.emailjs.send).toHaveBeenCalledWith(
+    "service_j8zb3jh",
+    "template_4onbz1h",
+    expect.objectContaining({
+      email: "patient@test.com",
+      name: "Patient One",
+      clinic_name: "Alpha Clinic",
+      appointment_reason: "Checkup",
+      appointment_date: "2026-05-12",
+      appointment_time: "10:00"
+    })
+  );
   expect(global.alert).toHaveBeenCalledWith("Appointment booked successfully!");
   expect(document.getElementById("appt-date").value).toBe("");
   expect(document.getElementById("selectedTime").value).toBe("");

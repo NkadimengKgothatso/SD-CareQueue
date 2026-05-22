@@ -101,6 +101,10 @@ beforeEach(() => {
     json: () => Promise.resolve({})
   }));
   global.alert = jest.fn();
+  global.emailjs = {
+    init: jest.fn(),
+    send: jest.fn(() => Promise.resolve())
+  };
 });
 
 test("getTodayString returns YYYY-MM-DD", async () => {
@@ -163,6 +167,17 @@ test("buildCard triggers position-two notification only once per appointment", a
       title: "Appointment In An Hour!",
       read: false,
       createdAt: "TIMESTAMP"
+    })
+  );
+  expect(global.emailjs.init).toHaveBeenCalledWith("jWEiS_k1FnVa1Zz5S");
+  expect(global.emailjs.send).toHaveBeenCalledWith(
+    "service_j8zb3jh",
+    "template_neu0ubc",
+    expect.objectContaining({
+      email: "patient@test.com",
+      name: "Patient",
+      clinic_name: "Central Clinic",
+      appointment_reason: "Checkup"
     })
   );
 
